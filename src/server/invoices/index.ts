@@ -96,6 +96,7 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
       currency: data.currency,
       dueDate: data.dueDate,
       notes: data.notes,
+      tags: data.tags || [],
       subtotal,
       total,
       status: "DRAFT",
@@ -140,6 +141,7 @@ export async function updateInvoice(id: string, userId: string, data: UpdateInvo
   if (data.currency) updateData.currency = data.currency;
   if (data.dueDate) updateData.dueDate = data.dueDate;
   if (data.notes !== undefined) updateData.notes = data.notes;
+  if (data.tags !== undefined) updateData.tags = data.tags;
 
   if (data.items) {
     const { subtotal, total } = calculateTotals(data.items);
@@ -217,6 +219,7 @@ export async function duplicateInvoice(id: string, userId: string) {
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
       subtotal: invoice.subtotal,
       total: invoice.total,
+      tags: invoice.tags as string[],
       items: {
         create: invoice.items.map((item) => ({
           description: item.description,

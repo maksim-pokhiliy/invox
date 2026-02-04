@@ -42,6 +42,7 @@ export const invoiceSchema = z.object({
   total: z.number(),
   dueDate: z.string(),
   notes: z.string().nullable(),
+  tags: z.array(z.string()),
   sentAt: z.string().nullable(),
   viewedAt: z.string().nullable(),
   paidAt: z.string().nullable(),
@@ -63,6 +64,7 @@ export const invoiceListItemSchema = z.object({
   currency: z.string(),
   total: z.number(),
   dueDate: z.string(),
+  tags: z.array(z.string()),
   createdAt: z.string(),
   client: z.object({
     name: z.string(),

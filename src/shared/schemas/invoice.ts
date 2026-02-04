@@ -6,6 +6,9 @@ export const invoiceItemSchema = z.object({
   unitPrice: z.number().int().min(0, "Unit price must be non-negative"),
 });
 
+// Tag validation
+const tagSchema = z.string().min(1).max(30);
+
 // Form schema for React Hook Form (no transforms, no defaults)
 export const invoiceFormSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
@@ -13,6 +16,7 @@ export const invoiceFormSchema = z.object({
   dueDate: z.string().min(1, "Due date is required"),
   items: z.array(invoiceItemSchema).min(1, "At least one item is required"),
   notes: z.string().optional(),
+  tags: z.array(tagSchema).optional(),
 });
 
 // API schema with date transform
@@ -25,6 +29,7 @@ export const createInvoiceSchema = z.object({
     .transform((val) => new Date(val)),
   items: z.array(invoiceItemSchema).min(1, "At least one item is required"),
   notes: z.string().optional(),
+  tags: z.array(tagSchema).optional(),
 });
 
 export const updateInvoiceSchema = z.object({
@@ -37,6 +42,7 @@ export const updateInvoiceSchema = z.object({
     .optional(),
   items: z.array(invoiceItemSchema).optional(),
   notes: z.string().optional().nullable(),
+  tags: z.array(tagSchema).optional(),
 });
 
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;

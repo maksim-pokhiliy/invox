@@ -124,6 +124,7 @@ model Invoice {
   total                   Int            @default(0)
   dueDate                 DateTime
   notes                   String?        @db.Text
+  tags                    Json           @default("[]") // Array of tag strings
   sentAt                  DateTime?
   viewedAt                DateTime?
   paidAt                  DateTime?
