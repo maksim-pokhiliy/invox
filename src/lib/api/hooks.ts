@@ -28,6 +28,7 @@ export function useClients() {
   return useQuery({
     queryKey: queryKeys.clients,
     queryFn: clientsApi.list,
+    staleTime: STALE_TIME.medium,
   });
 }
 
@@ -83,6 +84,7 @@ export function useInvoices() {
   return useQuery({
     queryKey: queryKeys.invoices,
     queryFn: invoicesApi.list,
+    staleTime: STALE_TIME.short,
   });
 }
 
@@ -90,6 +92,7 @@ export function useInvoice(id: string) {
   return useQuery({
     queryKey: queryKeys.invoice(id),
     queryFn: () => invoicesApi.get(id),
+    staleTime: STALE_TIME.medium,
   });
 }
 
@@ -240,6 +243,7 @@ export function useSenderProfile() {
   return useQuery({
     queryKey: queryKeys.senderProfile,
     queryFn: senderProfileApi.get,
+    staleTime: STALE_TIME.long,
   });
 }
 
@@ -270,6 +274,7 @@ export function usePublicInvoice(publicId: string) {
   return useQuery({
     queryKey: queryKeys.publicInvoice(publicId),
     queryFn: () => publicApi.getInvoice(publicId),
+    staleTime: STALE_TIME.medium,
   });
 }
 
