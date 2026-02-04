@@ -6,8 +6,8 @@ import type {
   PublicInvoice,
   CheckoutSession,
 } from "@app/shared/schemas/api";
-import type { CreateClientInput } from "@app/shared/schemas/client";
-import type { CreateInvoiceInput } from "@app/shared/schemas/invoice";
+import type { CreateClientInput, UpdateClientInput } from "@app/shared/schemas/client";
+import type { CreateInvoiceInput, UpdateInvoiceInput } from "@app/shared/schemas/invoice";
 import type { SenderProfileInput } from "@app/shared/schemas/sender-profile";
 import type { SignUpInput } from "@app/shared/schemas/auth";
 
@@ -59,10 +59,23 @@ export const authApi = {
 export const clientsApi = {
   list: () => fetchApi<Client[]>("/api/clients"),
 
+  get: (id: string) => fetchApi<Client>(`/api/clients/${id}`),
+
   create: (data: CreateClientInput) =>
     fetchApi<Client>("/api/clients", {
       method: "POST",
       body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: UpdateClientInput) =>
+    fetchApi<Client>(`/api/clients/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    fetchApi<{ success: boolean }>(`/api/clients/${id}`, {
+      method: "DELETE",
     }),
 };
 
@@ -78,6 +91,12 @@ export const invoicesApi = {
       body: JSON.stringify(data),
     }),
 
+  update: (id: string, data: UpdateInvoiceInput) =>
+    fetchApi<Invoice>(`/api/invoices/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
   send: (id: string) =>
     fetchApi<Invoice>(`/api/invoices/${id}/send`, {
       method: "POST",
@@ -85,6 +104,16 @@ export const invoicesApi = {
 
   markPaid: (id: string) =>
     fetchApi<Invoice>(`/api/invoices/${id}/mark-paid`, {
+      method: "POST",
+    }),
+
+  delete: (id: string) =>
+    fetchApi<{ success: boolean }>(`/api/invoices/${id}`, {
+      method: "DELETE",
+    }),
+
+  duplicate: (id: string) =>
+    fetchApi<Invoice>(`/api/invoices/${id}/duplicate`, {
       method: "POST",
     }),
 };

@@ -2,8 +2,8 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { clientsApi, invoicesApi, senderProfileApi, publicApi } from "./client";
-import type { CreateClientInput } from "@app/shared/schemas/client";
-import type { CreateInvoiceInput } from "@app/shared/schemas/invoice";
+import type { CreateClientInput, UpdateClientInput } from "@app/shared/schemas/client";
+import type { CreateInvoiceInput, UpdateInvoiceInput } from "@app/shared/schemas/invoice";
 import type { SenderProfileInput } from "@app/shared/schemas/sender-profile";
 
 // Query keys for cache management
@@ -28,6 +28,29 @@ export function useCreateClient() {
 
   return useMutation({
     mutationFn: (data: CreateClientInput) => clientsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients });
+    },
+  });
+}
+
+export function useUpdateClient() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateClientInput }) =>
+      clientsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients });
+    },
+  });
+}
+
+export function useDeleteClient() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => clientsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients });
     },
@@ -60,6 +83,19 @@ export function useCreateInvoice() {
   });
 }
 
+export function useUpdateInvoice() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateInvoiceInput }) =>
+      invoicesApi.update(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoices });
+    },
+  });
+}
+
 export function useSendInvoice() {
   const queryClient = useQueryClient();
 
@@ -79,6 +115,29 @@ export function useMarkInvoicePaid() {
     mutationFn: (id: string) => invoicesApi.markPaid(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoice(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoices });
+    },
+  });
+}
+
+export function useDeleteInvoice() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => invoicesApi.delete(id),
+    onSuccess: (_, id) => {
+      queryClient.removeQueries({ queryKey: queryKeys.invoice(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoices });
+    },
+  });
+}
+
+export function useDuplicateInvoice() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => invoicesApi.duplicate(id),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices });
     },
   });

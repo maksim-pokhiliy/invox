@@ -169,6 +169,70 @@ export async function updateInvoice(id: string, userId: string, data: UpdateInvo
   });
 }
 
+export async function deleteInvoice(id: string, userId: string) {
+  const invoice = await prisma.invoice.findFirst({
+    where: { id, userId },
+  });
+
+  if (!invoice) {
+    return null;
+  }
+
+  // Delete related items first
+  await prisma.invoiceItem.deleteMany({
+    where: { invoiceId: id },
+  });
+
+  // Delete the invoice
+  await prisma.invoice.delete({
+    where: { id },
+  });
+
+  return { success: true };
+}
+
+export async function duplicateInvoice(id: string, userId: string) {
+  const invoice = await prisma.invoice.findFirst({
+    where: { id, userId },
+    include: {
+      items: true,
+    },
+  });
+
+  if (!invoice) {
+    return null;
+  }
+
+  // Create a new invoice with the same data
+  const publicId = nanoid(10);
+  const newInvoice = await prisma.invoice.create({
+    data: {
+      userId,
+      clientId: invoice.clientId,
+      publicId,
+      currency: invoice.currency,
+      status: "DRAFT",
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      subtotal: invoice.subtotal,
+      total: invoice.total,
+      items: {
+        create: invoice.items.map((item) => ({
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          amount: item.amount,
+        })),
+      },
+    },
+    include: {
+      client: true,
+      items: true,
+    },
+  });
+
+  return newInvoice;
+}
+
 export async function markInvoiceViewed(publicId: string) {
   const invoice = await prisma.invoice.findUnique({
     where: { publicId },

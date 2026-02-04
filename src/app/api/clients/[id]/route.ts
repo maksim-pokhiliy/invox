@@ -1,22 +1,22 @@
 import { NextResponse } from "next/server";
 import { requireUser, AuthenticationError } from "@app/server/auth/require-user";
-import { getInvoice, updateInvoice, deleteInvoice } from "@app/server/invoices";
-import { updateInvoiceSchema } from "@app/shared/schemas";
+import { getClient, updateClient, deleteClient } from "@app/server/clients";
+import { updateClientSchema } from "@app/shared/schemas";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireUser();
     const { id } = await params;
-    const invoice = await getInvoice(id, user.id);
+    const client = await getClient(id, user.id);
 
-    if (!invoice) {
+    if (!client) {
       return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Invoice not found" } },
+        { error: { code: "NOT_FOUND", message: "Client not found" } },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(invoice);
+    return NextResponse.json(client);
   } catch (error) {
     if (error instanceof AuthenticationError) {
       return NextResponse.json(
@@ -24,7 +24,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         { status: 401 }
       );
     }
-    console.error("Get invoice error:", error);
+    console.error("Get client error:", error);
     return NextResponse.json(
       { error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred" } },
       { status: 500 }
@@ -37,7 +37,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const user = await requireUser();
     const { id } = await params;
     const body = await request.json();
-    const parsed = updateInvoiceSchema.safeParse(body);
+    const parsed = updateClientSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -51,16 +51,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       );
     }
 
-    const invoice = await updateInvoice(id, user.id, parsed.data);
+    const client = await updateClient(id, user.id, parsed.data);
 
-    if (!invoice) {
+    if (!client) {
       return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Invoice not found or not editable" } },
+        { error: { code: "NOT_FOUND", message: "Client not found" } },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(invoice);
+    return NextResponse.json(client);
   } catch (error) {
     if (error instanceof AuthenticationError) {
       return NextResponse.json(
@@ -68,7 +68,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         { status: 401 }
       );
     }
-    console.error("Update invoice error:", error);
+    console.error("Update client error:", error);
     return NextResponse.json(
       { error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred" } },
       { status: 500 }
@@ -80,11 +80,11 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   try {
     const user = await requireUser();
     const { id } = await params;
-    const result = await deleteInvoice(id, user.id);
+    const result = await deleteClient(id, user.id);
 
     if (!result) {
       return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Invoice not found" } },
+        { error: { code: "NOT_FOUND", message: "Client not found" } },
         { status: 404 }
       );
     }
@@ -97,7 +97,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
         { status: 401 }
       );
     }
-    console.error("Delete invoice error:", error);
+    console.error("Delete client error:", error);
     return NextResponse.json(
       { error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred" } },
       { status: 500 }

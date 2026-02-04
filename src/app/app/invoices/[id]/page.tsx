@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   Box,
   Button,
@@ -32,11 +32,23 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import PaymentIcon from "@mui/icons-material/Payment";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import EditIcon from "@mui/icons-material/Edit";
+import PreviewIcon from "@mui/icons-material/Preview";
 import { AppLayout } from "@app/components/layout/AppLayout";
 import { Breadcrumbs } from "@app/components/navigation/Breadcrumbs";
 import { PageLoader, Spinner } from "@app/components/feedback/Loading";
 import { useToast } from "@app/components/feedback/Toast";
-import { useInvoice, useSendInvoice, useMarkInvoicePaid, ApiError } from "@app/lib/api";
+import { ConfirmDialog, useConfirmDialog } from "@app/components/feedback/ConfirmDialog";
+import {
+  useInvoice,
+  useSendInvoice,
+  useMarkInvoicePaid,
+  useDeleteInvoice,
+  useDuplicateInvoice,
+  ApiError,
+} from "@app/lib/api";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -76,16 +88,21 @@ const statusConfig: Record<
 
 export default function InvoiceDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const invoiceId = params.id as string;
   const theme = useTheme();
   const toast = useToast();
+  const { confirm, dialogProps } = useConfirmDialog();
   const [sendDialogOpen, setSendDialogOpen] = React.useState(false);
   const [markPaidDialogOpen, setMarkPaidDialogOpen] = React.useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = React.useState(false);
 
   const { data: invoice, isLoading, error } = useInvoice(invoiceId);
 
   const sendMutation = useSendInvoice();
   const markPaidMutation = useMarkInvoicePaid();
+  const deleteMutation = useDeleteInvoice();
+  const duplicateMutation = useDuplicateInvoice();
 
   const handleSendInvoice = () => {
     sendMutation.mutate(invoiceId, {
@@ -115,6 +132,32 @@ export default function InvoiceDetailPage() {
     const url = `${window.location.origin}/i/${invoice?.publicId}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copied to clipboard!");
+  };
+
+  const handleDelete = () => {
+    confirm({
+      title: "Delete Invoice",
+      message: `Are you sure you want to delete invoice #${invoice?.publicId}? This action cannot be undone.`,
+      confirmText: "Delete",
+      confirmColor: "error",
+      onConfirm: async () => {
+        await deleteMutation.mutateAsync(invoiceId);
+        toast.success("Invoice deleted successfully");
+        router.push("/app/invoices");
+      },
+    });
+  };
+
+  const handleDuplicate = () => {
+    duplicateMutation.mutate(invoiceId, {
+      onSuccess: (newInvoice) => {
+        toast.success("Invoice duplicated successfully");
+        router.push(`/app/invoices/${newInvoice.id}`);
+      },
+      onError: (err) => {
+        toast.error(err instanceof ApiError ? err.message : "Failed to duplicate invoice");
+      },
+    });
   };
 
   if (isLoading) {
@@ -171,13 +214,29 @@ export default function InvoiceDetailPage() {
 
         <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
           {isDraft && (
-            <Button
-              variant="contained"
-              startIcon={<SendIcon />}
-              onClick={() => setSendDialogOpen(true)}
-            >
-              Send Invoice
-            </Button>
+            <>
+              <Button
+                variant="contained"
+                startIcon={<SendIcon />}
+                onClick={() => setSendDialogOpen(true)}
+              >
+                Send Invoice
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<EditIcon />}
+                onClick={() => router.push(`/app/invoices/${invoiceId}/edit`)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<PreviewIcon />}
+                onClick={() => setPreviewDialogOpen(true)}
+              >
+                Preview
+              </Button>
+            </>
           )}
           {!isDraft && (
             <Button variant="outlined" startIcon={<LinkIcon />} onClick={copyPublicLink}>
@@ -193,6 +252,22 @@ export default function InvoiceDetailPage() {
               Mark Paid
             </Button>
           )}
+          <Button
+            variant="outlined"
+            startIcon={duplicateMutation.isPending ? <Spinner size={16} /> : <ContentCopyIcon />}
+            onClick={handleDuplicate}
+            disabled={duplicateMutation.isPending}
+          >
+            Duplicate
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<DeleteIcon />}
+            onClick={handleDelete}
+          >
+            Delete
+          </Button>
         </Box>
       </Box>
 
@@ -416,6 +491,173 @@ export default function InvoiceDetailPage() {
             startIcon={markPaidMutation.isPending ? <Spinner size={16} /> : <CheckCircleIcon />}
           >
             Mark as Paid
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog {...dialogProps} />
+
+      {/* Preview Dialog */}
+      <Dialog
+        open={previewDialogOpen}
+        onClose={() => setPreviewDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600, display: "flex", justifyContent: "space-between" }}>
+          Invoice Preview
+          <Chip label="Preview Mode" size="small" color="info" />
+        </DialogTitle>
+        <DialogContent>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 4,
+              bgcolor: alpha(theme.palette.background.paper, 0.5),
+              borderRadius: 2,
+            }}
+          >
+            {/* Invoice Header */}
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 4 }}>
+              <Box>
+                <Typography variant="h4" fontWeight={700}>
+                  Invoice
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  #{invoice.publicId}
+                </Typography>
+              </Box>
+              <Chip label="Draft" color="default" />
+            </Box>
+
+            {/* From/To */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                gap: 4,
+                mb: 4,
+                p: 3,
+                borderRadius: 2,
+                bgcolor: alpha(theme.palette.primary.main, 0.02),
+              }}
+            >
+              <Box>
+                <Typography variant="overline" color="text.secondary" fontWeight={600}>
+                  From
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Your business info will appear here
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="overline" color="text.secondary" fontWeight={600}>
+                  Bill To
+                </Typography>
+                <Typography variant="h6" fontWeight={600} sx={{ mt: 1 }}>
+                  {invoice.client.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {invoice.client.email}
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Dates */}
+            <Box sx={{ display: "flex", gap: 4, mb: 4 }}>
+              <Box>
+                <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                  INVOICE DATE
+                </Typography>
+                <Typography variant="body1" fontWeight={500} sx={{ mt: 0.5 }}>
+                  {formatDate(invoice.createdAt)}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                  DUE DATE
+                </Typography>
+                <Typography variant="body1" fontWeight={500} sx={{ mt: 0.5 }}>
+                  {formatDate(invoice.dueDate)}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Divider sx={{ my: 3 }} />
+
+            {/* Items */}
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      Qty
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      Unit Price
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      Amount
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {invoice.items.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.description}</TableCell>
+                      <TableCell align="right">{item.quantity}</TableCell>
+                      <TableCell align="right">
+                        {formatCurrency(item.unitPrice, invoice.currency)}
+                      </TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 500 }}>
+                        {formatCurrency(item.amount, invoice.currency)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <Divider sx={{ my: 3 }} />
+
+            {/* Totals */}
+            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+              <Box sx={{ minWidth: 250 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                  <Typography color="text.secondary">Subtotal</Typography>
+                  <Typography>{formatCurrency(invoice.subtotal, invoice.currency)}</Typography>
+                </Box>
+                <Divider sx={{ my: 1 }} />
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="h6" fontWeight={600}>
+                    Total
+                  </Typography>
+                  <Typography variant="h6" fontWeight={700} color="primary.main">
+                    {formatCurrency(invoice.total, invoice.currency)}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Paper>
+
+          <Alert severity="info" sx={{ mt: 2, borderRadius: 2 }}>
+            This is how your invoice will appear to your client. Once sent, they will receive an
+            email with a link to view and pay this invoice.
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setPreviewDialogOpen(false)}>Close</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setPreviewDialogOpen(false);
+              setSendDialogOpen(true);
+            }}
+            startIcon={<SendIcon />}
+          >
+            Send Invoice
           </Button>
         </DialogActions>
       </Dialog>

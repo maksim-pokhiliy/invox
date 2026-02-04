@@ -9,3 +9,4 @@ export {
   PulsingText,
 } from "./Loading";
 export { ToastProvider, useToast } from "./Toast";
+export { ConfirmDialog, useConfirmDialog } from "./ConfirmDialog";

@@ -8,12 +8,17 @@ import {
   Box,
   Button,
   Divider,
+  Drawer,
   IconButton,
+  List,
+  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
   Tooltip,
+  Typography,
   useTheme,
   alpha,
 } from "@mui/material";
@@ -21,14 +26,18 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import PeopleIcon from "@mui/icons-material/People";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AddIcon from "@mui/icons-material/Add";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 import { Logo } from "@app/components/brand/Logo";
 import { useThemeMode } from "@app/components/theme/ThemeRegistry";
 
 const navItems = [
   { label: "Invoices", href: "/app/invoices", icon: <ReceiptLongIcon fontSize="small" /> },
+  { label: "Clients", href: "/app/clients", icon: <PeopleIcon fontSize="small" /> },
 ];
 
 export function Header() {
@@ -37,6 +46,7 @@ export function Header() {
   const theme = useTheme();
   const { mode, toggleTheme } = useThemeMode();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -48,12 +58,19 @@ export function Header() {
 
   const handleSignOut = async () => {
     handleMenuClose();
+    setMobileMenuOpen(false);
     await signOut({ callbackUrl: "/auth/sign-in" });
   };
 
   const handleSettings = () => {
     handleMenuClose();
+    setMobileMenuOpen(false);
     router.push("/app/settings");
+  };
+
+  const handleNavigate = (href: string) => {
+    setMobileMenuOpen(false);
+    router.push(href);
   };
 
   return (
@@ -85,6 +102,19 @@ export function Header() {
           alignItems: "center",
         }}
       >
+        {/* Mobile Menu Button */}
+        <IconButton
+          onClick={() => setMobileMenuOpen(true)}
+          sx={{
+            display: { xs: "flex", md: "none" },
+            mr: 1,
+            color: "text.secondary",
+          }}
+          aria-label="Open navigation menu"
+        >
+          <MenuIcon />
+        </IconButton>
+
         {/* Logo */}
         <Box
           component={Link}
@@ -99,8 +129,8 @@ export function Header() {
           <Logo size="medium" />
         </Box>
 
-        {/* Navigation */}
-        <Box sx={{ display: "flex", gap: 0.5, flex: 1 }}>
+        {/* Navigation - Hidden on mobile */}
+        <Box sx={{ display: { xs: "none", md: "flex" }, gap: 0.5, flex: 1 }}>
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
@@ -128,6 +158,9 @@ export function Header() {
             );
           })}
         </Box>
+
+        {/* Spacer for mobile */}
+        <Box sx={{ flex: 1, display: { xs: "block", md: "none" } }} />
 
         {/* Actions */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -195,6 +228,98 @@ export function Header() {
           </Menu>
         </Box>
       </Box>
+
+      {/* Mobile Navigation Drawer */}
+      <Drawer
+        anchor="left"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        PaperProps={{
+          sx: {
+            width: 280,
+            bgcolor: "background.paper",
+          },
+        }}
+      >
+        <Box sx={{ p: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Logo size="medium" />
+          <IconButton onClick={() => setMobileMenuOpen(false)} aria-label="Close navigation menu">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <Divider />
+        <List sx={{ px: 1 }}>
+          {navItems.map((item) => {
+            const isActive = pathname.startsWith(item.href);
+            return (
+              <ListItem key={item.href} disablePadding>
+                <ListItemButton
+                  onClick={() => handleNavigate(item.href)}
+                  sx={{
+                    borderRadius: 2,
+                    mb: 0.5,
+                    bgcolor: isActive ? alpha(theme.palette.primary.main, 0.08) : "transparent",
+                  }}
+                >
+                  <ListItemIcon sx={{ color: isActive ? "primary.main" : "text.secondary" }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{
+                      fontWeight: isActive ? 600 : 500,
+                      color: isActive ? "primary.main" : "text.primary",
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
+        <Divider sx={{ my: 1 }} />
+        <List sx={{ px: 1 }}>
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => handleNavigate("/app/invoices/new")}
+              sx={{ borderRadius: 2, mb: 0.5 }}
+            >
+              <ListItemIcon sx={{ color: "primary.main" }}>
+                <AddIcon />
+              </ListItemIcon>
+              <ListItemText primary="New Invoice" primaryTypographyProps={{ fontWeight: 500 }} />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={handleSettings} sx={{ borderRadius: 2, mb: 0.5 }}>
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              <ListItemText primary="Settings" />
+            </ListItemButton>
+          </ListItem>
+        </List>
+        <Box sx={{ mt: "auto", p: 2 }}>
+          <Divider sx={{ mb: 2 }} />
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Typography variant="body2" color="text.secondary">
+              {mode === "dark" ? "Dark Mode" : "Light Mode"}
+            </Typography>
+            <IconButton onClick={toggleTheme} size="small">
+              {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+          </Box>
+          <Button
+            fullWidth
+            variant="outlined"
+            color="error"
+            startIcon={<LogoutIcon />}
+            onClick={handleSignOut}
+            sx={{ mt: 2 }}
+          >
+            Sign Out
+          </Button>
+        </Box>
+      </Drawer>
     </Box>
   );
 }
