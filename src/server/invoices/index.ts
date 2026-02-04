@@ -8,7 +8,11 @@ interface DiscountInput {
   value: number;
 }
 
-function calculateTotals(items: InvoiceItemInput[], discount?: DiscountInput | null) {
+function calculateTotals(
+  items: InvoiceItemInput[],
+  discount?: DiscountInput | null,
+  taxRate?: number
+) {
   const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
 
   let discountAmount = 0;
@@ -20,8 +24,13 @@ function calculateTotals(items: InvoiceItemInput[], discount?: DiscountInput | n
     }
   }
 
-  const total = Math.max(0, subtotal - discountAmount);
-  return { subtotal, discountAmount, total };
+  const afterDiscount = Math.max(0, subtotal - discountAmount);
+
+  // Calculate tax on the discounted amount
+  const taxAmount = taxRate ? Math.round((afterDiscount * taxRate) / 100) : 0;
+
+  const total = afterDiscount + taxAmount;
+  return { subtotal, discountAmount, taxAmount, total };
 }
 
 function computeOverdueStatus(invoice: {
@@ -101,7 +110,11 @@ export async function getInvoiceByPublicId(publicId: string) {
 }
 
 export async function createInvoice(userId: string, data: CreateInvoiceInput) {
-  const { subtotal, discountAmount, total } = calculateTotals(data.items, data.discount);
+  const { subtotal, discountAmount, taxAmount, total } = calculateTotals(
+    data.items,
+    data.discount,
+    data.taxRate
+  );
   const publicId = nanoid(10);
 
   const invoice = await prisma.invoice.create({
@@ -117,6 +130,8 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
       discountType: data.discount?.type || null,
       discountValue: data.discount?.value || 0,
       discountAmount,
+      taxRate: data.taxRate || 0,
+      taxAmount,
       total,
       status: "DRAFT",
       items: {
@@ -174,44 +189,59 @@ export async function updateInvoice(id: string, userId: string, data: UpdateInvo
     }
   }
 
-  if (data.items) {
+  // Handle tax rate update
+  if (data.taxRate !== undefined) {
+    updateData.taxRate = data.taxRate;
+  }
+
+  // Determine if we need to recalculate totals
+  const needsRecalc = data.items || data.discount !== undefined || data.taxRate !== undefined;
+
+  if (needsRecalc) {
     const discount =
       data.discount !== undefined
         ? data.discount
         : invoice.discountType
           ? { type: invoice.discountType, value: invoice.discountValue }
           : null;
-    const { subtotal, discountAmount, total } = calculateTotals(data.items, discount);
-    updateData.subtotal = subtotal;
-    updateData.discountAmount = discountAmount;
-    updateData.total = total;
+    const taxRate = data.taxRate !== undefined ? data.taxRate : invoice.taxRate;
 
-    await prisma.invoiceItem.deleteMany({
-      where: { invoiceId: id },
-    });
+    let itemsForCalc: InvoiceItemInput[];
+    if (data.items) {
+      itemsForCalc = data.items;
 
-    await prisma.invoiceItem.createMany({
-      data: data.items.map((item) => ({
-        invoiceId: id,
+      await prisma.invoiceItem.deleteMany({
+        where: { invoiceId: id },
+      });
+
+      await prisma.invoiceItem.createMany({
+        data: data.items.map((item) => ({
+          invoiceId: id,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          amount: item.quantity * item.unitPrice,
+        })),
+      });
+    } else {
+      const existingItems = await prisma.invoiceItem.findMany({
+        where: { invoiceId: id },
+      });
+      itemsForCalc = existingItems.map((item) => ({
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
-        amount: item.quantity * item.unitPrice,
-      })),
-    });
-  } else if (data.discount !== undefined) {
-    // Recalculate with existing items if only discount changed
-    const existingItems = await prisma.invoiceItem.findMany({
-      where: { invoiceId: id },
-    });
-    const itemsInput = existingItems.map((item) => ({
-      description: item.description,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-    }));
-    const { subtotal, discountAmount, total } = calculateTotals(itemsInput, data.discount);
+      }));
+    }
+
+    const { subtotal, discountAmount, taxAmount, total } = calculateTotals(
+      itemsForCalc,
+      discount,
+      taxRate
+    );
     updateData.subtotal = subtotal;
     updateData.discountAmount = discountAmount;
+    updateData.taxAmount = taxAmount;
     updateData.total = total;
   }
 

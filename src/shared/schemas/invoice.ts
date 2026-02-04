@@ -30,6 +30,7 @@ export const invoiceFormSchema = z.object({
   notes: z.string().optional(),
   tags: z.array(tagSchema).optional(),
   discount: discountSchema,
+  taxRate: z.number().min(0).max(100).optional(), // Tax rate as percentage
 });
 
 // API schema with date transform
@@ -44,6 +45,7 @@ export const createInvoiceSchema = z.object({
   notes: z.string().optional(),
   tags: z.array(tagSchema).optional(),
   discount: discountSchema,
+  taxRate: z.number().min(0).max(100).optional(),
 });
 
 export const updateInvoiceSchema = z.object({
@@ -58,6 +60,7 @@ export const updateInvoiceSchema = z.object({
   notes: z.string().optional().nullable(),
   tags: z.array(tagSchema).optional(),
   discount: discountSchema,
+  taxRate: z.number().min(0).max(100).optional(),
 });
 
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;

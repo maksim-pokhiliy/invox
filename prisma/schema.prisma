@@ -129,6 +129,8 @@ model Invoice {
   discountType            DiscountType?
   discountValue           Int            @default(0) // Percentage (0-100) or fixed amount in cents
   discountAmount          Int            @default(0) // Calculated discount amount in cents
+  taxRate                 Int            @default(0) // Tax rate as percentage (e.g., 20 for 20%)
+  taxAmount               Int            @default(0) // Calculated tax amount in cents
   total                   Int            @default(0)
   dueDate                 DateTime
   notes                   String?        @db.Text

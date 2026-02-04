@@ -42,6 +42,8 @@ export const invoiceSchema = z.object({
   discountType: z.enum(["PERCENTAGE", "FIXED"]).nullable(),
   discountValue: z.number(),
   discountAmount: z.number(),
+  taxRate: z.number(),
+  taxAmount: z.number(),
   total: z.number(),
   dueDate: z.string(),
   notes: z.string().nullable(),
