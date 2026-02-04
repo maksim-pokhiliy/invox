@@ -1,18 +1,18 @@
 import { createTheme, alpha } from "@mui/material/styles";
 
-// Brand colors
+// Brand colors - WCAG AA compliant
 const brand = {
-  primary: "#6366f1", // Indigo
+  primary: "#4f46e5", // Indigo (darkened for better contrast)
   primaryLight: "#818cf8",
-  primaryDark: "#4f46e5",
-  secondary: "#10b981", // Emerald for success/money
+  primaryDark: "#3730a3",
+  secondary: "#047857", // Emerald (darkened for better contrast)
   secondaryLight: "#34d399",
-  secondaryDark: "#059669",
-  accent: "#f59e0b", // Amber for attention
-  error: "#ef4444",
-  warning: "#f59e0b",
-  info: "#3b82f6",
-  success: "#10b981",
+  secondaryDark: "#065f46",
+  accent: "#d97706", // Amber (darkened for better contrast)
+  error: "#dc2626",
+  warning: "#d97706",
+  info: "#2563eb",
+  success: "#047857",
 };
 
 const typography = {
@@ -218,30 +218,30 @@ export const lightTheme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: brand.primary,
+      main: "#4f46e5", // Darker indigo for better contrast (WCAG AA compliant)
       light: brand.primaryLight,
-      dark: brand.primaryDark,
+      dark: "#3730a3",
       contrastText: "#fff",
     },
     secondary: {
-      main: brand.secondary,
+      main: "#047857", // Darker emerald for better contrast
       light: brand.secondaryLight,
-      dark: brand.secondaryDark,
+      dark: "#065f46",
       contrastText: "#fff",
     },
-    error: { main: brand.error },
-    warning: { main: brand.warning },
-    info: { main: brand.info },
-    success: { main: brand.success },
+    error: { main: "#dc2626", contrastText: "#fff" }, // Darker red
+    warning: { main: "#d97706", contrastText: "#fff" }, // Darker amber
+    info: { main: "#2563eb", contrastText: "#fff" }, // Darker blue
+    success: { main: "#047857", contrastText: "#fff" }, // Darker green
     background: {
       default: "#f8fafc",
       paper: "#ffffff",
     },
     text: {
-      primary: "#1e293b",
-      secondary: "#64748b",
+      primary: "#0f172a", // Darker for better contrast
+      secondary: "#475569", // Darker secondary text (WCAG AA compliant)
     },
-    divider: "#e2e8f0",
+    divider: "#cbd5e1", // Slightly darker divider for visibility
   },
   typography,
   shape: {
@@ -265,30 +265,30 @@ export const darkTheme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: brand.primaryLight,
-      light: "#a5b4fc",
-      dark: brand.primary,
+      main: "#a5b4fc", // Lighter indigo for dark mode
+      light: "#c7d2fe",
+      dark: brand.primaryLight,
       contrastText: "#0f172a",
     },
     secondary: {
-      main: brand.secondaryLight,
-      light: "#6ee7b7",
-      dark: brand.secondary,
+      main: "#6ee7b7", // Lighter emerald for dark mode
+      light: "#a7f3d0",
+      dark: brand.secondaryLight,
       contrastText: "#0f172a",
     },
-    error: { main: "#f87171" },
-    warning: { main: "#fbbf24" },
-    info: { main: "#60a5fa" },
-    success: { main: "#34d399" },
+    error: { main: "#fca5a5", contrastText: "#0f172a" }, // Lighter red for dark bg
+    warning: { main: "#fcd34d", contrastText: "#0f172a" }, // Lighter amber
+    info: { main: "#93c5fd", contrastText: "#0f172a" }, // Lighter blue
+    success: { main: "#6ee7b7", contrastText: "#0f172a" }, // Lighter green
     background: {
       default: "#0f172a",
       paper: "#1e293b",
     },
     text: {
-      primary: "#f1f5f9",
-      secondary: "#94a3b8",
+      primary: "#f8fafc", // Slightly brighter
+      secondary: "#cbd5e1", // Lighter secondary for better contrast on dark bg
     },
-    divider: "#334155",
+    divider: "#475569", // More visible divider
   },
   typography,
   shape: {
