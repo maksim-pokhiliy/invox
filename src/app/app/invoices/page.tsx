@@ -40,6 +40,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EditIcon from "@mui/icons-material/Edit";
+import DownloadIcon from "@mui/icons-material/Download";
 import { AppLayout } from "@app/components/layout/AppLayout";
 import { Breadcrumbs } from "@app/components/navigation/Breadcrumbs";
 import { TableSkeleton } from "@app/components/feedback/Loading";
@@ -52,6 +53,7 @@ import {
   usePrefetchInvoice,
   ApiError,
 } from "@app/lib/api";
+import { exportInvoicesToCSV } from "@app/lib/export";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -240,6 +242,15 @@ export default function InvoicesPage() {
     router.push(`/app/invoices/${selectedInvoice.id}/edit`);
   };
 
+  const handleExportCSV = () => {
+    if (!filteredInvoices.length) {
+      toast.error("No invoices to export");
+      return;
+    }
+    exportInvoicesToCSV(filteredInvoices);
+    toast.success(`Exported ${filteredInvoices.length} invoices`);
+  };
+
   return (
     <AppLayout>
       <Breadcrumbs items={[{ label: "Invoices" }]} />
@@ -260,14 +271,26 @@ export default function InvoicesPage() {
             Manage and track all your invoices
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => router.push("/app/invoices/new")}
-          sx={{ display: { xs: "none", sm: "flex" } }}
-        >
-          New Invoice
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          {invoices && invoices.length > 0 && (
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              onClick={handleExportCSV}
+              sx={{ display: { xs: "none", sm: "flex" } }}
+            >
+              Export CSV
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => router.push("/app/invoices/new")}
+            sx={{ display: { xs: "none", sm: "flex" } }}
+          >
+            New Invoice
+          </Button>
+        </Box>
       </Box>
 
       {error && (
