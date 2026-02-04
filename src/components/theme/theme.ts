@@ -85,6 +85,21 @@ const typography = {
 };
 
 const sharedComponents = {
+  MuiCssBaseline: {
+    styleOverrides: {
+      // Enhanced focus styles for keyboard navigation
+      "*, *::before, *::after": {
+        "&:focus-visible": {
+          outline: `2px solid ${brand.primary}`,
+          outlineOffset: "2px",
+        },
+      },
+      // Hide focus ring for mouse users
+      "body:not(.user-is-tabbing) *:focus": {
+        outline: "none",
+      },
+    },
+  },
   MuiButton: {
     styleOverrides: {
       root: {
@@ -94,6 +109,10 @@ const sharedComponents = {
         boxShadow: "none",
         "&:hover": {
           boxShadow: "none",
+        },
+        "&:focus-visible": {
+          outline: `2px solid ${brand.primary}`,
+          outlineOffset: "2px",
         },
       },
       sizeLarge: {
