@@ -24,3 +24,6 @@ export { Logo } from "./brand";
 
 // Theme
 export { ThemeRegistry, useThemeMode, lightTheme, darkTheme } from "./theme";
+
+// Animation
+export { PageTransition } from "./animation";

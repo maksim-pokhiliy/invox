@@ -6,6 +6,7 @@ import { Box, Container, Link } from "@mui/material";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { KeyboardShortcutsDialog } from "@app/components/feedback/KeyboardShortcutsDialog";
+import { PageTransition } from "@app/components/animation";
 import { useKeyboardShortcuts } from "@app/hooks";
 
 interface AppLayoutProps {
@@ -98,13 +99,15 @@ export function AppLayout({ children, maxWidth = "lg", disablePadding = false }:
         tabIndex={-1}
         sx={{ flex: 1, py: disablePadding ? 0 : 4, px: 3, outline: "none" }}
       >
-        {maxWidth ? (
-          <Container maxWidth={maxWidth} disableGutters>
-            {children}
-          </Container>
-        ) : (
-          children
-        )}
+        <PageTransition>
+          {maxWidth ? (
+            <Container maxWidth={maxWidth} disableGutters>
+              {children}
+            </Container>
+          ) : (
+            children
+          )}
+        </PageTransition>
       </Box>
       <Footer />
       <KeyboardShortcutsDialog
