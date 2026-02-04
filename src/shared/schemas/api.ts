@@ -41,6 +41,7 @@ export const invoiceSchema = z.object({
   subtotal: z.number(),
   total: z.number(),
   dueDate: z.string(),
+  notes: z.string().nullable(),
   sentAt: z.string().nullable(),
   viewedAt: z.string().nullable(),
   paidAt: z.string().nullable(),

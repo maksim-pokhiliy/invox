@@ -45,7 +45,13 @@ import { Breadcrumbs } from "@app/components/navigation/Breadcrumbs";
 import { TableSkeleton } from "@app/components/feedback/Loading";
 import { useToast } from "@app/components/feedback/Toast";
 import { ConfirmDialog, useConfirmDialog } from "@app/components/feedback/ConfirmDialog";
-import { useInvoices, useDeleteInvoice, useDuplicateInvoice, ApiError } from "@app/lib/api";
+import {
+  useInvoices,
+  useDeleteInvoice,
+  useDuplicateInvoice,
+  usePrefetchInvoice,
+  ApiError,
+} from "@app/lib/api";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -82,6 +88,7 @@ export default function InvoicesPage() {
   const { data: invoices, isLoading, error } = useInvoices();
   const deleteMutation = useDeleteInvoice();
   const duplicateMutation = useDuplicateInvoice();
+  const prefetchInvoice = usePrefetchInvoice();
 
   const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedInvoiceId, setSelectedInvoiceId] = React.useState<string | null>(null);
@@ -394,6 +401,7 @@ export default function InvoicesPage() {
                         bgcolor: alpha(theme.palette.primary.main, 0.04),
                       },
                     }}
+                    onMouseEnter={() => prefetchInvoice(invoice.id)}
                     onClick={() => router.push(`/app/invoices/${invoice.id}`)}
                   >
                     <TableCell>

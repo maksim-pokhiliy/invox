@@ -16,6 +16,13 @@ export const queryKeys = {
   publicInvoice: (publicId: string) => ["public-invoice", publicId] as const,
 };
 
+// Stale time constants
+const STALE_TIME = {
+  short: 30 * 1000, // 30 seconds
+  medium: 60 * 1000, // 1 minute
+  long: 5 * 60 * 1000, // 5 minutes
+} as const;
+
 // Clients hooks
 export function useClients() {
   return useQuery({
@@ -276,4 +283,53 @@ export function useCreateCheckoutSession() {
   return useMutation({
     mutationFn: (invoiceId: string) => publicApi.createCheckoutSession(invoiceId),
   });
+}
+
+// Prefetch hooks for data loading optimization
+export function usePrefetchInvoice() {
+  const queryClient = useQueryClient();
+
+  return (id: string) => {
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.invoice(id),
+      queryFn: () => invoicesApi.get(id),
+      staleTime: STALE_TIME.medium,
+    });
+  };
+}
+
+export function usePrefetchClients() {
+  const queryClient = useQueryClient();
+
+  return () => {
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.clients,
+      queryFn: clientsApi.list,
+      staleTime: STALE_TIME.medium,
+    });
+  };
+}
+
+export function usePrefetchInvoices() {
+  const queryClient = useQueryClient();
+
+  return () => {
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.invoices,
+      queryFn: invoicesApi.list,
+      staleTime: STALE_TIME.short,
+    });
+  };
+}
+
+export function usePrefetchSenderProfile() {
+  const queryClient = useQueryClient();
+
+  return () => {
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.senderProfile,
+      queryFn: senderProfileApi.get,
+      staleTime: STALE_TIME.long,
+    });
+  };
 }

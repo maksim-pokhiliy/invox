@@ -76,6 +76,7 @@ export default function NewInvoicePage() {
       currency: "USD",
       dueDate: defaultDueDate,
       items: [{ description: "", quantity: 1, unitPrice: 0 }],
+      notes: "",
     },
   });
 
@@ -96,6 +97,7 @@ export default function NewInvoicePage() {
         ...item,
         unitPrice: Math.round(item.unitPrice * 100),
       })),
+      notes: data.notes || undefined,
     };
     createInvoiceMutation.mutate(transformedData, {
       onSuccess: (invoice) => {
@@ -216,6 +218,18 @@ export default function NewInvoicePage() {
               )}
             />
           </Box>
+
+          {/* Notes Section */}
+          <TextField
+            {...register("notes")}
+            label="Internal Notes"
+            placeholder="Add notes for yourself (not visible to client)"
+            fullWidth
+            multiline
+            rows={3}
+            sx={{ mt: 3 }}
+            helperText="These notes are for your reference only and won't be shown on the invoice"
+          />
 
           <Divider sx={{ my: 4 }} />
 

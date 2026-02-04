@@ -10,3 +10,4 @@ export {
 } from "./Loading";
 export { ToastProvider, useToast } from "./Toast";
 export { ConfirmDialog, useConfirmDialog } from "./ConfirmDialog";
+export { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";

@@ -1,9 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Box, Container, Link } from "@mui/material";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { KeyboardShortcutsDialog } from "@app/components/feedback/KeyboardShortcutsDialog";
+import { useKeyboardShortcuts } from "@app/hooks";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -40,6 +43,43 @@ function SkipLink() {
 }
 
 export function AppLayout({ children, maxWidth = "lg", disablePadding = false }: AppLayoutProps) {
+  const router = useRouter();
+  const [shortcutsDialogOpen, setShortcutsDialogOpen] = React.useState(false);
+
+  const shortcuts = React.useMemo(
+    () => [
+      {
+        key: "n",
+        ctrl: true,
+        handler: () => router.push("/app/invoices/new"),
+        description: "New invoice",
+      },
+      {
+        key: "/",
+        ctrl: true,
+        handler: () => setShortcutsDialogOpen(true),
+        description: "Show keyboard shortcuts",
+      },
+      {
+        key: "g",
+        ctrl: true,
+        shift: true,
+        handler: () => router.push("/app/invoices"),
+        description: "Go to invoices",
+      },
+      {
+        key: "c",
+        ctrl: true,
+        shift: true,
+        handler: () => router.push("/app/clients"),
+        description: "Go to clients",
+      },
+    ],
+    [router]
+  );
+
+  useKeyboardShortcuts(shortcuts);
+
   return (
     <Box
       sx={{
@@ -67,6 +107,10 @@ export function AppLayout({ children, maxWidth = "lg", disablePadding = false }:
         )}
       </Box>
       <Footer />
+      <KeyboardShortcutsDialog
+        open={shortcutsDialogOpen}
+        onClose={() => setShortcutsDialogOpen(false)}
+      />
     </Box>
   );
 }

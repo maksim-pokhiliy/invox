@@ -76,6 +76,7 @@ export default function EditInvoicePage() {
       currency: "USD",
       dueDate: "",
       items: [{ description: "", quantity: 1, unitPrice: 0 }],
+      notes: "",
     },
   });
 
@@ -91,6 +92,7 @@ export default function EditInvoicePage() {
           quantity: item.quantity,
           unitPrice: item.unitPrice / 100,
         })),
+        notes: invoice.notes || "",
       });
     }
   }, [invoice, reset]);
@@ -110,6 +112,7 @@ export default function EditInvoicePage() {
         ...item,
         unitPrice: Math.round(item.unitPrice * 100),
       })),
+      notes: data.notes || null,
     };
     updateInvoiceMutation.mutate(
       { id: invoiceId, data: transformedData },
@@ -266,6 +269,18 @@ export default function EditInvoicePage() {
               )}
             />
           </Box>
+
+          {/* Notes Section */}
+          <TextField
+            {...register("notes")}
+            label="Internal Notes"
+            placeholder="Add notes for yourself (not visible to client)"
+            fullWidth
+            multiline
+            rows={3}
+            sx={{ mt: 3 }}
+            helperText="These notes are for your reference only and won't be shown on the invoice"
+          />
 
           <Divider sx={{ my: 4 }} />
 

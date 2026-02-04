@@ -12,6 +12,7 @@ export const invoiceFormSchema = z.object({
   currency: z.string().min(1, "Currency is required"),
   dueDate: z.string().min(1, "Due date is required"),
   items: z.array(invoiceItemSchema).min(1, "At least one item is required"),
+  notes: z.string().optional(),
 });
 
 // API schema with date transform
@@ -23,6 +24,7 @@ export const createInvoiceSchema = z.object({
     .or(z.date())
     .transform((val) => new Date(val)),
   items: z.array(invoiceItemSchema).min(1, "At least one item is required"),
+  notes: z.string().optional(),
 });
 
 export const updateInvoiceSchema = z.object({
@@ -34,6 +36,7 @@ export const updateInvoiceSchema = z.object({
     .transform((val) => new Date(val))
     .optional(),
   items: z.array(invoiceItemSchema).optional(),
+  notes: z.string().optional().nullable(),
 });
 
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;

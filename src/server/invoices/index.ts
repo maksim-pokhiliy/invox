@@ -95,6 +95,7 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
       publicId,
       currency: data.currency,
       dueDate: data.dueDate,
+      notes: data.notes,
       subtotal,
       total,
       status: "DRAFT",
@@ -138,6 +139,7 @@ export async function updateInvoice(id: string, userId: string, data: UpdateInvo
   if (data.clientId) updateData.clientId = data.clientId;
   if (data.currency) updateData.currency = data.currency;
   if (data.dueDate) updateData.dueDate = data.dueDate;
+  if (data.notes !== undefined) updateData.notes = data.notes;
 
   if (data.items) {
     const { subtotal, total } = calculateTotals(data.items);

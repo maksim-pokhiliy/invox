@@ -123,6 +123,7 @@ model Invoice {
   subtotal                Int            @default(0)
   total                   Int            @default(0)
   dueDate                 DateTime
+  notes                   String?        @db.Text
   sentAt                  DateTime?
   viewedAt                DateTime?
   paidAt                  DateTime?

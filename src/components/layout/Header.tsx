@@ -34,6 +34,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import { Logo } from "@app/components/brand/Logo";
 import { useThemeMode } from "@app/components/theme/ThemeRegistry";
+import { usePrefetchInvoices, usePrefetchClients } from "@app/lib/api";
 
 const navItems = [
   { label: "Invoices", href: "/app/invoices", icon: <ReceiptLongIcon fontSize="small" /> },
@@ -47,6 +48,16 @@ export function Header() {
   const { mode, toggleTheme } = useThemeMode();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const prefetchInvoices = usePrefetchInvoices();
+  const prefetchClients = usePrefetchClients();
+
+  const handlePrefetch = (href: string) => {
+    if (href === "/app/invoices") {
+      prefetchInvoices();
+    } else if (href === "/app/clients") {
+      prefetchClients();
+    }
+  };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -140,6 +151,7 @@ export function Header() {
                 href={item.href}
                 size="small"
                 startIcon={item.icon}
+                onMouseEnter={() => handlePrefetch(item.href)}
                 sx={{
                   color: isActive ? "primary.main" : "text.secondary",
                   bgcolor: isActive ? alpha(theme.palette.primary.main, 0.08) : "transparent",
