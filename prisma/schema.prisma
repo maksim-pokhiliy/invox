@@ -113,6 +113,11 @@ enum PaymentMethod {
   MANUAL
 }
 
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
 model Invoice {
   id                      String         @id @default(cuid())
   userId                  String
@@ -121,6 +126,9 @@ model Invoice {
   currency                String         @default("USD")
   status                  InvoiceStatus  @default(DRAFT)
   subtotal                Int            @default(0)
+  discountType            DiscountType?
+  discountValue           Int            @default(0) // Percentage (0-100) or fixed amount in cents
+  discountAmount          Int            @default(0) // Calculated discount amount in cents
   total                   Int            @default(0)
   dueDate                 DateTime
   notes                   String?        @db.Text

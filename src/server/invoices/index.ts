@@ -3,9 +3,25 @@ import { prisma } from "@app/server/db";
 import { CreateInvoiceInput, UpdateInvoiceInput, InvoiceItemInput } from "@app/shared/schemas";
 import { InvoiceStatus, InvoiceEventType, PaymentMethod, Prisma } from "@prisma/client";
 
-function calculateTotals(items: InvoiceItemInput[]) {
+interface DiscountInput {
+  type: "PERCENTAGE" | "FIXED";
+  value: number;
+}
+
+function calculateTotals(items: InvoiceItemInput[], discount?: DiscountInput | null) {
   const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
-  return { subtotal, total: subtotal };
+
+  let discountAmount = 0;
+  if (discount && discount.value > 0) {
+    if (discount.type === "PERCENTAGE") {
+      discountAmount = Math.round((subtotal * discount.value) / 100);
+    } else {
+      discountAmount = discount.value;
+    }
+  }
+
+  const total = Math.max(0, subtotal - discountAmount);
+  return { subtotal, discountAmount, total };
 }
 
 function computeOverdueStatus(invoice: {
@@ -85,7 +101,7 @@ export async function getInvoiceByPublicId(publicId: string) {
 }
 
 export async function createInvoice(userId: string, data: CreateInvoiceInput) {
-  const { subtotal, total } = calculateTotals(data.items);
+  const { subtotal, discountAmount, total } = calculateTotals(data.items, data.discount);
   const publicId = nanoid(10);
 
   const invoice = await prisma.invoice.create({
@@ -98,6 +114,9 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
       notes: data.notes,
       tags: data.tags || [],
       subtotal,
+      discountType: data.discount?.type || null,
+      discountValue: data.discount?.value || 0,
+      discountAmount,
       total,
       status: "DRAFT",
       items: {
@@ -143,9 +162,28 @@ export async function updateInvoice(id: string, userId: string, data: UpdateInvo
   if (data.notes !== undefined) updateData.notes = data.notes;
   if (data.tags !== undefined) updateData.tags = data.tags;
 
+  // Handle discount update
+  if (data.discount !== undefined) {
+    if (data.discount) {
+      updateData.discountType = data.discount.type;
+      updateData.discountValue = data.discount.value;
+    } else {
+      updateData.discountType = null;
+      updateData.discountValue = 0;
+      updateData.discountAmount = 0;
+    }
+  }
+
   if (data.items) {
-    const { subtotal, total } = calculateTotals(data.items);
+    const discount =
+      data.discount !== undefined
+        ? data.discount
+        : invoice.discountType
+          ? { type: invoice.discountType, value: invoice.discountValue }
+          : null;
+    const { subtotal, discountAmount, total } = calculateTotals(data.items, discount);
     updateData.subtotal = subtotal;
+    updateData.discountAmount = discountAmount;
     updateData.total = total;
 
     await prisma.invoiceItem.deleteMany({
@@ -161,6 +199,20 @@ export async function updateInvoice(id: string, userId: string, data: UpdateInvo
         amount: item.quantity * item.unitPrice,
       })),
     });
+  } else if (data.discount !== undefined) {
+    // Recalculate with existing items if only discount changed
+    const existingItems = await prisma.invoiceItem.findMany({
+      where: { invoiceId: id },
+    });
+    const itemsInput = existingItems.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    }));
+    const { subtotal, discountAmount, total } = calculateTotals(itemsInput, data.discount);
+    updateData.subtotal = subtotal;
+    updateData.discountAmount = discountAmount;
+    updateData.total = total;
   }
 
   return prisma.invoice.update({
