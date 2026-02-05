@@ -34,7 +34,7 @@ import { Breadcrumbs } from "@app/components/navigation/Breadcrumbs";
 import { TableSkeleton } from "@app/components/feedback/Loading";
 import { useToast } from "@app/components/feedback/Toast";
 import { ConfirmDialog, useConfirmDialog } from "@app/components/feedback/ConfirmDialog";
-import { useTemplates, useDeleteTemplate, ApiError, type Template } from "@app/lib/api";
+import { useTemplates, useDeleteTemplate, type Template } from "@app/lib/api";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
