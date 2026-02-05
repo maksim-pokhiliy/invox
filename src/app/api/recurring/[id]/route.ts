@@ -6,6 +6,7 @@ import {
   updateRecurringInvoice,
   deleteRecurringInvoice,
 } from "@app/server/recurring";
+import { VALIDATION } from "@app/lib/constants";
 
 const updateRecurringSchema = z.object({
   name: z.string().min(1).optional(),
@@ -21,7 +22,7 @@ const updateRecurringSchema = z.object({
     .optional(),
   taxRate: z.number().min(0).max(100).optional(),
   notes: z.string().optional(),
-  dueDays: z.number().min(1).max(365).optional(),
+  dueDays: z.number().min(1).max(VALIDATION.MAX_DUE_DAYS).optional(),
   autoSend: z.boolean().optional(),
   nextRunAt: z
     .string()

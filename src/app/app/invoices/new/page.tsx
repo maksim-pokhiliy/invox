@@ -229,10 +229,8 @@ export default function NewInvoicePage() {
 
   const createInvoiceMutation = useCreateInvoice();
 
-  // Watch all form values for autosave
   const formValues = watch();
 
-  // Autosave functionality
   const { restoreDraft, clearDraft, lastSaved } = useAutosave({
     key: "invoice-draft-new",
     data: formValues,
@@ -245,7 +243,6 @@ export default function NewInvoicePage() {
 
   const [showDraftBanner, setShowDraftBanner] = React.useState(false);
 
-  // Apply template when loaded
   React.useEffect(() => {
     if (template && !templateApplied && !templateLoading) {
       const templateDueDate = getTemplateDueDate(template.dueDays);
@@ -256,7 +253,7 @@ export default function NewInvoicePage() {
         items: template.items.map((item) => ({
           description: item.description,
           quantity: item.quantity,
-          unitPrice: item.unitPrice / 100, // Convert from cents
+          unitPrice: item.unitPrice / 100,
         })),
         notes: template.notes || "",
       });
@@ -265,7 +262,6 @@ export default function NewInvoicePage() {
     }
   }, [template, templateApplied, templateLoading, reset, toast]);
 
-  // Check for existing draft on mount
   React.useEffect(() => {
     const checkDraft = () => {
       try {
@@ -273,9 +269,7 @@ export default function NewInvoicePage() {
         if (saved) {
           setShowDraftBanner(true);
         }
-      } catch {
-        // Ignore
-      }
+      } catch {}
     };
     checkDraft();
   }, []);
@@ -304,7 +298,7 @@ export default function NewInvoicePage() {
     };
     createInvoiceMutation.mutate(transformedData, {
       onSuccess: (invoice) => {
-        clearDraft(); // Clear autosaved draft on successful submit
+        clearDraft();
         toast.success("Invoice created successfully!");
         router.push(`/app/invoices/${invoice.id}`);
       },
@@ -376,7 +370,6 @@ export default function NewInvoicePage() {
 
       <Paper sx={{ p: 4, borderRadius: 3 }}>
         <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-          {/* Client & Details Section */}
           <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
             Invoice Details
           </Typography>
@@ -452,7 +445,6 @@ export default function NewInvoicePage() {
             />
           </Box>
 
-          {/* Notes Section */}
           <TextField
             {...register("notes")}
             label="Internal Notes"
@@ -466,7 +458,6 @@ export default function NewInvoicePage() {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* Items Section */}
           <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
             Line Items
           </Typography>
@@ -524,7 +515,6 @@ export default function NewInvoicePage() {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* Totals Section */}
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 4 }}>
             <Box
               sx={{
@@ -554,7 +544,6 @@ export default function NewInvoicePage() {
             </Box>
           </Box>
 
-          {/* Actions */}
           <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
             <Button variant="outlined" onClick={() => router.push("/app/invoices")}>
               Cancel

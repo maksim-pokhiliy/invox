@@ -16,7 +16,6 @@ interface Shortcut {
 export function useKeyboardShortcuts(shortcuts: Shortcut[]) {
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Don't trigger shortcuts when typing in input fields
       const target = event.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
         return;

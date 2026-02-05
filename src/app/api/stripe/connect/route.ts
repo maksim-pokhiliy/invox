@@ -2,17 +2,16 @@ import { NextResponse } from "next/server";
 import { requireUser, AuthenticationError } from "@app/server/auth/require-user";
 import { getStripeConnectUrl } from "@app/server/stripe";
 import { randomBytes } from "crypto";
+import { VALIDATION } from "@app/lib/constants";
 
 export async function GET() {
   try {
     const user = await requireUser();
 
-    // Generate a state token for CSRF protection
-    // In production, you'd want to store this in a session or short-lived token
     const state = Buffer.from(
       JSON.stringify({
         userId: user.id,
-        nonce: randomBytes(16).toString("hex"),
+        nonce: randomBytes(VALIDATION.STATE_LENGTH).toString("hex"),
         timestamp: Date.now(),
       })
     ).toString("base64url");

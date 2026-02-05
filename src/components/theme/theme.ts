@@ -1,14 +1,13 @@
 import { createTheme, alpha } from "@mui/material/styles";
 
-// Brand colors - WCAG AA compliant
 const brand = {
-  primary: "#4f46e5", // Indigo (darkened for better contrast)
+  primary: "#4f46e5",
   primaryLight: "#818cf8",
   primaryDark: "#3730a3",
-  secondary: "#047857", // Emerald (darkened for better contrast)
+  secondary: "#047857",
   secondaryLight: "#34d399",
   secondaryDark: "#065f46",
-  accent: "#d97706", // Amber (darkened for better contrast)
+  accent: "#d97706",
   error: "#dc2626",
   warning: "#d97706",
   info: "#2563eb",
@@ -87,14 +86,12 @@ const typography = {
 const sharedComponents = {
   MuiCssBaseline: {
     styleOverrides: {
-      // Enhanced focus styles for keyboard navigation
       "*, *::before, *::after": {
         "&:focus-visible": {
           outline: `2px solid ${brand.primary}`,
           outlineOffset: "2px",
         },
       },
-      // Hide focus ring for mouse users
       "body:not(.user-is-tabbing) *:focus": {
         outline: "none",
       },
@@ -218,30 +215,30 @@ export const lightTheme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#4f46e5", // Darker indigo for better contrast (WCAG AA compliant)
+      main: "#4f46e5",
       light: brand.primaryLight,
       dark: "#3730a3",
       contrastText: "#fff",
     },
     secondary: {
-      main: "#047857", // Darker emerald for better contrast
+      main: "#047857",
       light: brand.secondaryLight,
       dark: "#065f46",
       contrastText: "#fff",
     },
-    error: { main: "#dc2626", contrastText: "#fff" }, // Darker red
-    warning: { main: "#d97706", contrastText: "#fff" }, // Darker amber
-    info: { main: "#2563eb", contrastText: "#fff" }, // Darker blue
-    success: { main: "#047857", contrastText: "#fff" }, // Darker green
+    error: { main: "#dc2626", contrastText: "#fff" },
+    warning: { main: "#d97706", contrastText: "#fff" },
+    info: { main: "#2563eb", contrastText: "#fff" },
+    success: { main: "#047857", contrastText: "#fff" },
     background: {
       default: "#f8fafc",
       paper: "#ffffff",
     },
     text: {
-      primary: "#0f172a", // Darker for better contrast
-      secondary: "#475569", // Darker secondary text (WCAG AA compliant)
+      primary: "#0f172a",
+      secondary: "#475569",
     },
-    divider: "#cbd5e1", // Slightly darker divider for visibility
+    divider: "#cbd5e1",
   },
   typography,
   shape: {
@@ -265,30 +262,30 @@ export const darkTheme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "#a5b4fc", // Lighter indigo for dark mode
+      main: "#a5b4fc",
       light: "#c7d2fe",
       dark: brand.primaryLight,
       contrastText: "#0f172a",
     },
     secondary: {
-      main: "#6ee7b7", // Lighter emerald for dark mode
+      main: "#6ee7b7",
       light: "#a7f3d0",
       dark: brand.secondaryLight,
       contrastText: "#0f172a",
     },
-    error: { main: "#fca5a5", contrastText: "#0f172a" }, // Lighter red for dark bg
-    warning: { main: "#fcd34d", contrastText: "#0f172a" }, // Lighter amber
-    info: { main: "#93c5fd", contrastText: "#0f172a" }, // Lighter blue
-    success: { main: "#6ee7b7", contrastText: "#0f172a" }, // Lighter green
+    error: { main: "#fca5a5", contrastText: "#0f172a" },
+    warning: { main: "#fcd34d", contrastText: "#0f172a" },
+    info: { main: "#93c5fd", contrastText: "#0f172a" },
+    success: { main: "#6ee7b7", contrastText: "#0f172a" },
     background: {
       default: "#0f172a",
       paper: "#1e293b",
     },
     text: {
-      primary: "#f8fafc", // Slightly brighter
-      secondary: "#cbd5e1", // Lighter secondary for better contrast on dark bg
+      primary: "#f8fafc",
+      secondary: "#cbd5e1",
     },
-    divider: "#475569", // More visible divider
+    divider: "#475569",
   },
   typography,
   shape: {

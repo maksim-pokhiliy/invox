@@ -195,7 +195,6 @@ export default function EditInvoicePage() {
     },
   });
 
-  // Reset form when invoice data is loaded
   React.useEffect(() => {
     if (invoice) {
       reset({
@@ -329,7 +328,6 @@ export default function EditInvoicePage() {
 
       <Paper sx={{ p: 4, borderRadius: 3 }}>
         <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-          {/* Client & Details Section */}
           <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
             Invoice Details
           </Typography>
@@ -401,7 +399,6 @@ export default function EditInvoicePage() {
             />
           </Box>
 
-          {/* Notes Section */}
           <TextField
             {...register("notes")}
             label="Internal Notes"
@@ -415,7 +412,6 @@ export default function EditInvoicePage() {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* Items Section */}
           <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
             Line Items
           </Typography>
@@ -473,7 +469,6 @@ export default function EditInvoicePage() {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* Totals Section */}
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 4 }}>
             <Box
               sx={{
@@ -503,7 +498,6 @@ export default function EditInvoicePage() {
             </Box>
           </Box>
 
-          {/* Actions */}
           <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
             <Button variant="outlined" onClick={() => router.push(`/app/invoices/${invoiceId}`)}>
               Cancel

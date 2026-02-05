@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Generic API error response
 export const apiErrorSchema = z.object({
   error: z.object({
     code: z.string(),
@@ -10,7 +9,6 @@ export const apiErrorSchema = z.object({
 
 export type ApiError = z.infer<typeof apiErrorSchema>;
 
-// Client response schema
 export const clientSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -23,7 +21,6 @@ export const clientListSchema = z.array(clientSchema);
 
 export type Client = z.infer<typeof clientSchema>;
 
-// Invoice item response schema
 export const invoiceItemResponseSchema = z.object({
   id: z.string(),
   description: z.string(),
@@ -32,7 +29,6 @@ export const invoiceItemResponseSchema = z.object({
   amount: z.number(),
 });
 
-// Invoice event (audit log) schema
 export const invoiceEventSchema = z.object({
   id: z.string(),
   type: z.enum([
@@ -51,7 +47,6 @@ export const invoiceEventSchema = z.object({
 
 export type InvoiceEvent = z.infer<typeof invoiceEventSchema>;
 
-// Payment schema
 export const paymentSchema = z.object({
   id: z.string(),
   invoiceId: z.string(),
@@ -64,7 +59,6 @@ export const paymentSchema = z.object({
 
 export type Payment = z.infer<typeof paymentSchema>;
 
-// Invoice response schema
 export const invoiceSchema = z.object({
   id: z.string(),
   publicId: z.string(),
@@ -118,7 +112,6 @@ export const invoiceListSchema = z.array(invoiceListItemSchema);
 export type Invoice = z.infer<typeof invoiceSchema>;
 export type InvoiceListItem = z.infer<typeof invoiceListItemSchema>;
 
-// Sender profile response schema
 export const senderProfileResponseSchema = z.object({
   id: z.string(),
   companyName: z.string().nullable(),
@@ -135,7 +128,6 @@ export const senderProfileResponseSchema = z.object({
 
 export type SenderProfile = z.infer<typeof senderProfileResponseSchema>;
 
-// Public invoice response schema (for payment page)
 export const publicInvoiceSchema = z.object({
   id: z.string(),
   publicId: z.string(),
@@ -162,7 +154,6 @@ export const publicInvoiceSchema = z.object({
 
 export type PublicInvoice = z.infer<typeof publicInvoiceSchema>;
 
-// Checkout session response
 export const checkoutSessionSchema = z.object({
   url: z.string(),
 });

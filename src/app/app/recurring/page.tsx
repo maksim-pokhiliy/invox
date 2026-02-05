@@ -43,6 +43,7 @@ import {
   ApiError,
 } from "@app/lib/api";
 import type { RecurringInvoice, RecurringStatus } from "@app/lib/api/client";
+import { formatCurrency, formatDateCompact } from "@app/lib/format";
 
 const frequencyLabels: Record<string, string> = {
   WEEKLY: "Weekly",
@@ -60,21 +61,6 @@ const statusConfig: Record<
   PAUSED: { color: "warning", label: "Paused" },
   CANCELED: { color: "error", label: "Canceled" },
 };
-
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(date));
-}
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(amount / 100);
-}
 
 export default function RecurringInvoicesPage() {
   const theme = useTheme();
@@ -99,7 +85,9 @@ export default function RecurringInvoicesPage() {
   };
 
   const handleToggleStatus = () => {
-    if (!selectedItem) return;
+    if (!selectedItem) {
+      return;
+    }
     const newStatus: RecurringStatus = selectedItem.status === "ACTIVE" ? "PAUSED" : "ACTIVE";
     updateMutation.mutate(
       { id: selectedItem.id, data: { status: newStatus } },
@@ -116,7 +104,9 @@ export default function RecurringInvoicesPage() {
   };
 
   const handleGenerateNow = () => {
-    if (!selectedItem) return;
+    if (!selectedItem) {
+      return;
+    }
     generateMutation.mutate(selectedItem.id, {
       onSuccess: (data) => {
         toast.success("Invoice generated successfully");
@@ -130,7 +120,9 @@ export default function RecurringInvoicesPage() {
   };
 
   const handleDelete = () => {
-    if (!selectedItem) return;
+    if (!selectedItem) {
+      return;
+    }
     deleteMutation.mutate(selectedItem.id, {
       onSuccess: () => {
         toast.success("Recurring invoice deleted");
@@ -238,7 +230,7 @@ export default function RecurringInvoicesPage() {
                   <TableCell sx={{ fontWeight: 500 }}>
                     {formatCurrency(calculateTotal(item), item.currency)}
                   </TableCell>
-                  <TableCell>{formatDate(item.nextRunAt)}</TableCell>
+                  <TableCell>{formatDateCompact(item.nextRunAt)}</TableCell>
                   <TableCell>
                     <Chip
                       label={statusConfig[item.status].label}

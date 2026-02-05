@@ -2,11 +2,15 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser, AuthenticationError } from "@app/server/auth/require-user";
 import { getFollowUpRule, createOrUpdateFollowUpRule } from "@app/server/followups";
+import { REMINDER } from "@app/lib/constants";
 
 const updateReminderSettingsSchema = z.object({
   enabled: z.boolean(),
   mode: z.enum(["AFTER_SENT", "AFTER_DUE"]),
-  delaysDays: z.array(z.number().min(1).max(90)).min(1).max(5),
+  delaysDays: z
+    .array(z.number().min(REMINDER.MIN_DAYS).max(REMINDER.MAX_DAYS))
+    .min(1)
+    .max(REMINDER.MAX_REMINDER_COUNT),
 });
 
 export async function GET() {
@@ -14,12 +18,11 @@ export async function GET() {
     const user = await requireUser();
     const rule = await getFollowUpRule(user.id);
 
-    // Return default settings if no rule exists
     if (!rule) {
       return NextResponse.json({
         enabled: false,
         mode: "AFTER_DUE",
-        delaysDays: [1, 3, 7],
+        delaysDays: [...REMINDER.DEFAULT_DAYS],
       });
     }
 

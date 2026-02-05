@@ -91,12 +91,24 @@ export async function updateTemplate(id: string, userId: string, data: UpdateTem
 
   const updateData: Record<string, unknown> = {};
 
-  if (data.name !== undefined) updateData.name = data.name;
-  if (data.description !== undefined) updateData.description = data.description;
-  if (data.currency !== undefined) updateData.currency = data.currency;
-  if (data.taxRate !== undefined) updateData.taxRate = data.taxRate;
-  if (data.notes !== undefined) updateData.notes = data.notes;
-  if (data.dueDays !== undefined) updateData.dueDays = data.dueDays;
+  if (data.name !== undefined) {
+    updateData.name = data.name;
+  }
+  if (data.description !== undefined) {
+    updateData.description = data.description;
+  }
+  if (data.currency !== undefined) {
+    updateData.currency = data.currency;
+  }
+  if (data.taxRate !== undefined) {
+    updateData.taxRate = data.taxRate;
+  }
+  if (data.notes !== undefined) {
+    updateData.notes = data.notes;
+  }
+  if (data.dueDays !== undefined) {
+    updateData.dueDays = data.dueDays;
+  }
 
   if (data.discount !== undefined) {
     if (data.discount) {
@@ -108,7 +120,6 @@ export async function updateTemplate(id: string, userId: string, data: UpdateTem
     }
   }
 
-  // Handle items update
   if (data.items !== undefined) {
     await prisma.invoiceTemplateItem.deleteMany({
       where: { templateId: id },

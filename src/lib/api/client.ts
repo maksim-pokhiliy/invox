@@ -11,7 +11,6 @@ import type { CreateInvoiceInput, UpdateInvoiceInput } from "@app/shared/schemas
 import type { SenderProfileInput } from "@app/shared/schemas/sender-profile";
 import type { SignUpInput } from "@app/shared/schemas/auth";
 
-// API Error class for consistent error handling
 export class ApiError extends Error {
   constructor(
     public code: string,
@@ -23,7 +22,6 @@ export class ApiError extends Error {
   }
 }
 
-// Generic fetch wrapper with error handling
 async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...options,
@@ -46,7 +44,6 @@ async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   return data as T;
 }
 
-// Auth API
 export const authApi = {
   signUp: (data: SignUpInput) =>
     fetchApi<{ message: string }>("/api/auth/sign-up", {
@@ -55,7 +52,6 @@ export const authApi = {
     }),
 };
 
-// Clients API
 export const clientsApi = {
   list: () => fetchApi<Client[]>("/api/clients"),
 
@@ -79,7 +75,6 @@ export const clientsApi = {
     }),
 };
 
-// Payment types
 export interface Payment {
   id: string;
   invoiceId: string;
@@ -97,7 +92,6 @@ export interface RecordPaymentInput {
   paidAt?: string;
 }
 
-// Invoices API
 export const invoicesApi = {
   list: () => fetchApi<InvoiceListItem[]>("/api/invoices"),
 
@@ -135,7 +129,6 @@ export const invoicesApi = {
       method: "POST",
     }),
 
-  // Payment methods
   getPayments: (invoiceId: string) => fetchApi<Payment[]>(`/api/invoices/${invoiceId}/payments`),
 
   recordPayment: (invoiceId: string, data: RecordPaymentInput) =>
@@ -150,7 +143,6 @@ export const invoicesApi = {
     }),
 };
 
-// Sender Profile API
 export const senderProfileApi = {
   get: () => fetchApi<SenderProfile>("/api/sender-profile"),
 
@@ -167,7 +159,6 @@ export const senderProfileApi = {
     }),
 };
 
-// Public API (no auth required)
 export const publicApi = {
   getInvoice: (publicId: string) => fetchApi<PublicInvoice>(`/api/public/invoices/${publicId}`),
 
@@ -183,7 +174,6 @@ export const publicApi = {
     }),
 };
 
-// Analytics types
 export interface CurrencyMetrics {
   totalRevenue: number;
   revenueThisMonth: number;
@@ -194,10 +184,8 @@ export interface CurrencyMetrics {
 }
 
 export interface AnalyticsData {
-  // Currency-specific data
   currencies: string[];
   byCurrency: Record<string, CurrencyMetrics>;
-  // Totals (for backwards compatibility)
   totalRevenue: number;
   revenueThisMonth: number;
   revenueLastMonth: number;
@@ -220,12 +208,10 @@ export interface AnalyticsData {
   }[];
 }
 
-// Analytics API
 export const analyticsApi = {
   get: () => fetchApi<AnalyticsData>("/api/analytics"),
 };
 
-// Template types
 export interface TemplateItem {
   id: string;
   templateId: string;
@@ -285,14 +271,12 @@ export interface UpdateTemplateInput {
   }[];
 }
 
-// Reminder settings types
 export interface ReminderSettings {
   enabled: boolean;
   mode: "AFTER_SENT" | "AFTER_DUE";
   delaysDays: number[];
 }
 
-// Reminders API
 export const remindersApi = {
   get: () => fetchApi<ReminderSettings>("/api/reminders"),
 
@@ -303,7 +287,6 @@ export const remindersApi = {
     }),
 };
 
-// Templates API
 export const templatesApi = {
   list: () => fetchApi<Template[]>("/api/templates"),
 
@@ -327,7 +310,6 @@ export const templatesApi = {
     }),
 };
 
-// Stripe Connect API
 export const stripeApi = {
   disconnect: () =>
     fetchApi<{ success: boolean }>("/api/stripe/disconnect", {
@@ -335,7 +317,6 @@ export const stripeApi = {
     }),
 };
 
-// Recurring Invoice types
 export type RecurringFrequency = "WEEKLY" | "BIWEEKLY" | "MONTHLY" | "QUARTERLY" | "YEARLY";
 export type RecurringStatus = "ACTIVE" | "PAUSED" | "CANCELED";
 
@@ -416,7 +397,6 @@ export interface UpdateRecurringInput {
   }[];
 }
 
-// Recurring Invoices API
 export const recurringApi = {
   list: () => fetchApi<RecurringInvoice[]>("/api/recurring"),
 

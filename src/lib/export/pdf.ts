@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import { formatCurrency, formatDate } from "@app/lib/format";
 
 interface InvoiceItem {
   description: string;
@@ -36,31 +37,14 @@ interface InvoicePdfData {
   items: InvoiceItem[];
 }
 
-function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(amount / 100);
-}
-
-function formatDate(dateString: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(new Date(dateString));
-}
-
 export function generateInvoicePdf(invoice: InvoicePdfData): void {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  // Colors
-  const primaryColor: [number, number, number] = [79, 70, 229]; // #4f46e5
-  const textColor: [number, number, number] = [31, 41, 55]; // gray-800
-  const mutedColor: [number, number, number] = [107, 114, 128]; // gray-500
+  const primaryColor: [number, number, number] = [79, 70, 229];
+  const textColor: [number, number, number] = [31, 41, 55];
+  const mutedColor: [number, number, number] = [107, 114, 128];
 
-  // Header
   doc.setFontSize(28);
   doc.setTextColor(...primaryColor);
   doc.text("INVOICE", 20, 30);
@@ -69,7 +53,6 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
   doc.setTextColor(...mutedColor);
   doc.text(`#${invoice.publicId}`, 20, 38);
 
-  // Status badge
   const statusColors: Record<string, [number, number, number]> = {
     PAID: [34, 197, 94],
     OVERDUE: [239, 68, 68],
@@ -84,10 +67,8 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
   doc.setTextColor(255, 255, 255);
   doc.text(invoice.status, pageWidth - 35, 29, { align: "center" });
 
-  // From/To section
   let yPos = 55;
 
-  // From (Sender)
   doc.setFontSize(10);
   doc.setTextColor(...mutedColor);
   doc.text("FROM", 20, yPos);
@@ -118,7 +99,6 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
     });
   }
 
-  // To (Client)
   yPos = 55;
   doc.setFontSize(10);
   doc.setTextColor(...mutedColor);
@@ -133,7 +113,6 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
   doc.setFont("helvetica", "normal");
   doc.text(invoice.client.email, pageWidth / 2 + 10, yPos);
 
-  // Dates section
   yPos = 100;
   doc.setFillColor(249, 250, 251);
   doc.roundedRect(20, yPos - 5, pageWidth - 40, 25, 3, 3, "F");
@@ -154,7 +133,6 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
     doc.text(formatDate(invoice.paidAt), 150, yPos + 12);
   }
 
-  // Items table
   yPos = 135;
   const tableData = invoice.items.map((item) => [
     item.description,
@@ -187,14 +165,11 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
     margin: { left: 20, right: 20 },
   });
 
-  // Totals section
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  yPos = (doc as any).lastAutoTable.finalY + 15;
+  yPos = (doc.lastAutoTable.finalY ?? yPos) + 15;
 
   const totalsX = pageWidth - 90;
   const totalsWidth = 70;
 
-  // Subtotal
   doc.setFontSize(10);
   doc.setTextColor(...mutedColor);
   doc.text("Subtotal", totalsX, yPos);
@@ -204,13 +179,12 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
   });
   yPos += 8;
 
-  // Discount (if any)
   if (invoice.discountAmount && invoice.discountAmount > 0) {
     doc.setTextColor(...mutedColor);
     const discountLabel =
       invoice.discountType === "PERCENTAGE" ? `Discount (${invoice.discountValue}%)` : "Discount";
     doc.text(discountLabel, totalsX, yPos);
-    doc.setTextColor(239, 68, 68); // Red for discount
+    doc.setTextColor(239, 68, 68);
     doc.text(
       `-${formatCurrency(invoice.discountAmount, invoice.currency)}`,
       totalsX + totalsWidth,
@@ -222,7 +196,6 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
     yPos += 8;
   }
 
-  // Tax (if any)
   if (invoice.taxAmount && invoice.taxAmount > 0) {
     doc.setTextColor(...mutedColor);
     doc.text(`Tax (${invoice.taxRate}%)`, totalsX, yPos);
@@ -233,12 +206,10 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
     yPos += 8;
   }
 
-  // Divider
   doc.setDrawColor(229, 231, 235);
   doc.line(totalsX, yPos, totalsX + totalsWidth, yPos);
   yPos += 10;
 
-  // Total
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...textColor);
@@ -248,7 +219,6 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
     align: "right",
   });
 
-  // Notes (if any)
   if (invoice.notes) {
     yPos += 25;
     doc.setFont("helvetica", "normal");
@@ -262,12 +232,10 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
     doc.text(noteLines, 20, yPos);
   }
 
-  // Footer
   const footerY = doc.internal.pageSize.getHeight() - 20;
   doc.setFontSize(8);
   doc.setTextColor(...mutedColor);
   doc.text("Generated with Invox", pageWidth / 2, footerY, { align: "center" });
 
-  // Save the PDF
   doc.save(`invoice-${invoice.publicId}.pdf`);
 }

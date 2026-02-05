@@ -1,22 +1,20 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@app/server/db";
 import { requireUser, AuthenticationError } from "@app/server/auth/require-user";
+import { getUserProfile } from "@app/server/user";
 
 export async function GET() {
   try {
     const user = await requireUser();
+    const profile = await getUserProfile(user.id);
 
-    const senderProfile = await prisma.senderProfile.findUnique({
-      where: { userId: user.id },
-    });
+    if (!profile) {
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "User not found" } },
+        { status: 404 }
+      );
+    }
 
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-      },
-      hasSenderProfile: !!senderProfile,
-    });
+    return NextResponse.json(profile);
   } catch (error) {
     if (error instanceof AuthenticationError) {
       return NextResponse.json(

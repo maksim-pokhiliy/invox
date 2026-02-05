@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@app/server/db";
 import { connectStripeAccount } from "@app/server/stripe";
+import { connectUserStripe } from "@app/server/user";
+import { AUTH } from "@app/lib/constants";
 
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
-const STATE_MAX_AGE = 10 * 60 * 1000; // 10 minutes
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -12,7 +12,6 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 
-  // Handle errors from Stripe
   if (error) {
     console.error("Stripe Connect error:", error, errorDescription);
     return NextResponse.redirect(
@@ -27,11 +26,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Decode and verify the state
     const stateData = JSON.parse(Buffer.from(state, "base64url").toString());
 
-    // Check timestamp to prevent replay attacks
-    if (Date.now() - stateData.timestamp > STATE_MAX_AGE) {
+    if (Date.now() - stateData.timestamp > AUTH.STATE_MAX_AGE) {
       return NextResponse.redirect(
         new URL("/app/settings?tab=payments&error=state_expired", APP_URL)
       );
@@ -45,19 +42,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Exchange code for connected account ID
     const stripeAccountId = await connectStripeAccount(code);
-
-    // Update the user's sender profile with the connected account ID
-    await prisma.senderProfile.upsert({
-      where: { userId },
-      update: { stripeAccountId },
-      create: {
-        userId,
-        stripeAccountId,
-        defaultCurrency: "USD",
-      },
-    });
+    await connectUserStripe(userId, stripeAccountId);
 
     return NextResponse.redirect(
       new URL("/app/settings?tab=payments&success=stripe_connected", APP_URL)

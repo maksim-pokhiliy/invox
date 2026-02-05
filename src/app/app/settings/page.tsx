@@ -42,12 +42,10 @@ export default function SettingsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Get tab from URL or default to 0
   const tabParam = searchParams.get("tab");
   const initialTab = tabParam ? (TAB_MAP[tabParam] ?? 0) : 0;
   const [tabValue, setTabValue] = React.useState(initialTab);
 
-  // Handle URL params for success/error messages
   React.useEffect(() => {
     const success = searchParams.get("success");
     const errorParam = searchParams.get("error");

@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
 import { requireUser, AuthenticationError } from "@app/server/auth/require-user";
-import { prisma } from "@app/server/db";
 import { disconnectStripeAccount } from "@app/server/stripe";
+import { disconnectUserStripe } from "@app/server/user";
 
 export async function POST() {
   try {
     const user = await requireUser();
 
-    // Get the user's sender profile
-    const senderProfile = await prisma.senderProfile.findUnique({
-      where: { userId: user.id },
-    });
+    const stripeAccountId = await disconnectUserStripe(user.id);
 
-    if (!senderProfile?.stripeAccountId) {
+    if (!stripeAccountId) {
       return NextResponse.json(
         { error: { code: "NOT_CONNECTED", message: "No Stripe account connected" } },
         { status: 400 }
@@ -20,18 +17,10 @@ export async function POST() {
     }
 
     try {
-      // Deauthorize the connected account
-      await disconnectStripeAccount(senderProfile.stripeAccountId);
+      await disconnectStripeAccount(stripeAccountId);
     } catch (err) {
-      // If deauthorization fails, log it but continue to clear local record
       console.error("Failed to deauthorize Stripe account:", err);
     }
-
-    // Clear the stripe account ID from the profile
-    await prisma.senderProfile.update({
-      where: { userId: user.id },
-      data: { stripeAccountId: null },
-    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

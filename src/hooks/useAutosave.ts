@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-const AUTOSAVE_DELAY = 2000; // 2 seconds
+const AUTOSAVE_DELAY = 2000;
 
 interface UseAutosaveOptions<T> {
   key: string;
@@ -17,9 +17,10 @@ export function useAutosave<T>({ key, data, onRestore, enabled = true }: UseAuto
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialCheckDone = React.useRef(false);
 
-  // Check for existing draft on mount
   React.useEffect(() => {
-    if (!enabled || initialCheckDone.current) return;
+    if (!enabled || initialCheckDone.current) {
+      return;
+    }
     initialCheckDone.current = true;
 
     try {
@@ -30,14 +31,13 @@ export function useAutosave<T>({ key, data, onRestore, enabled = true }: UseAuto
           setHasDraft(true);
         }
       }
-    } catch {
-      // Ignore errors
-    }
+    } catch {}
   }, [key, enabled]);
 
-  // Autosave on data change
   React.useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      return;
+    }
 
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -52,9 +52,7 @@ export function useAutosave<T>({ key, data, onRestore, enabled = true }: UseAuto
         localStorage.setItem(key, JSON.stringify(payload));
         setLastSaved(new Date());
         setHasDraft(true);
-      } catch {
-        // Ignore storage errors
-      }
+      } catch {}
     }, AUTOSAVE_DELAY);
 
     return () => {
@@ -74,9 +72,7 @@ export function useAutosave<T>({ key, data, onRestore, enabled = true }: UseAuto
           return true;
         }
       }
-    } catch {
-      // Ignore errors
-    }
+    } catch {}
     return false;
   }, [key, onRestore]);
 
@@ -85,9 +81,7 @@ export function useAutosave<T>({ key, data, onRestore, enabled = true }: UseAuto
       localStorage.removeItem(key);
       setHasDraft(false);
       setLastSaved(null);
-    } catch {
-      // Ignore errors
-    }
+    } catch {}
   }, [key]);
 
   const getDraftTimestamp = React.useCallback((): Date | null => {
@@ -99,9 +93,7 @@ export function useAutosave<T>({ key, data, onRestore, enabled = true }: UseAuto
           return new Date(parsed.timestamp);
         }
       }
-    } catch {
-      // Ignore errors
-    }
+    } catch {}
     return null;
   }, [key]);
 

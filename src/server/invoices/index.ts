@@ -26,7 +26,6 @@ function calculateTotals(
 
   const afterDiscount = Math.max(0, subtotal - discountAmount);
 
-  // Calculate tax on the discounted amount
   const taxAmount = taxRate ? Math.round((afterDiscount * taxRate) / 100) : 0;
 
   const total = afterDiscount + taxAmount;
@@ -43,7 +42,6 @@ function computeOverdueStatus(invoice: {
   if (invoice.status === "PAID" || invoice.paidAt) {
     return "PAID";
   }
-  // Check for partial payment
   if (
     invoice.paidAmount &&
     invoice.total &&
@@ -185,13 +183,22 @@ export async function updateInvoice(id: string, userId: string, data: UpdateInvo
 
   const updateData: Record<string, unknown> = {};
 
-  if (data.clientId) updateData.clientId = data.clientId;
-  if (data.currency) updateData.currency = data.currency;
-  if (data.dueDate) updateData.dueDate = data.dueDate;
-  if (data.notes !== undefined) updateData.notes = data.notes;
-  if (data.tags !== undefined) updateData.tags = data.tags;
+  if (data.clientId) {
+    updateData.clientId = data.clientId;
+  }
+  if (data.currency) {
+    updateData.currency = data.currency;
+  }
+  if (data.dueDate) {
+    updateData.dueDate = data.dueDate;
+  }
+  if (data.notes !== undefined) {
+    updateData.notes = data.notes;
+  }
+  if (data.tags !== undefined) {
+    updateData.tags = data.tags;
+  }
 
-  // Handle discount update
   if (data.discount !== undefined) {
     if (data.discount) {
       updateData.discountType = data.discount.type;
@@ -203,12 +210,10 @@ export async function updateInvoice(id: string, userId: string, data: UpdateInvo
     }
   }
 
-  // Handle tax rate update
   if (data.taxRate !== undefined) {
     updateData.taxRate = data.taxRate;
   }
 
-  // Determine if we need to recalculate totals
   const needsRecalc = data.items || data.discount !== undefined || data.taxRate !== undefined;
 
   if (needsRecalc) {
@@ -278,12 +283,10 @@ export async function deleteInvoice(id: string, userId: string) {
     return null;
   }
 
-  // Delete related items first
   await prisma.invoiceItem.deleteMany({
     where: { invoiceId: id },
   });
 
-  // Delete the invoice
   await prisma.invoice.delete({
     where: { id },
   });
@@ -303,7 +306,6 @@ export async function duplicateInvoice(id: string, userId: string) {
     return null;
   }
 
-  // Create a new invoice with the same data
   const publicId = nanoid(10);
   const newInvoice = await prisma.invoice.create({
     data: {
@@ -312,7 +314,7 @@ export async function duplicateInvoice(id: string, userId: string) {
       publicId,
       currency: invoice.currency,
       status: "DRAFT",
-      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       subtotal: invoice.subtotal,
       total: invoice.total,
       tags: invoice.tags as string[],
@@ -482,12 +484,10 @@ export async function recordPayment(id: string, userId: string, data: RecordPaym
     return null;
   }
 
-  // Don't allow payments on drafts
   if (invoice.status === "DRAFT") {
     return null;
   }
 
-  // Don't allow payments that exceed the remaining balance
   const remainingBalance = invoice.total - invoice.paidAmount;
   if (data.amount > remainingBalance) {
     return null;
@@ -496,7 +496,6 @@ export async function recordPayment(id: string, userId: string, data: RecordPaym
   const newPaidAmount = invoice.paidAmount + data.amount;
   const isFullyPaid = newPaidAmount >= invoice.total;
 
-  // Create payment record
   const payment = await prisma.payment.create({
     data: {
       invoiceId: id,
@@ -507,7 +506,6 @@ export async function recordPayment(id: string, userId: string, data: RecordPaym
     },
   });
 
-  // Update invoice
   const updatedInvoice = await prisma.invoice.update({
     where: { id },
     data: {
@@ -525,7 +523,6 @@ export async function recordPayment(id: string, userId: string, data: RecordPaym
     },
   });
 
-  // Log the payment event
   await prisma.invoiceEvent.create({
     data: {
       invoiceId: id,
@@ -539,7 +536,6 @@ export async function recordPayment(id: string, userId: string, data: RecordPaym
     },
   });
 
-  // Cancel follow-up jobs if fully paid
   if (isFullyPaid) {
     await prisma.followUpJob.updateMany({
       where: { invoiceId: id, status: "PENDING" },
@@ -577,19 +573,16 @@ export async function deletePayment(paymentId: string, userId: string) {
     return null;
   }
 
-  // Don't allow deleting payments from paid invoices
   if (payment.invoice.status === "PAID") {
     return null;
   }
 
   const newPaidAmount = payment.invoice.paidAmount - payment.amount;
 
-  // Delete the payment
   await prisma.payment.delete({
     where: { id: paymentId },
   });
 
-  // Update invoice
   const updatedInvoice = await prisma.invoice.update({
     where: { id: payment.invoiceId },
     data: {

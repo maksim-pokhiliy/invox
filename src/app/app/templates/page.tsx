@@ -35,21 +35,7 @@ import { TableSkeleton } from "@app/components/feedback/Loading";
 import { useToast } from "@app/components/feedback/Toast";
 import { ConfirmDialog, useConfirmDialog } from "@app/components/feedback/ConfirmDialog";
 import { useTemplates, useDeleteTemplate, type Template } from "@app/lib/api";
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(amount / 100);
-}
-
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(date));
-}
+import { formatCurrency, formatDateCompact } from "@app/lib/format";
 
 export default function TemplatesPage() {
   const router = useRouter();
@@ -77,7 +63,9 @@ export default function TemplatesPage() {
   };
 
   const handleDelete = () => {
-    if (!selectedTemplate) return;
+    if (!selectedTemplate) {
+      return;
+    }
     handleMenuClose();
     confirm({
       title: "Delete Template",
@@ -92,7 +80,9 @@ export default function TemplatesPage() {
   };
 
   const handleEdit = () => {
-    if (!selectedTemplate) return;
+    if (!selectedTemplate) {
+      return;
+    }
     handleMenuClose();
     router.push(`/app/templates/${selectedTemplate.id}/edit`);
   };
@@ -209,7 +199,7 @@ export default function TemplatesPage() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {formatDate(template.updatedAt)}
+                        {formatDateCompact(template.updatedAt)}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">

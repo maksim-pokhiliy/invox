@@ -7,14 +7,14 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60 * 1000, // Data considered fresh for 1 minute
-        gcTime: 5 * 60 * 1000, // Cache kept for 5 minutes after becoming unused
+        staleTime: 60 * 1000,
+        gcTime: 5 * 60 * 1000,
         refetchOnWindowFocus: false,
-        retry: 1, // Retry failed requests once
+        retry: 1,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       },
       mutations: {
-        retry: 0, // Don't retry mutations by default
+        retry: 0,
       },
     },
   });

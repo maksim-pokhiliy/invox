@@ -35,7 +35,6 @@ export default function DashboardPage() {
   const { data: analytics, isLoading, error } = useAnalytics();
   const [selectedCurrency, setSelectedCurrency] = React.useState<string | null>(null);
 
-  // Set default currency when data loads
   React.useEffect(() => {
     if (analytics?.currencies && analytics.currencies.length > 0 && !selectedCurrency) {
       setSelectedCurrency(analytics.currencies[0]);
@@ -52,7 +51,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Get currency-specific metrics or fallback to totals
   const currencyMetrics =
     selectedCurrency && analytics?.byCurrency ? analytics.byCurrency[selectedCurrency] : undefined;
   const displayCurrency = selectedCurrency || "USD";
@@ -116,7 +114,6 @@ export default function DashboardPage() {
         </Box>
       </Box>
 
-      {/* Metrics Grid */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           {isLoading ? (
@@ -170,9 +167,7 @@ export default function DashboardPage() {
         </Grid>
       </Grid>
 
-      {/* Charts and Lists */}
       <Grid container spacing={3}>
-        {/* Revenue Chart */}
         <Grid size={{ xs: 12, md: 8 }}>
           <Paper sx={{ p: 3, borderRadius: 3, height: 400 }}>
             <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -215,7 +210,6 @@ export default function DashboardPage() {
           </Paper>
         </Grid>
 
-        {/* Invoice Status */}
         <Grid size={{ xs: 12, md: 4 }}>
           <Paper sx={{ p: 3, borderRadius: 3, height: 400 }}>
             <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -276,7 +270,6 @@ export default function DashboardPage() {
           </Paper>
         </Grid>
 
-        {/* Recent Invoices */}
         <Grid size={{ xs: 12 }}>
           <Paper sx={{ p: 3, borderRadius: 3 }}>
             <Box

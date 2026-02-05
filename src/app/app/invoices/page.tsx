@@ -55,21 +55,7 @@ import {
 } from "@app/lib/api";
 import { exportInvoicesToCSV } from "@app/lib/export";
 import { useVirtualList } from "@app/hooks";
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(amount / 100);
-}
-
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(date));
-}
+import { formatCurrency, formatDateCompact } from "@app/lib/format";
 
 const statusConfig: Record<
   string,
@@ -106,11 +92,11 @@ export default function InvoicesPage() {
 
   const selectedInvoice = invoices?.find((inv) => inv.id === selectedInvoiceId);
 
-  // Filter and sort invoices
   const filteredInvoices = React.useMemo(() => {
-    if (!invoices) return [];
+    if (!invoices) {
+      return [];
+    }
 
-    // First filter
     const filtered = invoices.filter((invoice) => {
       const matchesSearch =
         searchQuery === "" ||
@@ -121,7 +107,6 @@ export default function InvoicesPage() {
       return matchesSearch && matchesStatus;
     });
 
-    // Then sort
     return filtered.sort((a, b) => {
       let comparison = 0;
       switch (sortColumn) {
@@ -149,22 +134,21 @@ export default function InvoicesPage() {
     });
   }, [invoices, searchQuery, statusFilter, sortColumn, sortDirection]);
 
-  // Reset page when filters change
   React.useEffect(() => {
     setPage(0);
   }, [searchQuery, statusFilter]);
 
-  // Paginated invoices (when not showing all)
   const paginatedInvoices = React.useMemo(() => {
-    if (showAll) return filteredInvoices;
+    if (showAll) {
+      return filteredInvoices;
+    }
     const start = page * rowsPerPage;
     return filteredInvoices.slice(start, start + rowsPerPage);
   }, [filteredInvoices, page, rowsPerPage, showAll]);
 
-  // Virtualization for "Show All" mode
   const { parentRef, virtualItems, totalSize } = useVirtualList({
     items: filteredInvoices,
-    estimateSize: 65, // Approximate row height
+    estimateSize: 65,
     overscan: 10,
   });
 
@@ -213,7 +197,9 @@ export default function InvoicesPage() {
   };
 
   const handleDelete = () => {
-    if (!selectedInvoice) return;
+    if (!selectedInvoice) {
+      return;
+    }
     handleMenuClose();
     confirm({
       title: "Delete Invoice",
@@ -228,7 +214,9 @@ export default function InvoicesPage() {
   };
 
   const handleDuplicate = () => {
-    if (!selectedInvoice) return;
+    if (!selectedInvoice) {
+      return;
+    }
     handleMenuClose();
     duplicateMutation.mutate(selectedInvoice.id, {
       onSuccess: (newInvoice) => {
@@ -242,13 +230,17 @@ export default function InvoicesPage() {
   };
 
   const handleViewDetails = () => {
-    if (!selectedInvoice) return;
+    if (!selectedInvoice) {
+      return;
+    }
     handleMenuClose();
     router.push(`/app/invoices/${selectedInvoice.id}`);
   };
 
   const handleEdit = () => {
-    if (!selectedInvoice) return;
+    if (!selectedInvoice) {
+      return;
+    }
     handleMenuClose();
     router.push(`/app/invoices/${selectedInvoice.id}/edit`);
   };
@@ -310,7 +302,6 @@ export default function InvoicesPage() {
         </Alert>
       )}
 
-      {/* Search and Filter */}
       {!isLoading && invoices && invoices.length > 0 && (
         <Box
           sx={{
@@ -469,7 +460,7 @@ export default function InvoicesPage() {
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2" color="text.secondary">
-                              {formatDate(invoice.dueDate)}
+                              {formatDateCompact(invoice.dueDate)}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -482,7 +473,7 @@ export default function InvoicesPage() {
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2" color="text.secondary">
-                              {formatDate(invoice.createdAt)}
+                              {formatDateCompact(invoice.createdAt)}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -545,7 +536,7 @@ export default function InvoicesPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" color="text.secondary">
-                            {formatDate(invoice.dueDate)}
+                            {formatDateCompact(invoice.dueDate)}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -558,7 +549,7 @@ export default function InvoicesPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" color="text.secondary">
-                            {formatDate(invoice.createdAt)}
+                            {formatDateCompact(invoice.createdAt)}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -698,7 +689,6 @@ export default function InvoicesPage() {
         </Paper>
       )}
 
-      {/* Actions Menu */}
       <Menu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}
@@ -740,7 +730,6 @@ export default function InvoicesPage() {
         </MenuItem>
       </Menu>
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog {...dialogProps} />
     </AppLayout>
   );

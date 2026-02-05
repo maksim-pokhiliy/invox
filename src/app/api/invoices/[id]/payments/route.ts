@@ -112,7 +112,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       );
     }
 
-    // Verify invoice ownership
     if (invoice.id !== invoiceId) {
       return NextResponse.json(
         { error: { code: "BAD_REQUEST", message: "Payment does not belong to this invoice" } },

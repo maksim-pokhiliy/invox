@@ -52,7 +52,6 @@ export function ConfirmDialog({
   );
 }
 
-// Hook for managing confirm dialog state
 export function useConfirmDialog() {
   const [state, setState] = React.useState<{
     open: boolean;

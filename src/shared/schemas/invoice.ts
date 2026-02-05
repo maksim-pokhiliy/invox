@@ -6,10 +6,8 @@ export const invoiceItemSchema = z.object({
   unitPrice: z.number().int().min(0, "Unit price must be non-negative"),
 });
 
-// Tag validation
 const tagSchema = z.string().min(1).max(30);
 
-// Discount schema
 export const discountTypeSchema = z.enum(["PERCENTAGE", "FIXED"]);
 export type DiscountType = z.infer<typeof discountTypeSchema>;
 
@@ -21,7 +19,6 @@ export const discountSchema = z
   .nullable()
   .optional();
 
-// Form schema for React Hook Form (no transforms, no defaults)
 export const invoiceFormSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
   currency: z.string().min(1, "Currency is required"),
@@ -30,10 +27,9 @@ export const invoiceFormSchema = z.object({
   notes: z.string().optional(),
   tags: z.array(tagSchema).optional(),
   discount: discountSchema,
-  taxRate: z.number().min(0).max(100).optional(), // Tax rate as percentage
+  taxRate: z.number().min(0).max(100).optional(),
 });
 
-// API schema with date transform
 export const createInvoiceSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
   currency: z.string().default("USD"),

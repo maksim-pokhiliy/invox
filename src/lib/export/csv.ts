@@ -1,13 +1,9 @@
-// CSV export utilities
-
 export function escapeCSVValue(value: string | number | null | undefined): string {
   if (value === null || value === undefined) {
     return "";
   }
   const str = String(value);
-  // Escape double quotes by doubling them
   const escaped = str.replace(/"/g, '""');
-  // Wrap in quotes if contains comma, newline, or quotes
   if (escaped.includes(",") || escaped.includes("\n") || escaped.includes('"')) {
     return `"${escaped}"`;
   }
@@ -38,7 +34,6 @@ export function downloadCSV(csv: string, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
-// Invoice-specific export function
 interface InvoiceExportData {
   id: string;
   publicId: string;
@@ -81,7 +76,6 @@ export function exportInvoicesToCSV(invoices: InvoiceExportData[]): void {
   downloadCSV(csv, `invoices-${date}.csv`);
 }
 
-// Clients export
 interface ClientExportData {
   id: string;
   name: string;

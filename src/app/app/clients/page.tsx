@@ -49,14 +49,7 @@ import {
   ApiError,
 } from "@app/lib/api";
 import { createClientSchema, CreateClientInput } from "@app/shared/schemas";
-
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(date));
-}
+import { formatDateCompact } from "@app/lib/format";
 
 export default function ClientsPage() {
   const theme = useTheme();
@@ -74,9 +67,10 @@ export default function ClientsPage() {
 
   const selectedClient = clients?.find((c) => c.id === selectedClientId);
 
-  // Filter clients
   const filteredClients = React.useMemo(() => {
-    if (!clients) return [];
+    if (!clients) {
+      return [];
+    }
     return clients.filter((client) => {
       return (
         searchQuery === "" ||
@@ -98,7 +92,9 @@ export default function ClientsPage() {
   };
 
   const handleDelete = () => {
-    if (!selectedClient) return;
+    if (!selectedClient) {
+      return;
+    }
     handleMenuClose();
     confirm({
       title: "Delete Client",
@@ -153,7 +149,6 @@ export default function ClientsPage() {
         </Alert>
       )}
 
-      {/* Search */}
       {!isLoading && clients && clients.length > 0 && (
         <Box sx={{ mb: 3 }}>
           <TextField
@@ -238,7 +233,7 @@ export default function ClientsPage() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" color="text.secondary">
-                      {formatDate(client.createdAt)}
+                      {formatDateCompact(client.createdAt)}
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -323,7 +318,6 @@ export default function ClientsPage() {
         </Paper>
       )}
 
-      {/* Actions Menu */}
       <Menu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}
@@ -351,17 +345,14 @@ export default function ClientsPage() {
         </MenuItem>
       </Menu>
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog {...dialogProps} />
 
-      {/* Create Client Dialog */}
       <ClientDialog
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
         mode="create"
       />
 
-      {/* Edit Client Dialog */}
       {selectedClient && (
         <ClientDialog
           open={editDialogOpen}

@@ -21,7 +21,6 @@ const bounce = keyframes`
   }
 `;
 
-// Full page loading spinner
 export function PageLoader({ message }: { message?: string }) {
   return (
     <Box
@@ -44,12 +43,10 @@ export function PageLoader({ message }: { message?: string }) {
   );
 }
 
-// Inline spinner
 export function Spinner({ size = 24 }: { size?: number }) {
   return <CircularProgress size={size} thickness={4} />;
 }
 
-// Dots loading animation
 export function DotsLoader() {
   return (
     <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
@@ -70,17 +67,14 @@ export function DotsLoader() {
   );
 }
 
-// Table skeleton
 export function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; columns?: number }) {
   return (
     <Box sx={{ width: "100%" }}>
-      {/* Header */}
       <Box sx={{ display: "flex", gap: 2, mb: 2, pb: 2, borderBottom: 1, borderColor: "divider" }}>
         {Array.from({ length: columns }).map((_, i) => (
           <Skeleton key={i} variant="text" width={`${100 / columns}%`} height={24} />
         ))}
       </Box>
-      {/* Rows */}
       {Array.from({ length: rows }).map((_, rowIndex) => (
         <Box key={rowIndex} sx={{ display: "flex", gap: 2, py: 1.5 }}>
           {Array.from({ length: columns }).map((_, colIndex) => (
@@ -92,7 +86,6 @@ export function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; column
   );
 }
 
-// Card skeleton
 export function CardSkeleton() {
   return (
     <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 3 }}>
@@ -104,7 +97,6 @@ export function CardSkeleton() {
   );
 }
 
-// Invoice list item skeleton
 export function InvoiceItemSkeleton() {
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 3, py: 2 }}>
@@ -120,7 +112,6 @@ export function InvoiceItemSkeleton() {
   );
 }
 
-// Stat card skeleton
 export function StatSkeleton() {
   return (
     <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 3 }}>
@@ -130,7 +121,6 @@ export function StatSkeleton() {
   );
 }
 
-// Pulsing text placeholder
 export function PulsingText({ width = 100 }: { width?: number | string }) {
   return (
     <Box

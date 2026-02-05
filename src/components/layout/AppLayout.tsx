@@ -15,7 +15,6 @@ interface AppLayoutProps {
   disablePadding?: boolean;
 }
 
-// Header height (80px) + top padding (16px) + bottom padding (16px) = 112px = 14 spacing units
 const HEADER_HEIGHT = 14;
 
 function SkipLink() {

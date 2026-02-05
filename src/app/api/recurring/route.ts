@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser, AuthenticationError } from "@app/server/auth/require-user";
 import { getRecurringInvoices, createRecurringInvoice } from "@app/server/recurring";
+import { VALIDATION } from "@app/lib/constants";
 
 const createRecurringSchema = z.object({
   clientId: z.string().min(1),
@@ -16,7 +17,7 @@ const createRecurringSchema = z.object({
     .optional(),
   taxRate: z.number().min(0).max(100).optional(),
   notes: z.string().optional(),
-  dueDays: z.number().min(1).max(365).optional(),
+  dueDays: z.number().min(1).max(VALIDATION.MAX_DUE_DAYS).optional(),
   autoSend: z.boolean().optional(),
   startDate: z.string().transform((s) => new Date(s)),
   endDate: z

@@ -72,7 +72,6 @@ export async function getRecurringInvoice(userId: string, id: string) {
 }
 
 export async function createRecurringInvoice(userId: string, data: CreateRecurringInvoiceInput) {
-  // Verify client belongs to user
   const client = await prisma.client.findFirst({
     where: { id: data.clientId, userId },
   });
@@ -126,7 +125,6 @@ export async function updateRecurringInvoice(
     throw new Error("Recurring invoice not found");
   }
 
-  // If items are provided, delete existing and create new
   if (data.items) {
     await prisma.recurringInvoiceItem.deleteMany({
       where: { recurringInvoiceId: id },
@@ -183,7 +181,6 @@ export async function deleteRecurringInvoice(userId: string, id: string) {
   return { success: true };
 }
 
-// Calculate next run date based on frequency
 export function calculateNextRunDate(currentDate: Date, frequency: RecurringFrequency): Date {
   const next = new Date(currentDate);
 
@@ -208,7 +205,6 @@ export function calculateNextRunDate(currentDate: Date, frequency: RecurringFreq
   return next;
 }
 
-// Generate invoice from recurring invoice
 export async function generateInvoiceFromRecurring(recurringInvoice: {
   id: string;
   userId: string;
@@ -223,7 +219,6 @@ export async function generateInvoiceFromRecurring(recurringInvoice: {
   frequency: RecurringFrequency;
   items: { description: string; quantity: number; unitPrice: number }[];
 }) {
-  // Calculate totals
   const subtotal = recurringInvoice.items.reduce(
     (sum, item) => sum + item.quantity * item.unitPrice,
     0
@@ -243,7 +238,6 @@ export async function generateInvoiceFromRecurring(recurringInvoice: {
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + recurringInvoice.dueDays);
 
-  // Create the invoice
   const invoice = await prisma.invoice.create({
     data: {
       userId: recurringInvoice.userId,
@@ -278,7 +272,6 @@ export async function generateInvoiceFromRecurring(recurringInvoice: {
     },
   });
 
-  // Update recurring invoice with next run date
   const nextRunAt = calculateNextRunDate(new Date(), recurringInvoice.frequency);
   await prisma.recurringInvoice.update({
     where: { id: recurringInvoice.id },
@@ -291,7 +284,6 @@ export async function generateInvoiceFromRecurring(recurringInvoice: {
   return invoice;
 }
 
-// Process all due recurring invoices (called by cron job or manual trigger)
 export async function processDueRecurringInvoices() {
   const now = new Date();
 

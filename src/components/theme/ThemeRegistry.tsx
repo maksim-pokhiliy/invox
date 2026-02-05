@@ -33,7 +33,6 @@ export function ThemeRegistry({ children }: { children: React.ReactNode }) {
       setMode("dark");
     }
 
-    // Detect keyboard navigation for focus styling
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Tab") {
         document.body.classList.add("user-is-tabbing");

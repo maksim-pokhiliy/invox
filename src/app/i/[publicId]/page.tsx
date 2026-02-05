@@ -24,7 +24,6 @@ export default async function PublicInvoicePage({ params, searchParams }: Props)
   const senderTaxId = senderProfile?.taxId || "";
   const hasStripe = !!senderProfile?.stripeAccountId;
 
-  // Branding
   const branding = {
     logoUrl: senderProfile?.logoUrl || null,
     primaryColor: senderProfile?.primaryColor || "#1976d2",

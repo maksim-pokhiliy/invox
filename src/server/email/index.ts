@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { formatCurrency, formatDate } from "@app/lib/format";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -13,21 +14,6 @@ interface InvoiceEmailData {
   total: number;
   currency: string;
   dueDate: Date;
-}
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(amount / 100);
-}
-
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(date);
 }
 
 export async function sendInvoiceEmail(data: InvoiceEmailData) {

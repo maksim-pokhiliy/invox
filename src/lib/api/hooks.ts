@@ -25,7 +25,6 @@ import type { CreateInvoiceInput, UpdateInvoiceInput } from "@app/shared/schemas
 import type { SenderProfileInput } from "@app/shared/schemas/sender-profile";
 import type { Client, InvoiceListItem, Invoice } from "@app/shared/schemas/api";
 
-// Query keys for cache management
 export const queryKeys = {
   clients: ["clients"] as const,
   invoices: ["invoices"] as const,
@@ -40,14 +39,12 @@ export const queryKeys = {
   recurringItem: (id: string) => ["recurring", id] as const,
 };
 
-// Stale time constants
 const STALE_TIME = {
-  short: 30 * 1000, // 30 seconds
-  medium: 60 * 1000, // 1 minute
-  long: 5 * 60 * 1000, // 5 minutes
+  short: 30 * 1000,
+  medium: 60 * 1000,
+  long: 5 * 60 * 1000,
 } as const;
 
-// Clients hooks
 export function useClients() {
   return useQuery({
     queryKey: queryKeys.clients,
@@ -103,7 +100,6 @@ export function useDeleteClient() {
   });
 }
 
-// Invoices hooks
 export function useInvoices() {
   return useQuery({
     queryKey: queryKeys.invoices,
@@ -262,7 +258,6 @@ export function useDuplicateInvoice() {
   });
 }
 
-// Payment hooks
 export function useRecordPayment() {
   const queryClient = useQueryClient();
 
@@ -291,7 +286,6 @@ export function useDeletePayment() {
   });
 }
 
-// Sender Profile hooks
 export function useSenderProfile() {
   return useQuery({
     queryKey: queryKeys.senderProfile,
@@ -322,7 +316,6 @@ export function useUpdateSenderProfile() {
   });
 }
 
-// Public invoice hooks
 export function usePublicInvoice(publicId: string) {
   return useQuery({
     queryKey: queryKeys.publicInvoice(publicId),
@@ -343,7 +336,6 @@ export function useCreateCheckoutSession() {
   });
 }
 
-// Prefetch hooks for data loading optimization
 export function usePrefetchInvoice() {
   const queryClient = useQueryClient();
 
@@ -392,7 +384,6 @@ export function usePrefetchSenderProfile() {
   };
 }
 
-// Analytics hooks
 export function useAnalytics() {
   return useQuery({
     queryKey: queryKeys.analytics,
@@ -401,7 +392,6 @@ export function useAnalytics() {
   });
 }
 
-// Templates hooks
 export function useTemplates() {
   return useQuery({
     queryKey: queryKeys.templates,
@@ -468,7 +458,6 @@ export function useDeleteTemplate() {
   });
 }
 
-// Reminder settings hooks
 export function useReminderSettings() {
   return useQuery({
     queryKey: queryKeys.reminderSettings,
@@ -488,7 +477,6 @@ export function useUpdateReminderSettings() {
   });
 }
 
-// Stripe hooks
 export function useDisconnectStripe() {
   const queryClient = useQueryClient();
 
@@ -500,7 +488,6 @@ export function useDisconnectStripe() {
   });
 }
 
-// Recurring invoice hooks
 export function useRecurringInvoices() {
   return useQuery({
     queryKey: queryKeys.recurring,
