@@ -54,6 +54,7 @@ import {
   ApiError,
 } from "@app/lib/api";
 import { exportInvoicesToCSV } from "@app/lib/export";
+import { useVirtualList } from "@app/hooks";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -100,6 +101,7 @@ export default function InvoicesPage() {
   const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("desc");
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [showAll, setShowAll] = React.useState(false);
 
   const selectedInvoice = invoices?.find((inv) => inv.id === selectedInvoiceId);
 
@@ -151,11 +153,19 @@ export default function InvoicesPage() {
     setPage(0);
   }, [searchQuery, statusFilter]);
 
-  // Paginated invoices
+  // Paginated invoices (when not showing all)
   const paginatedInvoices = React.useMemo(() => {
+    if (showAll) return filteredInvoices;
     const start = page * rowsPerPage;
     return filteredInvoices.slice(start, start + rowsPerPage);
-  }, [filteredInvoices, page, rowsPerPage]);
+  }, [filteredInvoices, page, rowsPerPage, showAll]);
+
+  // Virtualization for "Show All" mode
+  const { parentRef, virtualItems, totalSize } = useVirtualList({
+    items: filteredInvoices,
+    estimateSize: 65, // Approximate row height
+    overscan: 10,
+  });
 
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -364,134 +374,255 @@ export default function InvoicesPage() {
           <TableSkeleton rows={5} columns={6} />
         </Paper>
       ) : invoices && invoices.length > 0 && filteredInvoices.length > 0 ? (
-        <TableContainer
-          component={Paper}
-          sx={{
-            borderRadius: 3,
-            overflow: "hidden",
-            "& .MuiTableHead-root": {
-              bgcolor: alpha(theme.palette.primary.main, 0.04),
-            },
-          }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={sortableHeaderSx} onClick={() => handleSort("publicId")}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    Invoice # {renderSortIcon("publicId")}
-                  </Box>
-                </TableCell>
-                <TableCell sx={sortableHeaderSx} onClick={() => handleSort("client")}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    Client {renderSortIcon("client")}
-                  </Box>
-                </TableCell>
-                <TableCell sx={sortableHeaderSx} onClick={() => handleSort("total")}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    Amount {renderSortIcon("total")}
-                  </Box>
-                </TableCell>
-                <TableCell sx={sortableHeaderSx} onClick={() => handleSort("dueDate")}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    Due Date {renderSortIcon("dueDate")}
-                  </Box>
-                </TableCell>
-                <TableCell sx={sortableHeaderSx} onClick={() => handleSort("status")}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    Status {renderSortIcon("status")}
-                  </Box>
-                </TableCell>
-                <TableCell sx={sortableHeaderSx} onClick={() => handleSort("createdAt")}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    Created {renderSortIcon("createdAt")}
-                  </Box>
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600, width: 48 }} />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedInvoices.map((invoice) => {
-                const status = statusConfig[invoice.status] || statusConfig.DRAFT;
-                return (
-                  <TableRow
-                    key={invoice.id}
-                    hover
-                    sx={{
-                      cursor: "pointer",
-                      transition: "background-color 0.2s",
-                      "&:hover": {
-                        bgcolor: alpha(theme.palette.primary.main, 0.04),
-                      },
-                    }}
-                    onMouseEnter={() => prefetchInvoice(invoice.id)}
-                    onClick={() => router.push(`/app/invoices/${invoice.id}`)}
-                  >
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={600} color="primary.main">
-                        {invoice.publicId}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={500}>
-                        {invoice.client.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {invoice.client.email}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={600}>
-                        {formatCurrency(invoice.total, invoice.currency)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {formatDate(invoice.dueDate)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={status.label}
-                        size="small"
-                        color={status.color}
-                        sx={{ fontWeight: 500 }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {formatDate(invoice.createdAt)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => handleMenuOpen(e, invoice.id)}
-                        sx={{ color: "text.secondary" }}
-                        aria-label={`Actions for invoice ${invoice.publicId}`}
-                      >
-                        <MoreVertIcon fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-          <TablePagination
-            component="div"
-            count={filteredInvoices.length}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25, 50]}
+        <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+          <TableContainer
+            ref={showAll ? parentRef : undefined}
             sx={{
-              borderTop: 1,
-              borderColor: "divider",
+              maxHeight: showAll ? 600 : undefined,
+              "& .MuiTableHead-root": {
+                bgcolor: alpha(theme.palette.primary.main, 0.04),
+              },
             }}
-          />
-        </TableContainer>
+          >
+            <Table stickyHeader={showAll}>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("publicId")}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      Invoice # {renderSortIcon("publicId")}
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("client")}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      Client {renderSortIcon("client")}
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("total")}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      Amount {renderSortIcon("total")}
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("dueDate")}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      Due Date {renderSortIcon("dueDate")}
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("status")}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      Status {renderSortIcon("status")}
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("createdAt")}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      Created {renderSortIcon("createdAt")}
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, width: 48 }} />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {showAll ? (
+                  <>
+                    {virtualItems.length > 0 && (
+                      <TableRow style={{ height: virtualItems[0].start }}>
+                        <TableCell colSpan={7} sx={{ p: 0, border: 0 }} />
+                      </TableRow>
+                    )}
+                    {virtualItems.map((virtualRow) => {
+                      const invoice = filteredInvoices[virtualRow.index];
+                      const status = statusConfig[invoice.status] || statusConfig.DRAFT;
+                      return (
+                        <TableRow
+                          key={invoice.id}
+                          data-index={virtualRow.index}
+                          hover
+                          sx={{
+                            cursor: "pointer",
+                            transition: "background-color 0.2s",
+                            height: 65,
+                            "&:hover": {
+                              bgcolor: alpha(theme.palette.primary.main, 0.04),
+                            },
+                          }}
+                          onMouseEnter={() => prefetchInvoice(invoice.id)}
+                          onClick={() => router.push(`/app/invoices/${invoice.id}`)}
+                        >
+                          <TableCell>
+                            <Typography variant="body2" fontWeight={600} color="primary.main">
+                              {invoice.publicId}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight={500}>
+                              {invoice.client.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {invoice.client.email}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight={600}>
+                              {formatCurrency(invoice.total, invoice.currency)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {formatDate(invoice.dueDate)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={status.label}
+                              size="small"
+                              color={status.color}
+                              sx={{ fontWeight: 500 }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {formatDate(invoice.createdAt)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleMenuOpen(e, invoice.id)}
+                              sx={{ color: "text.secondary" }}
+                              aria-label={`Actions for invoice ${invoice.publicId}`}
+                            >
+                              <MoreVertIcon fontSize="small" />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {virtualItems.length > 0 && (
+                      <TableRow
+                        style={{
+                          height: totalSize - (virtualItems[virtualItems.length - 1].end || 0),
+                        }}
+                      >
+                        <TableCell colSpan={7} sx={{ p: 0, border: 0 }} />
+                      </TableRow>
+                    )}
+                  </>
+                ) : (
+                  paginatedInvoices.map((invoice) => {
+                    const status = statusConfig[invoice.status] || statusConfig.DRAFT;
+                    return (
+                      <TableRow
+                        key={invoice.id}
+                        hover
+                        sx={{
+                          cursor: "pointer",
+                          transition: "background-color 0.2s",
+                          "&:hover": {
+                            bgcolor: alpha(theme.palette.primary.main, 0.04),
+                          },
+                        }}
+                        onMouseEnter={() => prefetchInvoice(invoice.id)}
+                        onClick={() => router.push(`/app/invoices/${invoice.id}`)}
+                      >
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600} color="primary.main">
+                            {invoice.publicId}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={500}>
+                            {invoice.client.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {invoice.client.email}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600}>
+                            {formatCurrency(invoice.total, invoice.currency)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {formatDate(invoice.dueDate)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={status.label}
+                            size="small"
+                            color={status.color}
+                            sx={{ fontWeight: 500 }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {formatDate(invoice.createdAt)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleMenuOpen(e, invoice.id)}
+                            sx={{ color: "text.secondary" }}
+                            aria-label={`Actions for invoice ${invoice.publicId}`}
+                          >
+                            <MoreVertIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+            {showAll ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  px: 2,
+                  py: 1,
+                  borderTop: 1,
+                  borderColor: "divider",
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Showing all {filteredInvoices.length} invoices
+                </Typography>
+                <Button size="small" onClick={() => setShowAll(false)}>
+                  Use Pagination
+                </Button>
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  borderTop: 1,
+                  borderColor: "divider",
+                }}
+              >
+                <TablePagination
+                  component="div"
+                  count={filteredInvoices.length}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  rowsPerPageOptions={[5, 10, 25, 50]}
+                  sx={{ flex: 1 }}
+                />
+                {filteredInvoices.length > 50 && (
+                  <Button size="small" onClick={() => setShowAll(true)} sx={{ mr: 2 }}>
+                    Show All
+                  </Button>
+                )}
+              </Box>
+            )}
+          </TableContainer>
+        </Paper>
       ) : invoices && invoices.length > 0 && filteredInvoices.length === 0 ? (
         <Paper
           sx={{
