@@ -18,101 +18,16 @@ import {
 } from "@mui/material";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import WarningIcon from "@mui/icons-material/Warning";
 import PeopleIcon from "@mui/icons-material/People";
 import AddIcon from "@mui/icons-material/Add";
 import { AppLayout } from "@app/components/layout/AppLayout";
+import { MetricCard } from "@app/components/data-display";
 import { useAnalytics } from "@app/lib/api";
-
-function formatCurrency(amount: number, currency = "USD"): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount / 100);
-}
-
-function formatDate(dateString: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-  }).format(new Date(dateString));
-}
-
-interface MetricCardProps {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-  change?: number;
-  changeLabel?: string;
-  color?: string;
-}
-
-function MetricCard({ title, value, icon, change, changeLabel, color }: MetricCardProps) {
-  const theme = useTheme();
-  const isPositive = change !== undefined && change >= 0;
-
-  return (
-    <Paper
-      sx={{
-        p: 3,
-        borderRadius: 3,
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Box
-          sx={{
-            width: 48,
-            height: 48,
-            borderRadius: 2,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            bgcolor: alpha(color || theme.palette.primary.main, 0.1),
-            color: color || theme.palette.primary.main,
-          }}
-        >
-          {icon}
-        </Box>
-        {change !== undefined && (
-          <Chip
-            size="small"
-            icon={isPositive ? <TrendingUpIcon /> : <TrendingDownIcon />}
-            label={`${isPositive ? "+" : ""}${change.toFixed(0)}%`}
-            color={isPositive ? "success" : "error"}
-            sx={{ fontWeight: 600 }}
-          />
-        )}
-      </Box>
-      <Typography variant="body2" color="text.secondary" gutterBottom>
-        {title}
-      </Typography>
-      <Typography variant="h4" fontWeight={700}>
-        {value}
-      </Typography>
-      {changeLabel && (
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-          {changeLabel}
-        </Typography>
-      )}
-    </Paper>
-  );
-}
-
-const statusColors: Record<string, string> = {
-  PAID: "#22c55e",
-  OVERDUE: "#ef4444",
-  SENT: "#3b82f6",
-  VIEWED: "#3b82f6",
-  DRAFT: "#9ca3af",
-};
+import { formatCurrency, formatCurrencyCompact, formatDateShort } from "@app/lib/format";
+import { STATUS_COLORS } from "@app/lib/constants";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -209,7 +124,7 @@ export default function DashboardPage() {
           ) : (
             <MetricCard
               title="Total Revenue"
-              value={formatCurrency(totalRevenue, displayCurrency)}
+              value={formatCurrencyCompact(totalRevenue, displayCurrency)}
               icon={<AccountBalanceWalletIcon />}
               color={theme.palette.success.main}
             />
@@ -221,7 +136,7 @@ export default function DashboardPage() {
           ) : (
             <MetricCard
               title="This Month"
-              value={formatCurrency(revenueThisMonth, displayCurrency)}
+              value={formatCurrencyCompact(revenueThisMonth, displayCurrency)}
               icon={<TrendingUpIcon />}
               change={revenueChange}
               changeLabel="vs last month"
@@ -235,7 +150,7 @@ export default function DashboardPage() {
           ) : (
             <MetricCard
               title="Outstanding"
-              value={formatCurrency(outstandingBalance, displayCurrency)}
+              value={formatCurrencyCompact(outstandingBalance, displayCurrency)}
               icon={<ReceiptLongIcon />}
               color={theme.palette.warning.main}
             />
@@ -247,7 +162,7 @@ export default function DashboardPage() {
           ) : (
             <MetricCard
               title="Overdue"
-              value={formatCurrency(overdueAmount, displayCurrency)}
+              value={formatCurrencyCompact(overdueAmount, displayCurrency)}
               icon={<WarningIcon />}
               color={theme.palette.error.main}
             />
@@ -284,7 +199,7 @@ export default function DashboardPage() {
                   />
                   <Tooltip
                     formatter={(value) => [
-                      formatCurrency(value as number, displayCurrency),
+                      formatCurrencyCompact(value as number, displayCurrency),
                       "Revenue",
                     ]}
                     contentStyle={{
@@ -329,7 +244,7 @@ export default function DashboardPage() {
                           width: 12,
                           height: 12,
                           borderRadius: "50%",
-                          bgcolor: statusColors[status] || "#9ca3af",
+                          bgcolor: STATUS_COLORS[status] || "#9ca3af",
                         }}
                       />
                       <Typography variant="body2">{status}</Typography>
@@ -418,7 +333,7 @@ export default function DashboardPage() {
                         #{invoice.publicId}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {invoice.clientName} • {formatDate(invoice.createdAt)}
+                        {invoice.clientName} • {formatDateShort(invoice.createdAt)}
                       </Typography>
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -429,8 +344,8 @@ export default function DashboardPage() {
                         size="small"
                         label={invoice.status}
                         sx={{
-                          bgcolor: alpha(statusColors[invoice.status] || "#9ca3af", 0.1),
-                          color: statusColors[invoice.status] || "#9ca3af",
+                          bgcolor: alpha(STATUS_COLORS[invoice.status] || "#9ca3af", 0.1),
+                          color: STATUS_COLORS[invoice.status] || "#9ca3af",
                           fontWeight: 600,
                           fontSize: "0.7rem",
                         }}

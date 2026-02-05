@@ -16,38 +16,18 @@ import {
   TableRow,
   Typography,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
   alpha,
   useTheme,
-  Grid,
-  Collapse,
-  TextField,
-  IconButton,
-  Tooltip,
   LinearProgress,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
 import SendIcon from "@mui/icons-material/Send";
 import LinkIcon from "@mui/icons-material/Link";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import PaymentIcon from "@mui/icons-material/Payment";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import EditIcon from "@mui/icons-material/Edit";
 import PreviewIcon from "@mui/icons-material/Preview";
-import HistoryIcon from "@mui/icons-material/History";
-import CreateIcon from "@mui/icons-material/Create";
-import MailIcon from "@mui/icons-material/Mail";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import AddIcon from "@mui/icons-material/Add";
 import { AppLayout } from "@app/components/layout/AppLayout";
@@ -66,86 +46,17 @@ import {
   ApiError,
 } from "@app/lib/api";
 import { generateInvoicePdf } from "@app/lib/export";
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(amount / 100);
-}
-
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(new Date(date));
-}
-
-function formatDateTime(date: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(date));
-}
-
-const statusConfig: Record<
-  string,
-  { color: "success" | "error" | "info" | "warning" | "default"; label: string }
-> = {
-  PAID: { color: "success", label: "Paid" },
-  PARTIALLY_PAID: { color: "warning", label: "Partially Paid" },
-  OVERDUE: { color: "error", label: "Overdue" },
-  SENT: { color: "info", label: "Sent" },
-  VIEWED: { color: "info", label: "Viewed" },
-  DRAFT: { color: "default", label: "Draft" },
-};
-
-const eventConfig: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
-  CREATED: {
-    icon: <CreateIcon fontSize="small" />,
-    label: "Invoice created",
-    color: "text.secondary",
-  },
-  SENT: {
-    icon: <MailIcon fontSize="small" />,
-    label: "Invoice sent to client",
-    color: "info.main",
-  },
-  VIEWED: {
-    icon: <VisibilityIcon fontSize="small" />,
-    label: "Viewed by client",
-    color: "info.main",
-  },
-  REMINDER_SENT: {
-    icon: <NotificationsIcon fontSize="small" />,
-    label: "Payment reminder sent",
-    color: "warning.main",
-  },
-  PAID_STRIPE: {
-    icon: <CreditCardIcon fontSize="small" />,
-    label: "Paid via Stripe",
-    color: "success.main",
-  },
-  PAID_MANUAL: {
-    icon: <CheckCircleIcon fontSize="small" />,
-    label: "Marked as paid manually",
-    color: "success.main",
-  },
-  PAYMENT_RECORDED: {
-    icon: <PaymentIcon fontSize="small" />,
-    label: "Payment recorded",
-    color: "success.main",
-  },
-  STATUS_CHANGED: {
-    icon: <HistoryIcon fontSize="small" />,
-    label: "Status changed",
-    color: "text.secondary",
-  },
-};
+import { formatCurrency, formatDate } from "@app/lib/format";
+import { STATUS_CONFIG } from "@app/lib/constants";
+import {
+  InvoiceTimeline,
+  PaymentHistory,
+  ActivityHistory,
+  SendDialog,
+  MarkPaidDialog,
+  RecordPaymentDialog,
+  InvoicePreviewDialog,
+} from "./components";
 
 export default function InvoiceDetailPage() {
   const params = useParams();
@@ -160,8 +71,6 @@ export default function InvoiceDetailPage() {
   const [auditLogExpanded, setAuditLogExpanded] = React.useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [paymentsExpanded, setPaymentsExpanded] = React.useState(true);
-  const [paymentAmount, setPaymentAmount] = React.useState("");
-  const [paymentNote, setPaymentNote] = React.useState("");
 
   const { data: invoice, isLoading, error } = useInvoice(invoiceId);
 
@@ -228,8 +137,8 @@ export default function InvoiceDetailPage() {
     });
   };
 
-  const handleRecordPayment = () => {
-    const amountInCents = Math.round(parseFloat(paymentAmount) * 100);
+  const handleRecordPayment = (amount: string, note: string) => {
+    const amountInCents = Math.round(parseFloat(amount) * 100);
     if (isNaN(amountInCents) || amountInCents <= 0) {
       toast.error("Please enter a valid amount");
       return;
@@ -241,14 +150,12 @@ export default function InvoiceDetailPage() {
         data: {
           amount: amountInCents,
           method: "MANUAL",
-          note: paymentNote || undefined,
+          note: note || undefined,
         },
       },
       {
         onSuccess: () => {
           setPaymentDialogOpen(false);
-          setPaymentAmount("");
-          setPaymentNote("");
           toast.success("Payment recorded successfully!");
         },
         onError: (err) => {
@@ -293,7 +200,7 @@ export default function InvoiceDetailPage() {
   const isPaid = invoice.status === "PAID";
   const isPartiallyPaid = invoice.status === "PARTIALLY_PAID";
   const isOverdue = invoice.status === "OVERDUE";
-  const status = statusConfig[invoice.status] || statusConfig.DRAFT;
+  const status = STATUS_CONFIG[invoice.status] || STATUS_CONFIG.DRAFT;
   const remainingBalance = invoice.total - (invoice.paidAmount || 0);
   const paidPercentage = invoice.total > 0 ? ((invoice.paidAmount || 0) / invoice.total) * 100 : 0;
 
@@ -382,7 +289,7 @@ export default function InvoiceDetailPage() {
             onClick={() => {
               generateInvoicePdf({
                 ...invoice,
-                sender: null, // TODO: Add sender profile to invoice response
+                sender: null,
               });
               toast.success("PDF downloaded!");
             }}
@@ -409,88 +316,14 @@ export default function InvoiceDetailPage() {
       </Box>
 
       {/* Timeline */}
-      <Paper
-        sx={{
-          p: 3,
-          mb: 3,
-          borderRadius: 3,
-          bgcolor: alpha(theme.palette.primary.main, 0.02),
-        }}
-      >
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-              <AccessTimeIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                DUE DATE
-              </Typography>
-            </Box>
-            <Typography
-              variant="body1"
-              fontWeight={600}
-              color={isOverdue ? "error.main" : "text.primary"}
-            >
-              {formatDate(invoice.dueDate)}
-            </Typography>
-          </Grid>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-              <SendIcon
-                sx={{ fontSize: 18, color: invoice.sentAt ? "success.main" : "text.disabled" }}
-              />
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                SENT
-              </Typography>
-            </Box>
-            <Typography
-              variant="body1"
-              fontWeight={500}
-              color={invoice.sentAt ? "text.primary" : "text.disabled"}
-            >
-              {invoice.sentAt ? formatDateTime(invoice.sentAt) : "Not sent"}
-            </Typography>
-          </Grid>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-              <VisibilityIcon
-                sx={{ fontSize: 18, color: invoice.viewedAt ? "info.main" : "text.disabled" }}
-              />
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                VIEWED
-              </Typography>
-            </Box>
-            <Typography
-              variant="body1"
-              fontWeight={500}
-              color={invoice.viewedAt ? "text.primary" : "text.disabled"}
-            >
-              {invoice.viewedAt ? formatDateTime(invoice.viewedAt) : "Not viewed"}
-            </Typography>
-          </Grid>
-          <Grid size={{ xs: 6, sm: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-              <PaymentIcon
-                sx={{ fontSize: 18, color: invoice.paidAt ? "success.main" : "text.disabled" }}
-              />
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                PAID
-              </Typography>
-            </Box>
-            <Typography
-              variant="body1"
-              fontWeight={500}
-              color={invoice.paidAt ? "success.main" : "text.disabled"}
-            >
-              {invoice.paidAt ? formatDateTime(invoice.paidAt) : "Unpaid"}
-            </Typography>
-            {invoice.paymentMethod && (
-              <Typography variant="caption" color="text.secondary">
-                via {invoice.paymentMethod}
-              </Typography>
-            )}
-          </Grid>
-        </Grid>
-      </Paper>
+      <InvoiceTimeline
+        dueDate={invoice.dueDate}
+        sentAt={invoice.sentAt}
+        viewedAt={invoice.viewedAt}
+        paidAt={invoice.paidAt}
+        paymentMethod={invoice.paymentMethod}
+        isOverdue={isOverdue}
+      />
 
       {/* Main Content */}
       <Paper sx={{ p: 4, mb: 3, borderRadius: 3 }}>
@@ -615,92 +448,14 @@ export default function InvoiceDetailPage() {
       </Paper>
 
       {/* Payments Section */}
-      {invoice.payments && invoice.payments.length > 0 && (
-        <Paper sx={{ borderRadius: 3, overflow: "hidden", mb: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              p: 2,
-              cursor: "pointer",
-              "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
-            }}
-            onClick={() => setPaymentsExpanded(!paymentsExpanded)}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <PaymentIcon color="success" />
-              <Typography variant="subtitle1" fontWeight={600}>
-                Payment History
-              </Typography>
-              <Chip label={invoice.payments.length} size="small" color="success" />
-            </Box>
-            {paymentsExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </Box>
-          <Collapse in={paymentsExpanded}>
-            <Divider />
-            <TableContainer>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Method</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Note</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      Amount
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600, width: 60 }}>
-                      Actions
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {invoice.payments.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell>{formatDateTime(payment.paidAt)}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={payment.method === "STRIPE" ? "Stripe" : "Manual"}
-                          size="small"
-                          color={payment.method === "STRIPE" ? "primary" : "default"}
-                          icon={
-                            payment.method === "STRIPE" ? (
-                              <CreditCardIcon fontSize="small" />
-                            ) : undefined
-                          }
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {payment.note || "—"}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography fontWeight={600} color="success.main">
-                          {formatCurrency(payment.amount, invoice.currency)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        {!isPaid && (
-                          <Tooltip title="Delete payment">
-                            <IconButton
-                              size="small"
-                              color="error"
-                              onClick={() => handleDeletePayment(payment.id)}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Collapse>
-        </Paper>
-      )}
+      <PaymentHistory
+        payments={invoice.payments || []}
+        currency={invoice.currency}
+        isPaid={isPaid}
+        expanded={paymentsExpanded}
+        onToggle={() => setPaymentsExpanded(!paymentsExpanded)}
+        onDeletePayment={handleDeletePayment}
+      />
 
       {/* View Public Page */}
       {!isDraft && (
@@ -716,369 +471,48 @@ export default function InvoiceDetailPage() {
       )}
 
       {/* Audit Log */}
-      {invoice.events && invoice.events.length > 0 && (
-        <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              p: 2,
-              cursor: "pointer",
-              "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
-            }}
-            onClick={() => setAuditLogExpanded(!auditLogExpanded)}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <HistoryIcon color="action" />
-              <Typography variant="subtitle1" fontWeight={600}>
-                Activity History
-              </Typography>
-              <Chip label={invoice.events.length} size="small" />
-            </Box>
-            {auditLogExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </Box>
-          <Collapse in={auditLogExpanded}>
-            <Divider />
-            <Box sx={{ p: 2 }}>
-              {invoice.events.map((event, index) => {
-                const config = eventConfig[event.type] || {
-                  icon: <HistoryIcon fontSize="small" />,
-                  label: event.type,
-                  color: "text.secondary",
-                };
-                const isLast = index === invoice.events!.length - 1;
+      <ActivityHistory
+        events={invoice.events || []}
+        expanded={auditLogExpanded}
+        onToggle={() => setAuditLogExpanded(!auditLogExpanded)}
+      />
 
-                return (
-                  <Box
-                    key={event.id}
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      pb: isLast ? 0 : 2,
-                      position: "relative",
-                    }}
-                  >
-                    {/* Timeline connector */}
-                    {!isLast && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          left: 15,
-                          top: 32,
-                          bottom: 0,
-                          width: 2,
-                          bgcolor: "divider",
-                        }}
-                      />
-                    )}
-                    {/* Icon */}
-                    <Box
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        color: config.color,
-                        flexShrink: 0,
-                        zIndex: 1,
-                      }}
-                    >
-                      {config.icon}
-                    </Box>
-                    {/* Content */}
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" fontWeight={500}>
-                        {config.label}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatDateTime(event.createdAt)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                );
-              })}
-            </Box>
-          </Collapse>
-        </Paper>
-      )}
-
-      {/* Send Dialog */}
-      <Dialog
+      {/* Dialogs */}
+      <SendDialog
         open={sendDialogOpen}
         onClose={() => setSendDialogOpen(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 600 }}>Send Invoice</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            An email will be sent to <strong>{invoice.client.email}</strong> with a link to view and
-            pay this invoice.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setSendDialogOpen(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={handleSendInvoice}
-            disabled={sendMutation.isPending}
-            startIcon={sendMutation.isPending ? <Spinner size={16} /> : <SendIcon />}
-          >
-            Send Invoice
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleSendInvoice}
+        isLoading={sendMutation.isPending}
+        clientEmail={invoice.client.email}
+      />
 
-      {/* Mark Paid Dialog */}
-      <Dialog
+      <MarkPaidDialog
         open={markPaidDialogOpen}
         onClose={() => setMarkPaidDialogOpen(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 600 }}>Mark as Paid</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            This will mark the invoice as paid manually. Use this if you received payment outside of
-            the Stripe integration.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setMarkPaidDialogOpen(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={handleMarkPaid}
-            disabled={markPaidMutation.isPending}
-            startIcon={markPaidMutation.isPending ? <Spinner size={16} /> : <CheckCircleIcon />}
-          >
-            Mark as Paid
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleMarkPaid}
+        isLoading={markPaidMutation.isPending}
+      />
 
-      {/* Record Payment Dialog */}
-      <Dialog
+      <RecordPaymentDialog
         open={paymentDialogOpen}
         onClose={() => setPaymentDialogOpen(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 600 }}>Record Payment</DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ mb: 2 }}>
-            Record a partial or full payment for this invoice. Remaining balance:{" "}
-            <strong>{formatCurrency(remainingBalance, invoice.currency)}</strong>
-          </DialogContentText>
-          <TextField
-            autoFocus
-            label="Amount"
-            type="number"
-            fullWidth
-            value={paymentAmount}
-            onChange={(e) => setPaymentAmount(e.target.value)}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <Typography color="text.secondary" sx={{ mr: 0.5 }}>
-                    {invoice.currency === "USD" ? "$" : invoice.currency}
-                  </Typography>
-                ),
-              },
-            }}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="Note (optional)"
-            fullWidth
-            value={paymentNote}
-            onChange={(e) => setPaymentNote(e.target.value)}
-            placeholder="e.g., Bank transfer, Check #123"
-          />
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setPaymentDialogOpen(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handleRecordPayment}
-            disabled={recordPaymentMutation.isPending || !paymentAmount}
-            startIcon={recordPaymentMutation.isPending ? <Spinner size={16} /> : <AddIcon />}
-          >
-            Record Payment
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleRecordPayment}
+        isLoading={recordPaymentMutation.isPending}
+        remainingBalance={remainingBalance}
+        currency={invoice.currency}
+      />
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog {...dialogProps} />
 
-      {/* Preview Dialog */}
-      <Dialog
+      <InvoicePreviewDialog
         open={previewDialogOpen}
         onClose={() => setPreviewDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 600, display: "flex", justifyContent: "space-between" }}>
-          Invoice Preview
-          <Chip label="Preview Mode" size="small" color="info" />
-        </DialogTitle>
-        <DialogContent>
-          <Paper
-            variant="outlined"
-            sx={{
-              p: 4,
-              bgcolor: alpha(theme.palette.background.paper, 0.5),
-              borderRadius: 2,
-            }}
-          >
-            {/* Invoice Header */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 4 }}>
-              <Box>
-                <Typography variant="h4" fontWeight={700}>
-                  Invoice
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  #{invoice.publicId}
-                </Typography>
-              </Box>
-              <Chip label="Draft" color="default" />
-            </Box>
-
-            {/* From/To */}
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-                gap: 4,
-                mb: 4,
-                p: 3,
-                borderRadius: 2,
-                bgcolor: alpha(theme.palette.primary.main, 0.02),
-              }}
-            >
-              <Box>
-                <Typography variant="overline" color="text.secondary" fontWeight={600}>
-                  From
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Your business info will appear here
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="overline" color="text.secondary" fontWeight={600}>
-                  Bill To
-                </Typography>
-                <Typography variant="h6" fontWeight={600} sx={{ mt: 1 }}>
-                  {invoice.client.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {invoice.client.email}
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Dates */}
-            <Box sx={{ display: "flex", gap: 4, mb: 4 }}>
-              <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  INVOICE DATE
-                </Typography>
-                <Typography variant="body1" fontWeight={500} sx={{ mt: 0.5 }}>
-                  {formatDate(invoice.createdAt)}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  DUE DATE
-                </Typography>
-                <Typography variant="body1" fontWeight={500} sx={{ mt: 0.5 }}>
-                  {formatDate(invoice.dueDate)}
-                </Typography>
-              </Box>
-            </Box>
-
-            <Divider sx={{ my: 3 }} />
-
-            {/* Items */}
-            <TableContainer>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      Qty
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      Unit Price
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>
-                      Amount
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {invoice.items.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.description}</TableCell>
-                      <TableCell align="right">{item.quantity}</TableCell>
-                      <TableCell align="right">
-                        {formatCurrency(item.unitPrice, invoice.currency)}
-                      </TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 500 }}>
-                        {formatCurrency(item.amount, invoice.currency)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
-            <Divider sx={{ my: 3 }} />
-
-            {/* Totals */}
-            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-              <Box sx={{ minWidth: 250 }}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                  <Typography color="text.secondary">Subtotal</Typography>
-                  <Typography>{formatCurrency(invoice.subtotal, invoice.currency)}</Typography>
-                </Box>
-                <Divider sx={{ my: 1 }} />
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography variant="h6" fontWeight={600}>
-                    Total
-                  </Typography>
-                  <Typography variant="h6" fontWeight={700} color="primary.main">
-                    {formatCurrency(invoice.total, invoice.currency)}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          </Paper>
-
-          <Alert severity="info" sx={{ mt: 2, borderRadius: 2 }}>
-            This is how your invoice will appear to your client. Once sent, they will receive an
-            email with a link to view and pay this invoice.
-          </Alert>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setPreviewDialogOpen(false)}>Close</Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setPreviewDialogOpen(false);
-              setSendDialogOpen(true);
-            }}
-            startIcon={<SendIcon />}
-          >
-            Send Invoice
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onSend={() => {
+          setPreviewDialogOpen(false);
+          setSendDialogOpen(true);
+        }}
+        invoice={invoice}
+      />
     </AppLayout>
   );
 }

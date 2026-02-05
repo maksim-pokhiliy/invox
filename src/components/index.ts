@@ -27,3 +27,6 @@ export { ThemeRegistry, useThemeMode, lightTheme, darkTheme } from "./theme";
 
 // Animation
 export { PageTransition } from "./animation";
+
+// Data Display
+export { MetricCard } from "./data-display";

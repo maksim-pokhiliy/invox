@@ -1,0 +1,145 @@
+"use client";
+
+import {
+  Box,
+  Paper,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  IconButton,
+  Tooltip,
+  Divider,
+  Collapse,
+  alpha,
+  useTheme,
+} from "@mui/material";
+import PaymentIcon from "@mui/icons-material/Payment";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import { formatCurrency, formatDateTime } from "@app/lib/format";
+
+interface Payment {
+  id: string;
+  amount: number;
+  method: "STRIPE" | "MANUAL";
+  note: string | null;
+  paidAt: string;
+}
+
+interface PaymentHistoryProps {
+  payments: Payment[];
+  currency: string;
+  isPaid: boolean;
+  expanded: boolean;
+  onToggle: () => void;
+  onDeletePayment: (paymentId: string) => void;
+}
+
+export function PaymentHistory({
+  payments,
+  currency,
+  isPaid,
+  expanded,
+  onToggle,
+  onDeletePayment,
+}: PaymentHistoryProps) {
+  const theme = useTheme();
+
+  if (!payments || payments.length === 0) {
+    return null;
+  }
+
+  return (
+    <Paper sx={{ borderRadius: 3, overflow: "hidden", mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          p: 2,
+          cursor: "pointer",
+          "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+        }}
+        onClick={onToggle}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <PaymentIcon color="success" />
+          <Typography variant="subtitle1" fontWeight={600}>
+            Payment History
+          </Typography>
+          <Chip label={payments.length} size="small" color="success" />
+        </Box>
+        {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+      </Box>
+      <Collapse in={expanded}>
+        <Divider />
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Method</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Note</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 600 }}>
+                  Amount
+                </TableCell>
+                <TableCell align="right" sx={{ fontWeight: 600, width: 60 }}>
+                  Actions
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {payments.map((payment) => (
+                <TableRow key={payment.id}>
+                  <TableCell>{formatDateTime(payment.paidAt)}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={payment.method === "STRIPE" ? "Stripe" : "Manual"}
+                      size="small"
+                      color={payment.method === "STRIPE" ? "primary" : "default"}
+                      icon={
+                        payment.method === "STRIPE" ? (
+                          <CreditCardIcon fontSize="small" />
+                        ) : undefined
+                      }
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" color="text.secondary">
+                      {payment.note || "—"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Typography fontWeight={600} color="success.main">
+                      {formatCurrency(payment.amount, currency)}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    {!isPaid && (
+                      <Tooltip title="Delete payment">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => onDeletePayment(payment.id)}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Collapse>
+    </Paper>
+  );
+}
