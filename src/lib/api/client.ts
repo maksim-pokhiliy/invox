@@ -150,3 +150,32 @@ export const publicApi = {
       body: JSON.stringify({ invoiceId }),
     }),
 };
+
+// Analytics types
+export interface AnalyticsData {
+  totalRevenue: number;
+  revenueThisMonth: number;
+  revenueLastMonth: number;
+  outstandingBalance: number;
+  overdueAmount: number;
+  totalInvoices: number;
+  paidInvoices: number;
+  overdueInvoices: number;
+  statusCounts: Record<string, number>;
+  monthlyRevenue: { month: string; revenue: number }[];
+  clientCount: number;
+  recentInvoices: {
+    id: string;
+    publicId: string;
+    status: string;
+    total: number;
+    currency: string;
+    clientName: string;
+    createdAt: string;
+  }[];
+}
+
+// Analytics API
+export const analyticsApi = {
+  get: () => fetchApi<AnalyticsData>("/api/analytics"),
+};

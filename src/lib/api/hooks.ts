@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { clientsApi, invoicesApi, senderProfileApi, publicApi } from "./client";
+import { clientsApi, invoicesApi, senderProfileApi, publicApi, analyticsApi } from "./client";
 import type { CreateClientInput, UpdateClientInput } from "@app/shared/schemas/client";
 import type { CreateInvoiceInput, UpdateInvoiceInput } from "@app/shared/schemas/invoice";
 import type { SenderProfileInput } from "@app/shared/schemas/sender-profile";
@@ -14,6 +14,7 @@ export const queryKeys = {
   invoice: (id: string) => ["invoice", id] as const,
   senderProfile: ["sender-profile"] as const,
   publicInvoice: (publicId: string) => ["public-invoice", publicId] as const,
+  analytics: ["analytics"] as const,
 };
 
 // Stale time constants
@@ -337,4 +338,13 @@ export function usePrefetchSenderProfile() {
       staleTime: STALE_TIME.long,
     });
   };
+}
+
+// Analytics hooks
+export function useAnalytics() {
+  return useQuery({
+    queryKey: queryKeys.analytics,
+    queryFn: analyticsApi.get,
+    staleTime: STALE_TIME.medium,
+  });
 }
