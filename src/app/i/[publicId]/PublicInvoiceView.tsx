@@ -17,7 +17,6 @@ import {
   Alert,
   Divider,
   alpha,
-  useTheme,
 } from "@mui/material";
 import PrintIcon from "@mui/icons-material/Print";
 import PaymentIcon from "@mui/icons-material/Payment";
@@ -104,7 +103,6 @@ export default function PublicInvoiceView({
   justPaid,
   wasCanceled,
 }: Props) {
-  const theme = useTheme();
   const brandPrimary = branding.primaryColor;
   const brandAccent = branding.accentColor;
   const [viewTracked, setViewTracked] = React.useState(false);
