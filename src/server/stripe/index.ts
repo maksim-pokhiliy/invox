@@ -4,46 +4,117 @@ import { prisma } from "@app/server/db";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
-const STRIPE_CLIENT_ID = process.env.STRIPE_CLIENT_ID || "";
 
-export function getStripeConnectUrl(state: string): string {
-  const params = new URLSearchParams({
-    response_type: "code",
-    client_id: STRIPE_CLIENT_ID,
-    scope: "read_write",
-    redirect_uri: `${APP_URL}/api/stripe/connect/callback`,
-    state,
-  });
-
-  return `https://connect.stripe.com/oauth/authorize?${params.toString()}`;
-}
-
-export async function connectStripeAccount(code: string): Promise<string> {
-  const response = await stripe.oauth.token({
-    grant_type: "authorization_code",
-    code,
-  });
-
-  if (!response.stripe_user_id) {
-    throw new Error("Failed to connect Stripe account");
-  }
-
-  return response.stripe_user_id;
-}
-
-export async function disconnectStripeAccount(stripeAccountId: string): Promise<void> {
-  await stripe.oauth.deauthorize({
-    client_id: STRIPE_CLIENT_ID,
-    stripe_user_id: stripeAccountId,
+/**
+ * Create a new Stripe Connected Account for a user
+ */
+export async function createConnectedAccount(email: string): Promise<Stripe.Account> {
+  return stripe.accounts.create({
+    type: "express",
+    email,
+    capabilities: {
+      card_payments: { requested: true },
+      transfers: { requested: true },
+    },
   });
 }
 
-export async function getConnectedAccount(stripeAccountId: string): Promise<Stripe.Account | null> {
+/**
+ * Create an Account Link for onboarding
+ */
+export async function createAccountLink(
+  accountId: string,
+  userId: string
+): Promise<Stripe.AccountLink> {
+  return stripe.accountLinks.create({
+    account: accountId,
+    refresh_url: `${APP_URL}/api/stripe/connect/refresh?userId=${userId}`,
+    return_url: `${APP_URL}/api/stripe/connect/return?accountId=${accountId}&userId=${userId}`,
+    type: "account_onboarding",
+  });
+}
+
+/**
+ * Get account status and check if onboarding is complete
+ */
+export async function getConnectedAccount(accountId: string): Promise<Stripe.Account | null> {
   try {
-    return await stripe.accounts.retrieve(stripeAccountId);
+    return await stripe.accounts.retrieve(accountId);
   } catch {
     return null;
   }
+}
+
+/**
+ * Check if account has completed onboarding and can accept payments
+ */
+export function isAccountReady(account: Stripe.Account): boolean {
+  return (
+    account.charges_enabled === true &&
+    account.payouts_enabled === true &&
+    account.details_submitted === true
+  );
+}
+
+/**
+ * Delete a connected account (optional, for cleanup)
+ */
+export async function deleteConnectedAccount(accountId: string): Promise<void> {
+  try {
+    await stripe.accounts.del(accountId);
+  } catch (error) {
+    console.error("Failed to delete connected account:", error);
+  }
+}
+
+/**
+ * Get user's Stripe account ID from sender profile
+ */
+export async function getUserStripeAccountId(userId: string): Promise<string | null> {
+  const profile = await prisma.senderProfile.findUnique({
+    where: { userId },
+  });
+  return profile?.stripeAccountId ?? null;
+}
+
+/**
+ * Save Stripe account ID to user's sender profile
+ */
+export async function saveUserStripeAccountId(
+  userId: string,
+  stripeAccountId: string
+): Promise<void> {
+  await prisma.senderProfile.upsert({
+    where: { userId },
+    update: { stripeAccountId },
+    create: {
+      userId,
+      stripeAccountId,
+      defaultCurrency: "USD",
+    },
+  });
+}
+
+/**
+ * Remove Stripe account ID from user's sender profile
+ */
+export async function removeUserStripeAccountId(userId: string): Promise<string | null> {
+  const profile = await prisma.senderProfile.findUnique({
+    where: { userId },
+  });
+
+  if (!profile?.stripeAccountId) {
+    return null;
+  }
+
+  const stripeAccountId = profile.stripeAccountId;
+
+  await prisma.senderProfile.update({
+    where: { userId },
+    data: { stripeAccountId: null },
+  });
+
+  return stripeAccountId;
 }
 
 export async function createCheckoutSession(invoiceId: string) {
@@ -170,6 +241,24 @@ export async function handleWebhookEvent(
             where: { invoiceId: invoice.id, status: "PENDING" },
             data: { status: "CANCELED" },
           });
+        }
+      }
+
+      return { type: event.type, handled: true };
+    }
+
+    case "account.updated": {
+      const account = event.data.object as Stripe.Account;
+
+      if (account.id) {
+        const profile = await prisma.senderProfile.findFirst({
+          where: { stripeAccountId: account.id },
+        });
+
+        if (profile) {
+          console.warn(
+            `Stripe account ${account.id} updated: charges_enabled=${account.charges_enabled}, payouts_enabled=${account.payouts_enabled}`
+          );
         }
       }
 

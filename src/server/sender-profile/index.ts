@@ -1,6 +1,20 @@
 import { prisma } from "@app/server/db";
 import { SenderProfileInput } from "@app/shared/schemas";
 
+function normalizeProfileData(data: SenderProfileInput, isCreate: boolean) {
+  return {
+    companyName: data.companyName ?? null,
+    displayName: data.displayName ?? null,
+    emailFrom: data.emailFrom ?? null,
+    address: data.address ?? null,
+    taxId: data.taxId ?? null,
+    defaultCurrency: isCreate ? (data.defaultCurrency ?? "USD") : data.defaultCurrency,
+    logoUrl: data.logoUrl ?? null,
+    primaryColor: data.primaryColor ?? null,
+    accentColor: data.accentColor ?? null,
+  };
+}
+
 export async function getSenderProfile(userId: string) {
   return prisma.senderProfile.findUnique({
     where: { userId },
@@ -11,15 +25,7 @@ export async function createSenderProfile(userId: string, data: SenderProfileInp
   return prisma.senderProfile.create({
     data: {
       userId,
-      companyName: data.companyName || null,
-      displayName: data.displayName || null,
-      emailFrom: data.emailFrom || null,
-      address: data.address || null,
-      taxId: data.taxId || null,
-      defaultCurrency: data.defaultCurrency || "USD",
-      logoUrl: data.logoUrl || null,
-      primaryColor: data.primaryColor || null,
-      accentColor: data.accentColor || null,
+      ...normalizeProfileData(data, true),
     },
   });
 }
@@ -27,45 +33,17 @@ export async function createSenderProfile(userId: string, data: SenderProfileInp
 export async function updateSenderProfile(userId: string, data: SenderProfileInput) {
   return prisma.senderProfile.update({
     where: { userId },
-    data: {
-      companyName: data.companyName || null,
-      displayName: data.displayName || null,
-      emailFrom: data.emailFrom || null,
-      address: data.address || null,
-      taxId: data.taxId || null,
-      defaultCurrency: data.defaultCurrency,
-      logoUrl: data.logoUrl || null,
-      primaryColor: data.primaryColor || null,
-      accentColor: data.accentColor || null,
-    },
+    data: normalizeProfileData(data, false),
   });
 }
 
 export async function upsertSenderProfile(userId: string, data: SenderProfileInput) {
+  const createData = normalizeProfileData(data, true);
+  const updateData = normalizeProfileData(data, false);
+
   return prisma.senderProfile.upsert({
     where: { userId },
-    create: {
-      userId,
-      companyName: data.companyName || null,
-      displayName: data.displayName || null,
-      emailFrom: data.emailFrom || null,
-      address: data.address || null,
-      taxId: data.taxId || null,
-      defaultCurrency: data.defaultCurrency || "USD",
-      logoUrl: data.logoUrl || null,
-      primaryColor: data.primaryColor || null,
-      accentColor: data.accentColor || null,
-    },
-    update: {
-      companyName: data.companyName || null,
-      displayName: data.displayName || null,
-      emailFrom: data.emailFrom || null,
-      address: data.address || null,
-      taxId: data.taxId || null,
-      defaultCurrency: data.defaultCurrency,
-      logoUrl: data.logoUrl || null,
-      primaryColor: data.primaryColor || null,
-      accentColor: data.accentColor || null,
-    },
+    create: { userId, ...createData },
+    update: updateData,
   });
 }

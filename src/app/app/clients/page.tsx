@@ -52,7 +52,6 @@ import { createClientSchema, CreateClientInput } from "@app/shared/schemas";
 import { formatDateCompact } from "@app/lib/format";
 
 export default function ClientsPage() {
-  const theme = useTheme();
   const toast = useToast();
   const { confirm, dialogProps } = useConfirmDialog();
 
@@ -185,138 +184,14 @@ export default function ClientsPage() {
         </Box>
       )}
 
-      {isLoading ? (
-        <Paper sx={{ p: 3, borderRadius: 3 }}>
-          <TableSkeleton rows={5} columns={4} />
-        </Paper>
-      ) : clients && clients.length > 0 && filteredClients.length > 0 ? (
-        <TableContainer
-          component={Paper}
-          sx={{
-            borderRadius: 3,
-            overflow: "hidden",
-            "& .MuiTableHead-root": {
-              bgcolor: alpha(theme.palette.primary.main, 0.04),
-            },
-          }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
-                <TableCell sx={{ fontWeight: 600, width: 48 }} />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredClients.map((client) => (
-                <TableRow
-                  key={client.id}
-                  hover
-                  sx={{
-                    transition: "background-color 0.2s",
-                    "&:hover": {
-                      bgcolor: alpha(theme.palette.primary.main, 0.04),
-                    },
-                  }}
-                >
-                  <TableCell>
-                    <Typography variant="body2" fontWeight={600}>
-                      {client.name}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {client.email}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {formatDateCompact(client.createdAt)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleMenuOpen(e, client.id)}
-                      sx={{ color: "text.secondary" }}
-                      aria-label={`Actions for ${client.name}`}
-                    >
-                      <MoreVertIcon fontSize="small" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : clients && clients.length > 0 && filteredClients.length === 0 ? (
-        <Paper
-          sx={{
-            p: 6,
-            textAlign: "center",
-            borderRadius: 3,
-            bgcolor: alpha(theme.palette.primary.main, 0.02),
-          }}
-        >
-          <SearchIcon sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            No clients found
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Try adjusting your search to find what you&apos;re looking for.
-          </Typography>
-          <Button variant="outlined" onClick={() => setSearchQuery("")}>
-            Clear Search
-          </Button>
-        </Paper>
-      ) : (
-        <Paper
-          sx={{
-            p: 8,
-            textAlign: "center",
-            borderRadius: 3,
-            bgcolor: alpha(theme.palette.primary.main, 0.02),
-            border: `2px dashed ${alpha(theme.palette.primary.main, 0.2)}`,
-          }}
-        >
-          <Box
-            sx={{
-              width: 80,
-              height: 80,
-              borderRadius: "50%",
-              bgcolor: alpha(theme.palette.primary.main, 0.1),
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              mx: "auto",
-              mb: 3,
-            }}
-          >
-            <PeopleIcon sx={{ fontSize: 40, color: "primary.main" }} />
-          </Box>
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            No clients yet
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mb: 3, maxWidth: 400, mx: "auto" }}
-          >
-            Add your first client to start creating invoices. Clients help you organize your billing
-            and keep track of who you&apos;re working with.
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            startIcon={<AddIcon />}
-            onClick={() => setCreateDialogOpen(true)}
-          >
-            Add Your First Client
-          </Button>
-        </Paper>
-      )}
+      <ClientsContent
+        isLoading={isLoading}
+        clients={clients}
+        filteredClients={filteredClients}
+        setSearchQuery={setSearchQuery}
+        setCreateDialogOpen={setCreateDialogOpen}
+        handleMenuOpen={handleMenuOpen}
+      />
 
       <Menu
         anchorEl={menuAnchorEl}
@@ -474,10 +349,201 @@ function ClientDialog({
             Cancel
           </Button>
           <Button type="submit" variant="contained" disabled={isPending}>
-            {isPending ? <Spinner size={20} /> : mode === "create" ? "Add Client" : "Save Changes"}
+            <SubmitButtonContent isPending={isPending} mode={mode} />
           </Button>
         </DialogActions>
       </Box>
     </Dialog>
+  );
+}
+
+function SubmitButtonContent({ isPending, mode }: { isPending: boolean; mode: "create" | "edit" }) {
+  if (isPending) {
+    return <Spinner size={20} />;
+  }
+  if (mode === "create") {
+    return <>Add Client</>;
+  }
+  return <>Save Changes</>;
+}
+
+interface Client {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+}
+
+interface ClientsContentProps {
+  isLoading: boolean;
+  clients: Client[] | undefined;
+  filteredClients: Client[];
+  setSearchQuery: (query: string) => void;
+  setCreateDialogOpen: (open: boolean) => void;
+  handleMenuOpen: (event: React.MouseEvent<HTMLElement>, clientId: string) => void;
+}
+
+function ClientsContent({
+  isLoading,
+  clients,
+  filteredClients,
+  setSearchQuery,
+  setCreateDialogOpen,
+  handleMenuOpen,
+}: ClientsContentProps) {
+  const theme = useTheme();
+
+  if (isLoading) {
+    return (
+      <Paper sx={{ p: 3, borderRadius: 3 }}>
+        <TableSkeleton rows={5} columns={4} />
+      </Paper>
+    );
+  }
+
+  if (clients && clients.length > 0 && filteredClients.length > 0) {
+    return <ClientsTable filteredClients={filteredClients} handleMenuOpen={handleMenuOpen} />;
+  }
+
+  if (clients && clients.length > 0 && filteredClients.length === 0) {
+    return (
+      <Paper
+        sx={{
+          p: 6,
+          textAlign: "center",
+          borderRadius: 3,
+          bgcolor: alpha(theme.palette.primary.main, 0.02),
+        }}
+      >
+        <SearchIcon sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          No clients found
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Try adjusting your search to find what you&apos;re looking for.
+        </Typography>
+        <Button variant="outlined" onClick={() => setSearchQuery("")}>
+          Clear Search
+        </Button>
+      </Paper>
+    );
+  }
+
+  return <EmptyClientsState onAddClient={() => setCreateDialogOpen(true)} />;
+}
+
+function ClientsTable({
+  filteredClients,
+  handleMenuOpen,
+}: {
+  filteredClients: Client[];
+  handleMenuOpen: (event: React.MouseEvent<HTMLElement>, clientId: string) => void;
+}) {
+  const theme = useTheme();
+
+  return (
+    <TableContainer
+      component={Paper}
+      sx={{
+        borderRadius: 3,
+        overflow: "hidden",
+        "& .MuiTableHead-root": {
+          bgcolor: alpha(theme.palette.primary.main, 0.04),
+        },
+      }}
+    >
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+            <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+            <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+            <TableCell sx={{ fontWeight: 600, width: 48 }} />
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {filteredClients.map((client) => (
+            <TableRow
+              key={client.id}
+              hover
+              sx={{
+                transition: "background-color 0.2s",
+                "&:hover": {
+                  bgcolor: alpha(theme.palette.primary.main, 0.04),
+                },
+              }}
+            >
+              <TableCell>
+                <Typography variant="body2" fontWeight={600}>
+                  {client.name}
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body2" color="text.secondary">
+                  {client.email}
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body2" color="text.secondary">
+                  {formatDateCompact(client.createdAt)}
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <IconButton
+                  size="small"
+                  onClick={(e) => handleMenuOpen(e, client.id)}
+                  sx={{ color: "text.secondary" }}
+                  aria-label={`Actions for ${client.name}`}
+                >
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+function EmptyClientsState({ onAddClient }: { onAddClient: () => void }) {
+  const theme = useTheme();
+
+  return (
+    <Paper
+      sx={{
+        p: 8,
+        textAlign: "center",
+        borderRadius: 3,
+        bgcolor: alpha(theme.palette.primary.main, 0.02),
+        border: `2px dashed ${alpha(theme.palette.primary.main, 0.2)}`,
+      }}
+    >
+      <Box
+        sx={{
+          width: 80,
+          height: 80,
+          borderRadius: "50%",
+          bgcolor: alpha(theme.palette.primary.main, 0.1),
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          mx: "auto",
+          mb: 3,
+        }}
+      >
+        <PeopleIcon sx={{ fontSize: 40, color: "primary.main" }} />
+      </Box>
+      <Typography variant="h6" fontWeight={600} gutterBottom>
+        No clients yet
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: "auto" }}>
+        Add your first client to start creating invoices. Clients help you organize your billing and
+        keep track of who you&apos;re working with.
+      </Typography>
+      <Button variant="contained" size="large" startIcon={<AddIcon />} onClick={onAddClient}>
+        Add Your First Client
+      </Button>
+    </Paper>
   );
 }

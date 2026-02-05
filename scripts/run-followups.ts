@@ -38,6 +38,9 @@ async function main() {
       invoice.user.senderProfile?.displayName ||
       invoice.user.email;
 
+    const senderEmail =
+      invoice.user.senderProfile?.emailFrom || invoice.user.email;
+
     const isOverdue = invoice.dueDate < new Date();
 
     console.log(`Processing job ${job.id} for invoice ${invoice.publicId}...`);
@@ -47,6 +50,7 @@ async function main() {
         clientName: invoice.client.name,
         clientEmail: invoice.client.email,
         senderName,
+        senderEmail,
         publicId: invoice.publicId,
         total: invoice.total,
         currency: invoice.currency,

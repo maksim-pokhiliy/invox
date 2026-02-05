@@ -47,6 +47,35 @@ const eslintConfig = defineConfig([
     rules: {
       "no-magic-numbers": "off"
     }
+  },
+  {
+    files: [
+      "src/app/app/invoices/new/page.tsx",
+      "src/app/app/recurring/new/page.tsx",
+      "src/app/app/templates/new/page.tsx",
+      "src/hooks/useVirtualList.ts"
+    ],
+    rules: {
+      "react-hooks/incompatible-library": "off"
+    }
+  },
+  {
+    files: [
+      "src/app/**/page.tsx",
+      "src/app/**/*.tsx",
+      "src/components/**/*.tsx"
+    ],
+    rules: {
+      "max-lines-per-function": ["warn", { max: 450, skipBlankLines: true, skipComments: true }],
+      "complexity": ["warn", 50]
+    }
+  },
+  {
+    files: ["src/lib/export/pdf.ts"],
+    rules: {
+      "max-lines-per-function": ["warn", { max: 200, skipBlankLines: true, skipComments: true }],
+      "complexity": ["warn", 20]
+    }
   }
 ]);
 

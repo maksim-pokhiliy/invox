@@ -5,20 +5,8 @@ import { useRouter } from "next/navigation";
 import {
   Box,
   Button,
-  Chip,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
   Typography,
   Alert,
-  alpha,
-  useTheme,
-  IconButton,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -28,14 +16,11 @@ import {
   FormControl,
   InputLabel,
   Select,
+  IconButton,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -43,9 +28,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import DownloadIcon from "@mui/icons-material/Download";
 import { AppLayout } from "@app/components/layout/AppLayout";
 import { Breadcrumbs } from "@app/components/navigation/Breadcrumbs";
-import { TableSkeleton } from "@app/components/feedback/Loading";
 import { useToast } from "@app/components/feedback/Toast";
 import { ConfirmDialog, useConfirmDialog } from "@app/components/feedback/ConfirmDialog";
+import { InvoicesContent } from "@app/components/pages/invoices";
 import {
   useInvoices,
   useDeleteInvoice,
@@ -55,23 +40,9 @@ import {
 } from "@app/lib/api";
 import { exportInvoicesToCSV } from "@app/lib/export";
 import { useVirtualList } from "@app/hooks";
-import { formatCurrency, formatDateCompact } from "@app/lib/format";
-
-const statusConfig: Record<
-  string,
-  { color: "success" | "error" | "info" | "warning" | "default"; label: string }
-> = {
-  PAID: { color: "success", label: "Paid" },
-  PARTIALLY_PAID: { color: "warning", label: "Partially Paid" },
-  OVERDUE: { color: "error", label: "Overdue" },
-  SENT: { color: "info", label: "Sent" },
-  VIEWED: { color: "info", label: "Viewed" },
-  DRAFT: { color: "default", label: "Draft" },
-};
 
 export default function InvoicesPage() {
   const router = useRouter();
-  const theme = useTheme();
   const toast = useToast();
   const { confirm, dialogProps } = useConfirmDialog();
 
@@ -169,21 +140,6 @@ export default function InvoicesPage() {
       setSortDirection("asc");
     }
   };
-
-  const sortableHeaderSx = {
-    fontWeight: 600,
-    cursor: "pointer",
-    userSelect: "none",
-    "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.08) },
-  };
-
-  const renderSortIcon = (column: string) =>
-    sortColumn === column &&
-    (sortDirection === "asc" ? (
-      <ArrowUpwardIcon sx={{ fontSize: 16 }} />
-    ) : (
-      <ArrowDownwardIcon sx={{ fontSize: 16 }} />
-    ));
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, invoiceId: string) => {
     event.stopPropagation();
@@ -362,332 +318,32 @@ export default function InvoicesPage() {
         </Box>
       )}
 
-      {isLoading ? (
-        <Paper sx={{ p: 3, borderRadius: 3 }}>
-          <TableSkeleton rows={5} columns={6} />
-        </Paper>
-      ) : invoices && invoices.length > 0 && filteredInvoices.length > 0 ? (
-        <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
-          <TableContainer
-            ref={showAll ? parentRef : undefined}
-            sx={{
-              maxHeight: showAll ? 600 : undefined,
-              "& .MuiTableHead-root": {
-                bgcolor: alpha(theme.palette.primary.main, 0.04),
-              },
-            }}
-          >
-            <Table stickyHeader={showAll}>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("publicId")}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      Invoice # {renderSortIcon("publicId")}
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("client")}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      Client {renderSortIcon("client")}
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("total")}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      Amount {renderSortIcon("total")}
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("dueDate")}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      Due Date {renderSortIcon("dueDate")}
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("status")}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      Status {renderSortIcon("status")}
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={sortableHeaderSx} onClick={() => handleSort("createdAt")}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      Created {renderSortIcon("createdAt")}
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600, width: 48 }} />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {showAll ? (
-                  <>
-                    {virtualItems.length > 0 && (
-                      <TableRow style={{ height: virtualItems[0].start }}>
-                        <TableCell colSpan={7} sx={{ p: 0, border: 0 }} />
-                      </TableRow>
-                    )}
-                    {virtualItems.map((virtualRow) => {
-                      const invoice = filteredInvoices[virtualRow.index];
-                      const status = statusConfig[invoice.status] || statusConfig.DRAFT;
-                      return (
-                        <TableRow
-                          key={invoice.id}
-                          data-index={virtualRow.index}
-                          hover
-                          sx={{
-                            cursor: "pointer",
-                            transition: "background-color 0.2s",
-                            height: 65,
-                            "&:hover": {
-                              bgcolor: alpha(theme.palette.primary.main, 0.04),
-                            },
-                          }}
-                          onMouseEnter={() => prefetchInvoice(invoice.id)}
-                          onClick={() => router.push(`/app/invoices/${invoice.id}`)}
-                        >
-                          <TableCell>
-                            <Typography variant="body2" fontWeight={600} color="primary.main">
-                              {invoice.publicId}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" fontWeight={500}>
-                              {invoice.client.name}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {invoice.client.email}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" fontWeight={600}>
-                              {formatCurrency(invoice.total, invoice.currency)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" color="text.secondary">
-                              {formatDateCompact(invoice.dueDate)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={status.label}
-                              size="small"
-                              color={status.color}
-                              sx={{ fontWeight: 500 }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" color="text.secondary">
-                              {formatDateCompact(invoice.createdAt)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => handleMenuOpen(e, invoice.id)}
-                              sx={{ color: "text.secondary" }}
-                              aria-label={`Actions for invoice ${invoice.publicId}`}
-                            >
-                              <MoreVertIcon fontSize="small" />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                    {virtualItems.length > 0 && (
-                      <TableRow
-                        style={{
-                          height: totalSize - (virtualItems[virtualItems.length - 1].end || 0),
-                        }}
-                      >
-                        <TableCell colSpan={7} sx={{ p: 0, border: 0 }} />
-                      </TableRow>
-                    )}
-                  </>
-                ) : (
-                  paginatedInvoices.map((invoice) => {
-                    const status = statusConfig[invoice.status] || statusConfig.DRAFT;
-                    return (
-                      <TableRow
-                        key={invoice.id}
-                        hover
-                        sx={{
-                          cursor: "pointer",
-                          transition: "background-color 0.2s",
-                          "&:hover": {
-                            bgcolor: alpha(theme.palette.primary.main, 0.04),
-                          },
-                        }}
-                        onMouseEnter={() => prefetchInvoice(invoice.id)}
-                        onClick={() => router.push(`/app/invoices/${invoice.id}`)}
-                      >
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={600} color="primary.main">
-                            {invoice.publicId}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
-                            {invoice.client.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {invoice.client.email}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={600}>
-                            {formatCurrency(invoice.total, invoice.currency)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" color="text.secondary">
-                            {formatDateCompact(invoice.dueDate)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={status.label}
-                            size="small"
-                            color={status.color}
-                            sx={{ fontWeight: 500 }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" color="text.secondary">
-                            {formatDateCompact(invoice.createdAt)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleMenuOpen(e, invoice.id)}
-                            sx={{ color: "text.secondary" }}
-                            aria-label={`Actions for invoice ${invoice.publicId}`}
-                          >
-                            <MoreVertIcon fontSize="small" />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-            {showAll ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  px: 2,
-                  py: 1,
-                  borderTop: 1,
-                  borderColor: "divider",
-                }}
-              >
-                <Typography variant="body2" color="text.secondary">
-                  Showing all {filteredInvoices.length} invoices
-                </Typography>
-                <Button size="small" onClick={() => setShowAll(false)}>
-                  Use Pagination
-                </Button>
-              </Box>
-            ) : (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  borderTop: 1,
-                  borderColor: "divider",
-                }}
-              >
-                <TablePagination
-                  component="div"
-                  count={filteredInvoices.length}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  rowsPerPage={rowsPerPage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  rowsPerPageOptions={[5, 10, 25, 50]}
-                  sx={{ flex: 1 }}
-                />
-                {filteredInvoices.length > 50 && (
-                  <Button size="small" onClick={() => setShowAll(true)} sx={{ mr: 2 }}>
-                    Show All
-                  </Button>
-                )}
-              </Box>
-            )}
-          </TableContainer>
-        </Paper>
-      ) : invoices && invoices.length > 0 && filteredInvoices.length === 0 ? (
-        <Paper
-          sx={{
-            p: 6,
-            textAlign: "center",
-            borderRadius: 3,
-            bgcolor: alpha(theme.palette.primary.main, 0.02),
-          }}
-        >
-          <SearchIcon sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            No invoices found
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Try adjusting your search or filter to find what you&apos;re looking for.
-          </Typography>
-          <Button
-            variant="outlined"
-            onClick={() => {
-              setSearchQuery("");
-              setStatusFilter("ALL");
-            }}
-          >
-            Clear Filters
-          </Button>
-        </Paper>
-      ) : (
-        <Paper
-          sx={{
-            p: 8,
-            textAlign: "center",
-            borderRadius: 3,
-            bgcolor: alpha(theme.palette.primary.main, 0.02),
-            border: `2px dashed ${alpha(theme.palette.primary.main, 0.2)}`,
-          }}
-        >
-          <Box
-            sx={{
-              width: 80,
-              height: 80,
-              borderRadius: "50%",
-              bgcolor: alpha(theme.palette.primary.main, 0.1),
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              mx: "auto",
-              mb: 3,
-            }}
-          >
-            <ReceiptLongIcon sx={{ fontSize: 40, color: "primary.main" }} />
-          </Box>
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            No invoices yet
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mb: 3, maxWidth: 400, mx: "auto" }}
-          >
-            Create your first invoice and start getting paid faster. Track payments, send reminders,
-            and manage your cash flow all in one place.
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            startIcon={<AddIcon />}
-            onClick={() => router.push("/app/invoices/new")}
-          >
-            Create Your First Invoice
-          </Button>
-        </Paper>
-      )}
+      <InvoicesContent
+        isLoading={isLoading}
+        invoices={invoices}
+        filteredInvoices={filteredInvoices}
+        paginatedInvoices={paginatedInvoices}
+        showAll={showAll}
+        setShowAll={setShowAll}
+        virtualItems={virtualItems}
+        totalSize={totalSize}
+        parentRef={parentRef}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        sortColumn={sortColumn}
+        sortDirection={sortDirection}
+        onSort={handleSort}
+        onRowClick={(id) => router.push(`/app/invoices/${id}`)}
+        onMenuOpen={handleMenuOpen}
+        onPrefetch={prefetchInvoice}
+        onClearFilters={() => {
+          setSearchQuery("");
+          setStatusFilter("ALL");
+        }}
+        onCreateInvoice={() => router.push("/app/invoices/new")}
+      />
 
       <Menu
         anchorEl={menuAnchorEl}

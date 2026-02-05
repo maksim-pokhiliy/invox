@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireUser, AuthenticationError } from "@app/server/auth/require-user";
-import { disconnectStripeAccount } from "@app/server/stripe";
-import { disconnectUserStripe } from "@app/server/user";
+import { deleteConnectedAccount, removeUserStripeAccountId } from "@app/server/stripe";
 
 export async function POST() {
   try {
     const user = await requireUser();
 
-    const stripeAccountId = await disconnectUserStripe(user.id);
+    const stripeAccountId = await removeUserStripeAccountId(user.id);
 
     if (!stripeAccountId) {
       return NextResponse.json(
@@ -17,9 +16,9 @@ export async function POST() {
     }
 
     try {
-      await disconnectStripeAccount(stripeAccountId);
+      await deleteConnectedAccount(stripeAccountId);
     } catch (err) {
-      console.error("Failed to deauthorize Stripe account:", err);
+      console.error("Failed to delete Stripe account:", err);
     }
 
     return NextResponse.json({ success: true });

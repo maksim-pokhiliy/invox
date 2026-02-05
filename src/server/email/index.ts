@@ -10,6 +10,7 @@ interface InvoiceEmailData {
   clientName: string;
   clientEmail: string;
   senderName: string;
+  senderEmail: string;
   publicId: string;
   total: number;
   currency: string;
@@ -72,6 +73,7 @@ If you have any questions about this invoice, please reply to this email or cont
   const result = await resend.emails.send({
     from: EMAIL_FROM,
     to: data.clientEmail,
+    replyTo: data.senderEmail,
     subject: `Invoice from ${data.senderName} - ${formattedTotal}`,
     html,
     text,
@@ -144,6 +146,7 @@ If you have already paid this invoice, please disregard this reminder. For any q
   const result = await resend.emails.send({
     from: EMAIL_FROM,
     to: data.clientEmail,
+    replyTo: data.senderEmail,
     subject,
     html,
     text,

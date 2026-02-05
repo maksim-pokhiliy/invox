@@ -41,6 +41,13 @@ const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
 const MONTHS_TO_SHOW = 6;
 const RECENT_INVOICES_LIMIT = 5;
 
+interface InvoiceForMetrics {
+  status: string;
+  total: number;
+  paidAt: Date | null;
+  dueDate: Date;
+}
+
 function calculateMonthlyRevenue(
   paidInvoices: { paidAt: Date | null; total: number }[],
   now: Date
@@ -68,6 +75,40 @@ function calculateMonthlyRevenue(
   return result;
 }
 
+function calculateMetricsForInvoices(
+  invoices: InvoiceForMetrics[],
+  now: Date,
+  thirtyDaysAgo: Date,
+  sixtyDaysAgo: Date
+): Omit<CurrencyMetrics, "monthlyRevenue"> {
+  const paidInvoices = invoices.filter((inv) => inv.status === "PAID" || inv.paidAt);
+  const totalRevenue = paidInvoices.reduce((sum, inv) => sum + inv.total, 0);
+
+  const revenueThisMonth = paidInvoices
+    .filter((inv) => inv.paidAt && new Date(inv.paidAt) >= thirtyDaysAgo)
+    .reduce((sum, inv) => sum + inv.total, 0);
+
+  const revenueLastMonth = paidInvoices
+    .filter(
+      (inv) =>
+        inv.paidAt && new Date(inv.paidAt) >= sixtyDaysAgo && new Date(inv.paidAt) < thirtyDaysAgo
+    )
+    .reduce((sum, inv) => sum + inv.total, 0);
+
+  const outstandingInvoices = invoices.filter(
+    (inv) =>
+      !inv.paidAt && (inv.status === "SENT" || inv.status === "VIEWED" || inv.status === "OVERDUE")
+  );
+  const outstandingBalance = outstandingInvoices.reduce((sum, inv) => sum + inv.total, 0);
+
+  const overdueInvoices = invoices.filter(
+    (inv) => !inv.paidAt && new Date(inv.dueDate) < now && inv.status !== "DRAFT"
+  );
+  const overdueAmount = overdueInvoices.reduce((sum, inv) => sum + inv.total, 0);
+
+  return { totalRevenue, revenueThisMonth, revenueLastMonth, outstandingBalance, overdueAmount };
+}
+
 export async function getAnalytics(userId: string): Promise<AnalyticsData> {
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - THIRTY_DAYS_MS);
@@ -92,68 +133,16 @@ export async function getAnalytics(userId: string): Promise<AnalyticsData> {
   for (const currency of currencies) {
     const currencyInvoices = invoices.filter((inv) => inv.currency === currency);
     const paidInvoices = currencyInvoices.filter((inv) => inv.status === "PAID" || inv.paidAt);
-
-    const totalRevenue = paidInvoices.reduce((sum, inv) => sum + inv.total, 0);
-
-    const revenueThisMonth = paidInvoices
-      .filter((inv) => inv.paidAt && new Date(inv.paidAt) >= thirtyDaysAgo)
-      .reduce((sum, inv) => sum + inv.total, 0);
-
-    const revenueLastMonth = paidInvoices
-      .filter(
-        (inv) =>
-          inv.paidAt && new Date(inv.paidAt) >= sixtyDaysAgo && new Date(inv.paidAt) < thirtyDaysAgo
-      )
-      .reduce((sum, inv) => sum + inv.total, 0);
-
-    const outstandingInvoices = currencyInvoices.filter(
-      (inv) =>
-        !inv.paidAt &&
-        (inv.status === "SENT" || inv.status === "VIEWED" || inv.status === "OVERDUE")
-    );
-    const outstandingBalance = outstandingInvoices.reduce((sum, inv) => sum + inv.total, 0);
-
-    const overdueInvoices = currencyInvoices.filter(
-      (inv) => !inv.paidAt && new Date(inv.dueDate) < now && inv.status !== "DRAFT"
-    );
-    const overdueAmount = overdueInvoices.reduce((sum, inv) => sum + inv.total, 0);
-
+    const metrics = calculateMetricsForInvoices(currencyInvoices, now, thirtyDaysAgo, sixtyDaysAgo);
     const monthlyRevenue = calculateMonthlyRevenue(paidInvoices, now);
-
-    byCurrency[currency] = {
-      totalRevenue,
-      revenueThisMonth,
-      revenueLastMonth,
-      outstandingBalance,
-      overdueAmount,
-      monthlyRevenue,
-    };
+    byCurrency[currency] = { ...metrics, monthlyRevenue };
   }
 
   const allPaidInvoices = invoices.filter((inv) => inv.status === "PAID" || inv.paidAt);
-  const totalRevenue = allPaidInvoices.reduce((sum, inv) => sum + inv.total, 0);
-
-  const revenueThisMonth = allPaidInvoices
-    .filter((inv) => inv.paidAt && new Date(inv.paidAt) >= thirtyDaysAgo)
-    .reduce((sum, inv) => sum + inv.total, 0);
-
-  const revenueLastMonth = allPaidInvoices
-    .filter(
-      (inv) =>
-        inv.paidAt && new Date(inv.paidAt) >= sixtyDaysAgo && new Date(inv.paidAt) < thirtyDaysAgo
-    )
-    .reduce((sum, inv) => sum + inv.total, 0);
-
-  const allOutstandingInvoices = invoices.filter(
-    (inv) =>
-      !inv.paidAt && (inv.status === "SENT" || inv.status === "VIEWED" || inv.status === "OVERDUE")
-  );
-  const outstandingBalance = allOutstandingInvoices.reduce((sum, inv) => sum + inv.total, 0);
-
+  const globalMetrics = calculateMetricsForInvoices(invoices, now, thirtyDaysAgo, sixtyDaysAgo);
   const allOverdueInvoices = invoices.filter(
     (inv) => !inv.paidAt && new Date(inv.dueDate) < now && inv.status !== "DRAFT"
   );
-  const overdueAmount = allOverdueInvoices.reduce((sum, inv) => sum + inv.total, 0);
 
   const statusCounts = invoices.reduce(
     (acc, inv) => {
@@ -187,11 +176,7 @@ export async function getAnalytics(userId: string): Promise<AnalyticsData> {
   return {
     currencies,
     byCurrency,
-    totalRevenue,
-    revenueThisMonth,
-    revenueLastMonth,
-    outstandingBalance,
-    overdueAmount,
+    ...globalMetrics,
     totalInvoices: invoices.length,
     paidInvoices: allPaidInvoices.length,
     overdueInvoices: allOverdueInvoices.length,

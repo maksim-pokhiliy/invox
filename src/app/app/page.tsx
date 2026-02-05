@@ -287,70 +287,98 @@ export default function DashboardPage() {
                 View All
               </Button>
             </Box>
-            {isLoading ? (
-              <Skeleton variant="rounded" height={200} />
-            ) : analytics?.recentInvoices.length === 0 ? (
-              <Box sx={{ textAlign: "center", py: 4 }}>
-                <Typography color="text.secondary">No invoices yet</Typography>
-                <Button
-                  variant="outlined"
-                  sx={{ mt: 2 }}
-                  onClick={() => router.push("/app/invoices/new")}
-                >
-                  Create Your First Invoice
-                </Button>
-              </Box>
-            ) : (
-              <Box>
-                {analytics?.recentInvoices.map((invoice) => (
-                  <Box
-                    key={invoice.id}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      py: 1.5,
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                      cursor: "pointer",
-                      "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
-                      "&:last-child": { borderBottom: "none" },
-                      mx: -1,
-                      px: 1,
-                      borderRadius: 1,
-                    }}
-                    onClick={() => router.push(`/app/invoices/${invoice.id}`)}
-                  >
-                    <Box>
-                      <Typography variant="body2" fontWeight={500}>
-                        #{invoice.publicId}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {invoice.clientName} • {formatDateShort(invoice.createdAt)}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Typography variant="body2" fontWeight={600}>
-                        {formatCurrency(invoice.total, invoice.currency)}
-                      </Typography>
-                      <Chip
-                        size="small"
-                        label={invoice.status}
-                        sx={{
-                          bgcolor: alpha(STATUS_COLORS[invoice.status] || "#9ca3af", 0.1),
-                          color: STATUS_COLORS[invoice.status] || "#9ca3af",
-                          fontWeight: 600,
-                          fontSize: "0.7rem",
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
-            )}
+            <RecentInvoicesContent
+              isLoading={isLoading}
+              invoices={analytics?.recentInvoices}
+              onNavigate={(path) => router.push(path)}
+            />
           </Paper>
         </Grid>
       </Grid>
     </AppLayout>
+  );
+}
+
+interface RecentInvoice {
+  id: string;
+  publicId: string;
+  clientName: string;
+  total: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+}
+
+interface RecentInvoicesContentProps {
+  isLoading: boolean;
+  invoices: RecentInvoice[] | undefined;
+  onNavigate: (path: string) => void;
+}
+
+function RecentInvoicesContent({ isLoading, invoices, onNavigate }: RecentInvoicesContentProps) {
+  const theme = useTheme();
+
+  if (isLoading) {
+    return <Skeleton variant="rounded" height={200} />;
+  }
+
+  if (!invoices || invoices.length === 0) {
+    return (
+      <Box sx={{ textAlign: "center", py: 4 }}>
+        <Typography color="text.secondary">No invoices yet</Typography>
+        <Button variant="outlined" sx={{ mt: 2 }} onClick={() => onNavigate("/app/invoices/new")}>
+          Create Your First Invoice
+        </Button>
+      </Box>
+    );
+  }
+
+  return (
+    <Box>
+      {invoices.map((invoice) => (
+        <Box
+          key={invoice.id}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            py: 1.5,
+            borderBottom: "1px solid",
+            borderColor: "divider",
+            cursor: "pointer",
+            "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+            "&:last-child": { borderBottom: "none" },
+            mx: -1,
+            px: 1,
+            borderRadius: 1,
+          }}
+          onClick={() => onNavigate(`/app/invoices/${invoice.id}`)}
+        >
+          <Box>
+            <Typography variant="body2" fontWeight={500}>
+              #{invoice.publicId}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {invoice.clientName} • {formatDateShort(invoice.createdAt)}
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography variant="body2" fontWeight={600}>
+              {formatCurrency(invoice.total, invoice.currency)}
+            </Typography>
+            <Chip
+              size="small"
+              label={invoice.status}
+              sx={{
+                bgcolor: alpha(STATUS_COLORS[invoice.status] || "#9ca3af", 0.1),
+                color: STATUS_COLORS[invoice.status] || "#9ca3af",
+                fontWeight: 600,
+                fontSize: "0.7rem",
+              }}
+            />
+          </Box>
+        </Box>
+      ))}
+    </Box>
   );
 }

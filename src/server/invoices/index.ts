@@ -56,6 +56,62 @@ function computeOverdueStatus(invoice: {
   return invoice.status;
 }
 
+function buildBasicUpdateFields(data: UpdateInvoiceInput): Record<string, unknown> {
+  const updateData: Record<string, unknown> = {};
+  if (data.clientId) {
+    updateData.clientId = data.clientId;
+  }
+  if (data.currency) {
+    updateData.currency = data.currency;
+  }
+  if (data.dueDate) {
+    updateData.dueDate = data.dueDate;
+  }
+  if (data.notes !== undefined) {
+    updateData.notes = data.notes;
+  }
+  if (data.tags !== undefined) {
+    updateData.tags = data.tags;
+  }
+  if (data.taxRate !== undefined) {
+    updateData.taxRate = data.taxRate;
+  }
+  return updateData;
+}
+
+function buildDiscountFields(data: UpdateInvoiceInput): Record<string, unknown> {
+  if (data.discount === undefined) {
+    return {};
+  }
+  if (data.discount) {
+    return {
+      discountType: data.discount.type,
+      discountValue: data.discount.value,
+    };
+  }
+  return {
+    discountType: null,
+    discountValue: 0,
+    discountAmount: 0,
+  };
+}
+
+function resolveDiscount(
+  data: UpdateInvoiceInput,
+  invoice: { discountType: string | null; discountValue: number | null }
+): DiscountInput | null {
+  if (data.discount !== undefined) {
+    return data.discount;
+  }
+  if (invoice.discountType && invoice.discountValue !== null) {
+    return {
+      type: invoice.discountType as "PERCENTAGE" | "FIXED",
+      value: invoice.discountValue,
+    };
+  }
+  return null;
+}
+
 export async function getInvoices(userId: string) {
   const invoices = await prisma.invoice.findMany({
     where: { userId },
@@ -172,6 +228,31 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
   return invoice;
 }
 
+async function getItemsForCalculation(
+  id: string,
+  data: UpdateInvoiceInput
+): Promise<InvoiceItemInput[]> {
+  if (data.items) {
+    await prisma.invoiceItem.deleteMany({ where: { invoiceId: id } });
+    await prisma.invoiceItem.createMany({
+      data: data.items.map((item) => ({
+        invoiceId: id,
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        amount: item.quantity * item.unitPrice,
+      })),
+    });
+    return data.items;
+  }
+  const existingItems = await prisma.invoiceItem.findMany({ where: { invoiceId: id } });
+  return existingItems.map((item) => ({
+    description: item.description,
+    quantity: item.quantity,
+    unitPrice: item.unitPrice,
+  }));
+}
+
 export async function updateInvoice(id: string, userId: string, data: UpdateInvoiceInput) {
   const invoice = await prisma.invoice.findFirst({
     where: { id, userId, status: "DRAFT" },
@@ -181,96 +262,29 @@ export async function updateInvoice(id: string, userId: string, data: UpdateInvo
     return null;
   }
 
-  const updateData: Record<string, unknown> = {};
-
-  if (data.clientId) {
-    updateData.clientId = data.clientId;
-  }
-  if (data.currency) {
-    updateData.currency = data.currency;
-  }
-  if (data.dueDate) {
-    updateData.dueDate = data.dueDate;
-  }
-  if (data.notes !== undefined) {
-    updateData.notes = data.notes;
-  }
-  if (data.tags !== undefined) {
-    updateData.tags = data.tags;
-  }
-
-  if (data.discount !== undefined) {
-    if (data.discount) {
-      updateData.discountType = data.discount.type;
-      updateData.discountValue = data.discount.value;
-    } else {
-      updateData.discountType = null;
-      updateData.discountValue = 0;
-      updateData.discountAmount = 0;
-    }
-  }
-
-  if (data.taxRate !== undefined) {
-    updateData.taxRate = data.taxRate;
-  }
+  const updateData: Record<string, unknown> = {
+    ...buildBasicUpdateFields(data),
+    ...buildDiscountFields(data),
+  };
 
   const needsRecalc = data.items || data.discount !== undefined || data.taxRate !== undefined;
 
   if (needsRecalc) {
-    const discount =
-      data.discount !== undefined
-        ? data.discount
-        : invoice.discountType
-          ? { type: invoice.discountType, value: invoice.discountValue }
-          : null;
+    const discount = resolveDiscount(data, invoice);
     const taxRate = data.taxRate !== undefined ? data.taxRate : invoice.taxRate;
+    const itemsForCalc = await getItemsForCalculation(id, data);
+    const totals = calculateTotals(itemsForCalc, discount, taxRate);
 
-    let itemsForCalc: InvoiceItemInput[];
-    if (data.items) {
-      itemsForCalc = data.items;
-
-      await prisma.invoiceItem.deleteMany({
-        where: { invoiceId: id },
-      });
-
-      await prisma.invoiceItem.createMany({
-        data: data.items.map((item) => ({
-          invoiceId: id,
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          amount: item.quantity * item.unitPrice,
-        })),
-      });
-    } else {
-      const existingItems = await prisma.invoiceItem.findMany({
-        where: { invoiceId: id },
-      });
-      itemsForCalc = existingItems.map((item) => ({
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-      }));
-    }
-
-    const { subtotal, discountAmount, taxAmount, total } = calculateTotals(
-      itemsForCalc,
-      discount,
-      taxRate
-    );
-    updateData.subtotal = subtotal;
-    updateData.discountAmount = discountAmount;
-    updateData.taxAmount = taxAmount;
-    updateData.total = total;
+    updateData.subtotal = totals.subtotal;
+    updateData.discountAmount = totals.discountAmount;
+    updateData.taxAmount = totals.taxAmount;
+    updateData.total = totals.total;
   }
 
   return prisma.invoice.update({
     where: { id },
     data: updateData,
-    include: {
-      client: true,
-      items: true,
-    },
+    include: { client: true, items: true },
   });
 }
 
@@ -583,11 +597,20 @@ export async function deletePayment(paymentId: string, userId: string) {
     where: { id: paymentId },
   });
 
+  let newStatus: "PARTIALLY_PAID" | "VIEWED" | "SENT";
+  if (newPaidAmount > 0) {
+    newStatus = "PARTIALLY_PAID";
+  } else if (payment.invoice.viewedAt) {
+    newStatus = "VIEWED";
+  } else {
+    newStatus = "SENT";
+  }
+
   const updatedInvoice = await prisma.invoice.update({
     where: { id: payment.invoiceId },
     data: {
       paidAmount: newPaidAmount,
-      status: newPaidAmount > 0 ? "PARTIALLY_PAID" : payment.invoice.viewedAt ? "VIEWED" : "SENT",
+      status: newStatus,
     },
     include: {
       client: true,

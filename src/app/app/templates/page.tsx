@@ -39,7 +39,6 @@ import { formatCurrency, formatDateCompact } from "@app/lib/format";
 
 export default function TemplatesPage() {
   const router = useRouter();
-  const theme = useTheme();
   const toast = useToast();
   const { confirm, dialogProps } = useConfirmDialog();
 
@@ -141,107 +140,14 @@ export default function TemplatesPage() {
         </Alert>
       )}
 
-      {isLoading ? (
-        <Paper sx={{ p: 3, borderRadius: 3 }}>
-          <TableSkeleton rows={3} columns={5} />
-        </Paper>
-      ) : templates && templates.length > 0 ? (
-        <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
-          <TableContainer>
-            <Table>
-              <TableHead
-                sx={{
-                  bgcolor: alpha(theme.palette.primary.main, 0.04),
-                }}
-              >
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Items</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Est. Total</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Due Days</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Updated</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600 }}>
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {templates.map((template) => (
-                  <TableRow
-                    key={template.id}
-                    hover
-                    sx={{ cursor: "pointer" }}
-                    onClick={() => handleUseTemplate(template)}
-                  >
-                    <TableCell>
-                      <Box>
-                        <Typography fontWeight={600}>{template.name}</Typography>
-                        {template.description && (
-                          <Typography variant="caption" color="text.secondary">
-                            {template.description}
-                          </Typography>
-                        )}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={`${template.items.length} item${template.items.length !== 1 ? "s" : ""}`}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography fontWeight={500}>
-                        {formatCurrency(calculateEstimatedTotal(template), template.currency)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={`${template.dueDays} days`} size="small" variant="outlined" />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {formatDateCompact(template.updatedAt)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        size="small"
-                        onClick={(e) => handleMenuOpen(e, template.id)}
-                        aria-label="Template actions"
-                      >
-                        <MoreVertIcon fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      ) : (
-        <Paper
-          sx={{
-            p: 6,
-            textAlign: "center",
-            borderRadius: 3,
-            bgcolor: alpha(theme.palette.primary.main, 0.02),
-          }}
-        >
-          <DescriptionIcon sx={{ fontSize: 64, color: "text.disabled", mb: 2 }} />
-          <Typography variant="h6" gutterBottom>
-            No templates yet
-          </Typography>
-          <Typography color="text.secondary" sx={{ mb: 3 }}>
-            Create a template to quickly generate invoices with predefined items
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => router.push("/app/templates/new")}
-          >
-            Create Your First Template
-          </Button>
-        </Paper>
-      )}
+      <TemplatesContent
+        isLoading={isLoading}
+        templates={templates}
+        onUseTemplate={handleUseTemplate}
+        onMenuOpen={handleMenuOpen}
+        onCreateTemplate={() => router.push("/app/templates/new")}
+        calculateEstimatedTotal={calculateEstimatedTotal}
+      />
 
       {/* Actions Menu */}
       <Menu
@@ -272,5 +178,155 @@ export default function TemplatesPage() {
 
       <ConfirmDialog {...dialogProps} />
     </AppLayout>
+  );
+}
+
+interface TemplatesContentProps {
+  isLoading: boolean;
+  templates: Template[] | undefined;
+  onUseTemplate: (template: Template) => void;
+  onMenuOpen: (e: React.MouseEvent<HTMLElement>, id: string) => void;
+  onCreateTemplate: () => void;
+  calculateEstimatedTotal: (template: Template) => number;
+}
+
+function TemplatesContent({
+  isLoading,
+  templates,
+  onUseTemplate,
+  onMenuOpen,
+  onCreateTemplate,
+  calculateEstimatedTotal,
+}: TemplatesContentProps) {
+  const theme = useTheme();
+
+  if (isLoading) {
+    return (
+      <Paper sx={{ p: 3, borderRadius: 3 }}>
+        <TableSkeleton rows={3} columns={5} />
+      </Paper>
+    );
+  }
+
+  if (templates && templates.length > 0) {
+    return (
+      <TemplatesTable
+        templates={templates}
+        onUseTemplate={onUseTemplate}
+        onMenuOpen={onMenuOpen}
+        calculateEstimatedTotal={calculateEstimatedTotal}
+      />
+    );
+  }
+
+  return (
+    <Paper
+      sx={{
+        p: 6,
+        textAlign: "center",
+        borderRadius: 3,
+        bgcolor: alpha(theme.palette.primary.main, 0.02),
+      }}
+    >
+      <DescriptionIcon sx={{ fontSize: 64, color: "text.disabled", mb: 2 }} />
+      <Typography variant="h6" gutterBottom>
+        No templates yet
+      </Typography>
+      <Typography color="text.secondary" sx={{ mb: 3 }}>
+        Create a template to quickly generate invoices with predefined items
+      </Typography>
+      <Button variant="contained" startIcon={<AddIcon />} onClick={onCreateTemplate}>
+        Create Your First Template
+      </Button>
+    </Paper>
+  );
+}
+
+interface TemplatesTableProps {
+  templates: Template[];
+  onUseTemplate: (template: Template) => void;
+  onMenuOpen: (e: React.MouseEvent<HTMLElement>, id: string) => void;
+  calculateEstimatedTotal: (template: Template) => number;
+}
+
+function TemplatesTable({
+  templates,
+  onUseTemplate,
+  onMenuOpen,
+  calculateEstimatedTotal,
+}: TemplatesTableProps) {
+  const theme = useTheme();
+
+  return (
+    <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+      <TableContainer>
+        <Table>
+          <TableHead sx={{ bgcolor: alpha(theme.palette.primary.main, 0.04) }}>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Items</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Est. Total</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Due Days</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Updated</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Actions
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {templates.map((template) => (
+              <TableRow
+                key={template.id}
+                hover
+                sx={{ cursor: "pointer" }}
+                onClick={() => onUseTemplate(template)}
+              >
+                <TableCell>
+                  <Box>
+                    <Typography fontWeight={600}>{template.name}</Typography>
+                    {template.description && (
+                      <Typography variant="caption" color="text.secondary">
+                        {template.description}
+                      </Typography>
+                    )}
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={`${template.items.length} item${template.items.length !== 1 ? "s" : ""}`}
+                    size="small"
+                  />
+                </TableCell>
+                <TableCell>
+                  <Typography fontWeight={500}>
+                    {formatCurrency(calculateEstimatedTotal(template), template.currency)}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Chip label={`${template.dueDays} days`} size="small" variant="outlined" />
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" color="text.secondary">
+                    {formatDateCompact(template.updatedAt)}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMenuOpen(e, template.id);
+                    }}
+                    aria-label="Template actions"
+                  >
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
   );
 }

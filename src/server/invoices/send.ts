@@ -50,11 +50,14 @@ export async function sendInvoice(invoiceId: string, userId: string) {
     invoice.user.senderProfile?.displayName ||
     invoice.user.email;
 
+  const senderEmail = invoice.user.senderProfile?.emailFrom || invoice.user.email;
+
   try {
     await sendInvoiceEmail({
       clientName: invoice.client.name,
       clientEmail: invoice.client.email,
       senderName,
+      senderEmail,
       publicId: invoice.publicId,
       total: invoice.total,
       currency: invoice.currency,
