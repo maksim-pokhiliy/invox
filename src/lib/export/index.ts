@@ -5,3 +5,5 @@ export {
   exportInvoicesToCSV,
   exportClientsToCSV,
 } from "./csv";
+
+export { generateInvoicePdf } from "./pdf";

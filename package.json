@@ -33,6 +33,8 @@
     "@tanstack/react-query": "^5.90.20",
     "bcryptjs": "^3.0.3",
     "dayjs": "^1.11.19",
+    "jspdf": "^4.1.0",
+    "jspdf-autotable": "^5.0.7",
     "nanoid": "^5.1.6",
     "next": "16.1.6",
     "next-auth": "5.0.0-beta.30",

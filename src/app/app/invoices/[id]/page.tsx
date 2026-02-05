@@ -44,6 +44,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import CreateIcon from "@mui/icons-material/Create";
 import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { AppLayout } from "@app/components/layout/AppLayout";
 import { Breadcrumbs } from "@app/components/navigation/Breadcrumbs";
 import { PageLoader, Spinner } from "@app/components/feedback/Loading";
@@ -57,6 +58,7 @@ import {
   useDuplicateInvoice,
   ApiError,
 } from "@app/lib/api";
+import { generateInvoicePdf } from "@app/lib/export";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -299,6 +301,19 @@ export default function InvoiceDetailPage() {
               Mark Paid
             </Button>
           )}
+          <Button
+            variant="outlined"
+            startIcon={<PictureAsPdfIcon />}
+            onClick={() => {
+              generateInvoicePdf({
+                ...invoice,
+                sender: null, // TODO: Add sender profile to invoice response
+              });
+              toast.success("PDF downloaded!");
+            }}
+          >
+            Download PDF
+          </Button>
           <Button
             variant="outlined"
             startIcon={duplicateMutation.isPending ? <Spinner size={16} /> : <ContentCopyIcon />}
