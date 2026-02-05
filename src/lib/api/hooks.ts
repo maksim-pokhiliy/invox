@@ -10,11 +10,15 @@ import {
   templatesApi,
   remindersApi,
   stripeApi,
+  recurringApi,
   type RecordPaymentInput,
   type CreateTemplateInput,
   type UpdateTemplateInput,
   type Template,
   type ReminderSettings,
+  type RecurringInvoice,
+  type CreateRecurringInput,
+  type UpdateRecurringInput,
 } from "./client";
 import type { CreateClientInput, UpdateClientInput } from "@app/shared/schemas/client";
 import type { CreateInvoiceInput, UpdateInvoiceInput } from "@app/shared/schemas/invoice";
@@ -32,6 +36,8 @@ export const queryKeys = {
   templates: ["templates"] as const,
   template: (id: string) => ["template", id] as const,
   reminderSettings: ["reminder-settings"] as const,
+  recurring: ["recurring"] as const,
+  recurringItem: (id: string) => ["recurring", id] as const,
 };
 
 // Stale time constants
@@ -490,6 +496,86 @@ export function useDisconnectStripe() {
     mutationFn: () => stripeApi.disconnect(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.senderProfile });
+    },
+  });
+}
+
+// Recurring invoice hooks
+export function useRecurringInvoices() {
+  return useQuery({
+    queryKey: queryKeys.recurring,
+    queryFn: recurringApi.list,
+    staleTime: STALE_TIME.medium,
+  });
+}
+
+export function useRecurringInvoice(id: string) {
+  return useQuery({
+    queryKey: queryKeys.recurringItem(id),
+    queryFn: () => recurringApi.get(id),
+    enabled: !!id,
+    staleTime: STALE_TIME.medium,
+  });
+}
+
+export function useCreateRecurring() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateRecurringInput) => recurringApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurring });
+    },
+  });
+}
+
+export function useUpdateRecurring() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateRecurringInput }) =>
+      recurringApi.update(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurringItem(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurring });
+    },
+  });
+}
+
+export function useDeleteRecurring() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => recurringApi.delete(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.recurring });
+      const previous = queryClient.getQueryData<RecurringInvoice[]>(queryKeys.recurring);
+      queryClient.setQueryData<RecurringInvoice[]>(queryKeys.recurring, (old) =>
+        old?.filter((r) => r.id !== id)
+      );
+      return { previous };
+    },
+    onError: (_, __, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.recurring, context.previous);
+      }
+    },
+    onSettled: (_, __, id) => {
+      queryClient.removeQueries({ queryKey: queryKeys.recurringItem(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurring });
+    },
+  });
+}
+
+export function useGenerateFromRecurring() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => recurringApi.generate(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurringItem(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurring });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoices });
     },
   });
 }

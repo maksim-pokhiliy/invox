@@ -26,6 +26,7 @@ model User {
   invoices          Invoice[]
   invoiceTemplates  InvoiceTemplate[]
   followUpRules     FollowUpRule[]
+  recurringInvoices RecurringInvoice[]
 }
 
 model Account {
@@ -99,8 +100,9 @@ model Client {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  invoices Invoice[]
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices          Invoice[]
+  recurringInvoices RecurringInvoice[]
 
   @@index([userId])
 }
@@ -282,4 +284,63 @@ model FollowUpJob {
 
   @@index([invoiceId])
   @@index([status, scheduledFor])
+}
+
+// ============================================================
+// Recurring Invoices
+// ============================================================
+
+enum RecurringFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum RecurringStatus {
+  ACTIVE
+  PAUSED
+  CANCELED
+}
+
+model RecurringInvoice {
+  id            String             @id @default(cuid())
+  userId        String
+  clientId      String
+  name          String             // Name/description for this recurring invoice
+  frequency     RecurringFrequency @default(MONTHLY)
+  status        RecurringStatus    @default(ACTIVE)
+  currency      String             @default("USD")
+  discountType  DiscountType?
+  discountValue Int                @default(0)
+  taxRate       Int                @default(0)
+  notes         String?            @db.Text
+  dueDays       Int                @default(30) // Days until due from invoice creation
+  autoSend      Boolean            @default(false) // Auto-send invoice when created
+  nextRunAt     DateTime           // Next scheduled run date
+  lastRunAt     DateTime?          // Last time an invoice was generated
+  endDate       DateTime?          // Optional end date for the schedule
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  user   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client                  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items  RecurringInvoiceItem[]
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([status, nextRunAt])
+}
+
+model RecurringInvoiceItem {
+  id                 String @id @default(cuid())
+  recurringInvoiceId String
+  description        String
+  quantity           Int
+  unitPrice          Int
+
+  recurringInvoice RecurringInvoice @relation(fields: [recurringInvoiceId], references: [id], onDelete: Cascade)
+
+  @@index([recurringInvoiceId])
 }
