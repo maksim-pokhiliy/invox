@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// Hex color regex
+const hexColorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+
 // Form schema for React Hook Form
 export const senderProfileFormSchema = z
   .object({
@@ -15,6 +18,13 @@ export const senderProfileFormSchema = z
     path: ["companyName"],
   });
 
+// Branding schema
+export const brandingSchema = z.object({
+  logoUrl: z.string().url().optional().or(z.literal("")),
+  primaryColor: z.string().regex(hexColorRegex, "Invalid hex color").optional(),
+  accentColor: z.string().regex(hexColorRegex, "Invalid hex color").optional(),
+});
+
 // API schema
 export const senderProfileSchema = z.object({
   companyName: z.string().optional(),
@@ -23,6 +33,9 @@ export const senderProfileSchema = z.object({
   address: z.string().optional(),
   taxId: z.string().optional(),
   defaultCurrency: z.string().default("USD"),
+  logoUrl: z.string().optional(),
+  primaryColor: z.string().optional(),
+  accentColor: z.string().optional(),
 });
 
 export const createSenderProfileSchema = senderProfileSchema.refine(

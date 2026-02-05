@@ -55,9 +55,16 @@ interface Invoice {
   };
 }
 
+interface Branding {
+  logoUrl: string | null;
+  primaryColor: string;
+  accentColor: string;
+}
+
 interface Props {
   publicId: string;
   invoice: Invoice;
+  branding: Branding;
   hasStripe: boolean;
   justPaid: boolean;
   wasCanceled: boolean;
@@ -92,11 +99,14 @@ const statusConfig: Record<
 export default function PublicInvoiceView({
   publicId,
   invoice,
+  branding,
   hasStripe,
   justPaid,
   wasCanceled,
 }: Props) {
   const theme = useTheme();
+  const brandPrimary = branding.primaryColor;
+  const brandAccent = branding.accentColor;
   const [viewTracked, setViewTracked] = React.useState(false);
   const [isPayLoading, setIsPayLoading] = React.useState(false);
 
@@ -161,19 +171,37 @@ export default function PublicInvoiceView({
             "@media print": { display: "none" },
           }}
         >
-          <ReceiptLongIcon sx={{ color: "primary.main", fontSize: 28 }} />
-          <Typography
-            variant="h5"
-            fontWeight={700}
-            sx={{
-              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Invox
-          </Typography>
+          {branding.logoUrl ? (
+            <Box
+              component="img"
+              src={branding.logoUrl}
+              alt="Company logo"
+              sx={{
+                maxWidth: 180,
+                maxHeight: 60,
+                objectFit: "contain",
+              }}
+              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            <>
+              <ReceiptLongIcon sx={{ color: brandPrimary, fontSize: 28 }} />
+              <Typography
+                variant="h5"
+                fontWeight={700}
+                sx={{
+                  background: `linear-gradient(135deg, ${brandPrimary} 0%, ${brandAccent} 100%)`,
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                {invoice.sender.name}
+              </Typography>
+            </>
+          )}
         </Box>
 
         {justPaid && (
@@ -235,7 +263,7 @@ export default function PublicInvoiceView({
               mb: 4,
               p: 3,
               borderRadius: 2,
-              bgcolor: alpha(theme.palette.primary.main, 0.02),
+              bgcolor: alpha(brandPrimary, 0.04),
             }}
           >
             <Box>
@@ -359,7 +387,7 @@ export default function PublicInvoiceView({
                 <Typography variant="h6" fontWeight={600}>
                   Total Due
                 </Typography>
-                <Typography variant="h5" fontWeight={700} color="primary.main">
+                <Typography variant="h5" fontWeight={700} sx={{ color: brandPrimary }}>
                   {formatCurrency(invoice.total, invoice.currency)}
                 </Typography>
               </Box>
@@ -376,7 +404,20 @@ export default function PublicInvoiceView({
               "@media print": { display: "none" },
             }}
           >
-            <Button variant="outlined" startIcon={<PrintIcon />} onClick={handlePrint} size="large">
+            <Button
+              variant="outlined"
+              startIcon={<PrintIcon />}
+              onClick={handlePrint}
+              size="large"
+              sx={{
+                color: brandAccent,
+                borderColor: brandAccent,
+                "&:hover": {
+                  borderColor: brandAccent,
+                  bgcolor: alpha(brandAccent, 0.04),
+                },
+              }}
+            >
               Print / Save PDF
             </Button>
 
@@ -387,6 +428,10 @@ export default function PublicInvoiceView({
                 onClick={handlePay}
                 disabled={isPayLoading}
                 size="large"
+                sx={{
+                  bgcolor: brandPrimary,
+                  "&:hover": { bgcolor: brandPrimary, filter: "brightness(0.9)" },
+                }}
               >
                 Pay Now
               </Button>

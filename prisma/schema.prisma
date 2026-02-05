@@ -81,6 +81,10 @@ model SenderProfile {
   taxId           String?
   defaultCurrency String   @default("USD")
   stripeAccountId String?
+  // Branding customization
+  logoUrl         String?
+  primaryColor    String?  @default("#1976d2") // MUI default primary
+  accentColor     String?  @default("#9c27b0") // MUI default secondary
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

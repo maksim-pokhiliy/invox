@@ -17,14 +17,19 @@ export default async function PublicInvoicePage({ params, searchParams }: Props)
     notFound();
   }
 
-  const senderName =
-    invoice.user.senderProfile?.companyName ||
-    invoice.user.senderProfile?.displayName ||
-    invoice.user.email;
+  const senderProfile = invoice.user.senderProfile;
+  const senderName = senderProfile?.companyName || senderProfile?.displayName || invoice.user.email;
 
-  const senderAddress = invoice.user.senderProfile?.address || "";
-  const senderTaxId = invoice.user.senderProfile?.taxId || "";
-  const hasStripe = !!invoice.user.senderProfile?.stripeAccountId;
+  const senderAddress = senderProfile?.address || "";
+  const senderTaxId = senderProfile?.taxId || "";
+  const hasStripe = !!senderProfile?.stripeAccountId;
+
+  // Branding
+  const branding = {
+    logoUrl: senderProfile?.logoUrl || null,
+    primaryColor: senderProfile?.primaryColor || "#1976d2",
+    accentColor: senderProfile?.accentColor || "#9c27b0",
+  };
 
   return (
     <PublicInvoiceView
@@ -56,6 +61,7 @@ export default async function PublicInvoicePage({ params, searchParams }: Props)
           taxId: senderTaxId,
         },
       }}
+      branding={branding}
       hasStripe={hasStripe}
       justPaid={paid === "1"}
       wasCanceled={canceled === "1"}

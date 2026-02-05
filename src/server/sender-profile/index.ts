@@ -17,6 +17,9 @@ export async function createSenderProfile(userId: string, data: SenderProfileInp
       address: data.address || null,
       taxId: data.taxId || null,
       defaultCurrency: data.defaultCurrency || "USD",
+      logoUrl: data.logoUrl || null,
+      primaryColor: data.primaryColor || null,
+      accentColor: data.accentColor || null,
     },
   });
 }
@@ -31,6 +34,9 @@ export async function updateSenderProfile(userId: string, data: SenderProfileInp
       address: data.address || null,
       taxId: data.taxId || null,
       defaultCurrency: data.defaultCurrency,
+      logoUrl: data.logoUrl || null,
+      primaryColor: data.primaryColor || null,
+      accentColor: data.accentColor || null,
     },
   });
 }
@@ -46,6 +52,9 @@ export async function upsertSenderProfile(userId: string, data: SenderProfileInp
       address: data.address || null,
       taxId: data.taxId || null,
       defaultCurrency: data.defaultCurrency || "USD",
+      logoUrl: data.logoUrl || null,
+      primaryColor: data.primaryColor || null,
+      accentColor: data.accentColor || null,
     },
     update: {
       companyName: data.companyName || null,
@@ -54,6 +63,9 @@ export async function upsertSenderProfile(userId: string, data: SenderProfileInp
       address: data.address || null,
       taxId: data.taxId || null,
       defaultCurrency: data.defaultCurrency,
+      logoUrl: data.logoUrl || null,
+      primaryColor: data.primaryColor || null,
+      accentColor: data.accentColor || null,
     },
   });
 }

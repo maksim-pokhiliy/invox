@@ -128,6 +128,9 @@ export const senderProfileResponseSchema = z.object({
   taxId: z.string().nullable(),
   defaultCurrency: z.string(),
   stripeAccountId: z.string().nullable(),
+  logoUrl: z.string().nullable(),
+  primaryColor: z.string().nullable(),
+  accentColor: z.string().nullable(),
 });
 
 export type SenderProfile = z.infer<typeof senderProfileResponseSchema>;
