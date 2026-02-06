@@ -491,7 +491,6 @@ function EmptyClientsState({ onAddClient }: { onAddClient: () => void }) {
       icon={<PeopleIcon sx={{ fontSize: 40, color: "primary.main" }} />}
       title="No clients yet"
       description="Add your first client to start creating invoices. Clients help you organize your billing and keep track of who you're working with."
-      dashed
       action={
         <Button variant="contained" size="large" startIcon={<AddIcon />} onClick={onAddClient}>
           Add Your First Client

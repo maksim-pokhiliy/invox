@@ -8,10 +8,9 @@ interface EmptyStateProps {
   title: string;
   description: string;
   action?: React.ReactNode;
-  dashed?: boolean;
 }
 
-export function EmptyState({ icon, title, description, action, dashed = false }: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   const theme = useTheme();
 
   return (
@@ -21,9 +20,6 @@ export function EmptyState({ icon, title, description, action, dashed = false }:
         textAlign: "center",
         borderRadius: 3,
         bgcolor: alpha(theme.palette.primary.main, 0.02),
-        ...(dashed && {
-          border: `2px dashed ${alpha(theme.palette.primary.main, 0.2)}`,
-        }),
       }}
     >
       <Box

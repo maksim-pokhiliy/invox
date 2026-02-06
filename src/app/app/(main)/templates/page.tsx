@@ -221,7 +221,6 @@ function TemplatesContent({
       icon={<DescriptionIcon sx={{ fontSize: 40, color: "primary.main" }} />}
       title="No templates yet"
       description="Create a template to quickly generate invoices with predefined items"
-      dashed
       action={
         <Button variant="contained" size="large" startIcon={<AddIcon />} onClick={onCreateTemplate}>
           Create Your First Template

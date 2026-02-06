@@ -341,7 +341,6 @@ function RecurringContent({
       icon={<RepeatIcon sx={{ fontSize: 40, color: "primary.main" }} />}
       title="No recurring invoices yet"
       description="Set up automatic invoice generation for regular clients"
-      dashed
       action={
         <Button
           variant="contained"

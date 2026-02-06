@@ -39,7 +39,6 @@ export function ConnectionList() {
         icon={<AccountBalanceIcon sx={{ fontSize: 40, color: "primary.main" }} />}
         title="No banks connected"
         description="Connect your bank account to automatically detect incoming payments and match them to invoices."
-        dashed
       />
     );
   }
