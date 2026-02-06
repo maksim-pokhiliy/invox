@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -12,7 +13,6 @@ import {
   Typography,
   Paper,
   Link as MuiLink,
-  Alert,
   alpha,
   useTheme,
   InputAdornment,
@@ -26,6 +26,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Logo } from "@app/shared/ui/logo";
 import { Spinner } from "@app/shared/ui/loading";
+import { useToast } from "@app/shared/ui/toast";
 import { signUpSchema, SignUpInput } from "@app/shared/schemas";
 
 const features = [
@@ -38,7 +39,7 @@ const features = [
 export default function SignUpPage() {
   const router = useRouter();
   const theme = useTheme();
-  const [error, setError] = React.useState<string | null>(null);
+  const toast = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
 
@@ -52,7 +53,6 @@ export default function SignUpPage() {
 
   const onSubmit = async (data: SignUpInput) => {
     setIsLoading(true);
-    setError(null);
 
     try {
       const response = await fetch("/api/auth/sign-up", {
@@ -64,13 +64,27 @@ export default function SignUpPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error?.message || "Failed to create account");
+        toast.error(result.error?.message || "Failed to create account");
         return;
       }
 
-      router.push("/auth/sign-in?registered=true");
+      const signInResult = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (signInResult?.error) {
+        toast.success("Account created! Please sign in.");
+        router.push("/auth/sign-in");
+        return;
+      }
+
+      toast.success("Welcome to Invox!");
+      router.push("/app");
+      router.refresh();
     } catch {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -89,13 +103,11 @@ export default function SignUpPage() {
     >
       <Container maxWidth="sm">
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          {/* Logo above form */}
           <Box sx={{ mb: 4 }}>
             <Logo size="large" />
           </Box>
 
           <Paper sx={{ p: 5, width: "100%", borderRadius: 3 }}>
-            {/* Title */}
             <Box sx={{ textAlign: "center", mb: 4 }}>
               <Typography variant="h5" fontWeight={700} gutterBottom>
                 Create your account
@@ -105,7 +117,6 @@ export default function SignUpPage() {
               </Typography>
             </Box>
 
-            {/* Features */}
             <Box
               sx={{
                 mb: 4,
@@ -126,12 +137,6 @@ export default function SignUpPage() {
                 </Box>
               ))}
             </Box>
-
-            {error && (
-              <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-                {error}
-              </Alert>
-            )}
 
             <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
               <TextField
@@ -209,7 +214,6 @@ export default function SignUpPage() {
             </Box>
           </Paper>
 
-          {/* Footer */}
           <Typography variant="caption" color="text.secondary" sx={{ mt: 4 }}>
             &copy; {new Date().getFullYear()} Invox
           </Typography>

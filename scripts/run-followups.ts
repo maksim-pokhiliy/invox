@@ -1,16 +1,5 @@
-/**
- * Follow-up Script Runner
- *
- * This script processes pending follow-up jobs and sends reminder emails.
- *
- * Run with: pnpm followups:run
- */
-
 import { prisma } from "../src/server/db";
-import {
-  getPendingFollowUpJobs,
-  markFollowUpJobSent,
-} from "../src/server/followups";
+import { getPendingFollowUpJobs, markFollowUpJobSent } from "../src/server/followups";
 import { sendReminderEmail } from "../src/server/email";
 import { logInvoiceEvent } from "../src/server/invoices";
 
@@ -38,8 +27,7 @@ async function main() {
       invoice.user.senderProfile?.displayName ||
       invoice.user.email;
 
-    const senderEmail =
-      invoice.user.senderProfile?.emailFrom || invoice.user.email;
+    const senderEmail = invoice.user.senderProfile?.emailFrom || invoice.user.email;
 
     const isOverdue = invoice.dueDate < new Date();
 

@@ -13,7 +13,6 @@ import {
   Typography,
   Paper,
   Link as MuiLink,
-  Alert,
   InputAdornment,
   IconButton,
 } from "@mui/material";
@@ -24,14 +23,14 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Logo } from "@app/shared/ui/logo";
 import { Spinner } from "@app/shared/ui/loading";
+import { useToast } from "@app/shared/ui/toast";
 import { signInSchema, SignInInput } from "@app/shared/schemas";
 
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const toast = useToast();
   const callbackUrl = searchParams.get("callbackUrl") || "/app";
-  const registered = searchParams.get("registered") === "true";
-  const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
 
@@ -45,7 +44,6 @@ export default function SignInPage() {
 
   const onSubmit = async (data: SignInInput) => {
     setIsLoading(true);
-    setError(null);
 
     try {
       const result = await signIn("credentials", {
@@ -55,14 +53,15 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        toast.error("Invalid email or password");
         return;
       }
 
+      toast.success("Welcome back!");
       router.push(callbackUrl);
       router.refresh();
     } catch {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -81,13 +80,11 @@ export default function SignInPage() {
     >
       <Container maxWidth="sm">
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          {/* Logo above form */}
           <Box sx={{ mb: 4 }}>
             <Logo size="large" />
           </Box>
 
           <Paper sx={{ p: 5, width: "100%", borderRadius: 3 }}>
-            {/* Title */}
             <Box sx={{ textAlign: "center", mb: 4 }}>
               <Typography variant="h5" fontWeight={700} gutterBottom>
                 Welcome back
@@ -96,18 +93,6 @@ export default function SignInPage() {
                 Sign in to your account
               </Typography>
             </Box>
-
-            {registered && (
-              <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
-                Account created successfully! Please sign in.
-              </Alert>
-            )}
-
-            {error && (
-              <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-                {error}
-              </Alert>
-            )}
 
             <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
               <TextField
@@ -185,7 +170,6 @@ export default function SignInPage() {
             </Box>
           </Paper>
 
-          {/* Footer */}
           <Typography variant="caption" color="text.secondary" sx={{ mt: 4 }}>
             &copy; {new Date().getFullYear()} Invox
           </Typography>

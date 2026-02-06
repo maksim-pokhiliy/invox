@@ -8,7 +8,6 @@ import {
   Typography,
   Grid,
   Chip,
-  Skeleton,
   Alert,
   Button,
   alpha,
@@ -23,7 +22,9 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import WarningIcon from "@mui/icons-material/Warning";
 import PeopleIcon from "@mui/icons-material/People";
 import AddIcon from "@mui/icons-material/Add";
+import { EmptyState } from "@app/shared/ui/empty-state";
 import { AppLayout } from "@app/shared/layout/app-layout";
+import { StatSkeleton, CardSkeleton } from "@app/shared/ui/loading";
 import { MetricCard } from "@app/shared/ui/metric-card";
 import { useAnalytics } from "@app/features/dashboard";
 import { formatCurrency, formatCurrencyCompact, formatDateShort } from "@app/shared/lib/format";
@@ -117,7 +118,7 @@ export default function DashboardPage() {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           {isLoading ? (
-            <Skeleton variant="rounded" height={160} />
+            <StatSkeleton />
           ) : (
             <MetricCard
               title="Total Revenue"
@@ -129,7 +130,7 @@ export default function DashboardPage() {
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           {isLoading ? (
-            <Skeleton variant="rounded" height={160} />
+            <StatSkeleton />
           ) : (
             <MetricCard
               title="This Month"
@@ -143,7 +144,7 @@ export default function DashboardPage() {
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           {isLoading ? (
-            <Skeleton variant="rounded" height={160} />
+            <StatSkeleton />
           ) : (
             <MetricCard
               title="Outstanding"
@@ -155,7 +156,7 @@ export default function DashboardPage() {
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           {isLoading ? (
-            <Skeleton variant="rounded" height={160} />
+            <StatSkeleton />
           ) : (
             <MetricCard
               title="Overdue"
@@ -174,7 +175,7 @@ export default function DashboardPage() {
               Revenue (Last 6 Months){hasMultipleCurrencies && ` - ${displayCurrency}`}
             </Typography>
             {isLoading ? (
-              <Skeleton variant="rounded" height={320} />
+              <CardSkeleton />
             ) : (
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={monthlyRevenue}>
@@ -216,7 +217,7 @@ export default function DashboardPage() {
               Invoice Status
             </Typography>
             {isLoading ? (
-              <Skeleton variant="rounded" height={320} />
+              <CardSkeleton />
             ) : (
               <Box sx={{ mt: 2 }}>
                 {Object.entries(analytics?.statusCounts || {}).map(([status, count]) => (
@@ -319,17 +320,21 @@ function RecentInvoicesContent({ isLoading, invoices, onNavigate }: RecentInvoic
   const theme = useTheme();
 
   if (isLoading) {
-    return <Skeleton variant="rounded" height={200} />;
+    return <CardSkeleton />;
   }
 
   if (!invoices || invoices.length === 0) {
     return (
-      <Box sx={{ textAlign: "center", py: 4 }}>
-        <Typography color="text.secondary">No invoices yet</Typography>
-        <Button variant="outlined" sx={{ mt: 2 }} onClick={() => onNavigate("/app/invoices/new")}>
-          Create Your First Invoice
-        </Button>
-      </Box>
+      <EmptyState
+        icon={<ReceiptLongIcon sx={{ fontSize: 40, color: "primary.main" }} />}
+        title="No invoices yet"
+        description="Create your first invoice to see activity here"
+        action={
+          <Button variant="contained" onClick={() => onNavigate("/app/invoices/new")}>
+            Create Your First Invoice
+          </Button>
+        }
+      />
     );
   }
 

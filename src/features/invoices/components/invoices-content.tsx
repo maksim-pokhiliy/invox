@@ -3,7 +3,8 @@
 import * as React from "react";
 import { Paper } from "@mui/material";
 import { TableSkeleton } from "@app/shared/ui/loading";
-import { NoInvoicesFound, EmptyInvoicesState } from "./empty-states";
+import { NoResults } from "@app/shared/ui/empty-state";
+import { EmptyInvoicesState } from "./empty-states";
 import { InvoicesTable } from "./table";
 import type { InvoiceData } from "./invoice-row";
 
@@ -93,7 +94,7 @@ export function InvoicesContent({
   }
 
   if (invoices && invoices.length > 0 && filteredInvoices.length === 0) {
-    return <NoInvoicesFound onClearFilters={onClearFilters} />;
+    return <NoResults entity="invoices" onClear={onClearFilters} />;
   }
 
   return <EmptyInvoicesState onCreateInvoice={onCreateInvoice} />;

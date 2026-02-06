@@ -12,6 +12,8 @@ export const queryKeys = {
   reminderSettings: ["reminder-settings"] as const,
   recurring: ["recurring"] as const,
   recurringItem: (id: string) => ["recurring", id] as const,
+  bankConnections: ["bank-connections"] as const,
+  bankTransactions: ["bank-transactions"] as const,
 };
 
 export const STALE_TIME = {

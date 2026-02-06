@@ -12,12 +12,13 @@ datasource db {
 // ============================================================
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  emailVerified DateTime?
-  passwordHash  String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  emailVerified      DateTime?
+  passwordHash       String
+  saltEdgeCustomerId String?   @unique
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   accounts          Account[]
   sessions          Session[]
@@ -27,6 +28,7 @@ model User {
   invoiceTemplates  InvoiceTemplate[]
   followUpRules     FollowUpRule[]
   recurringInvoices RecurringInvoice[]
+  bankConnections   BankConnection[]
 }
 
 model Account {
@@ -152,12 +154,15 @@ model Invoice {
   createdAt               DateTime       @default(now())
   updatedAt               DateTime       @updatedAt
 
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client       Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  items        InvoiceItem[]
-  events       InvoiceEvent[]
-  payments     Payment[]
-  followUpJobs FollowUpJob[]
+  paymentReference    String?        @unique
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client           Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items            InvoiceItem[]
+  events           InvoiceEvent[]
+  payments         Payment[]
+  followUpJobs     FollowUpJob[]
+  bankTransactions BankTransaction[]
 
   @@index([userId])
   @@index([clientId])
@@ -342,4 +347,70 @@ model RecurringInvoiceItem {
   recurringInvoice RecurringInvoice @relation(fields: [recurringInvoiceId], references: [id], onDelete: Cascade)
 
   @@index([recurringInvoiceId])
+}
+
+// ============================================================
+// Banking Integration (Salt Edge)
+// ============================================================
+
+enum BankTransactionStatus {
+  PENDING
+  AUTO_MATCHED
+  CONFIRMED
+  IGNORED
+}
+
+model BankConnection {
+  id                   String    @id @default(cuid())
+  userId               String
+  saltEdgeConnectionId String    @unique
+  provider             String
+  providerName         String
+  country              String
+  status               String    @default("active")
+  lastSyncAt           DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accounts BankAccount[]
+
+  @@index([userId])
+}
+
+model BankAccount {
+  id                String   @id @default(cuid())
+  connectionId      String
+  saltEdgeAccountId String   @unique
+  name              String
+  nature            String
+  balance           Int
+  currencyCode      String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  connection   BankConnection  @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  transactions BankTransaction[]
+
+  @@index([connectionId])
+}
+
+model BankTransaction {
+  id               String                @id @default(cuid())
+  accountId        String
+  saltEdgeId       String                @unique
+  amount           Int
+  currencyCode     String
+  description      String
+  madeOn           DateTime
+  status           BankTransactionStatus @default(PENDING)
+  matchedInvoiceId String?
+  matchConfidence  Float?
+  createdAt        DateTime              @default(now())
+
+  account        BankAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  matchedInvoice Invoice?    @relation(fields: [matchedInvoiceId], references: [id])
+
+  @@index([accountId])
+  @@index([matchedInvoiceId])
 }

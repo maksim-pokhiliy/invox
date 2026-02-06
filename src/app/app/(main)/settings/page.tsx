@@ -9,7 +9,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import BrushIcon from "@mui/icons-material/Brush";
 import { AppLayout } from "@app/shared/layout/app-layout";
 import { Breadcrumbs } from "@app/shared/ui/breadcrumbs";
-import { PageLoader } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/loading";
 import { useSenderProfile, useReminderSettings } from "@app/features/settings";
 import {
   BusinessProfileTab,
@@ -51,13 +51,7 @@ export default function SettingsPage() {
   const { data: profile, isLoading } = useSenderProfile();
   const { data: reminderSettings, isLoading: reminderLoading } = useReminderSettings();
 
-  if (isLoading || reminderLoading) {
-    return (
-      <AppLayout>
-        <PageLoader message="Loading settings..." />
-      </AppLayout>
-    );
-  }
+  const contentLoading = isLoading || reminderLoading;
 
   return (
     <AppLayout>
@@ -104,21 +98,27 @@ export default function SettingsPage() {
         </Tabs>
 
         <Box sx={{ p: 4 }}>
-          <TabPanel value={tabValue} index={0}>
-            <BusinessProfileTab profile={profile} />
-          </TabPanel>
+          {contentLoading ? (
+            <CardSkeleton />
+          ) : (
+            <>
+              <TabPanel value={tabValue} index={0}>
+                <BusinessProfileTab profile={profile} />
+              </TabPanel>
 
-          <TabPanel value={tabValue} index={1}>
-            <PaymentsTab />
-          </TabPanel>
+              <TabPanel value={tabValue} index={1}>
+                <PaymentsTab />
+              </TabPanel>
 
-          <TabPanel value={tabValue} index={2}>
-            <RemindersTab settings={reminderSettings} />
-          </TabPanel>
+              <TabPanel value={tabValue} index={2}>
+                <RemindersTab settings={reminderSettings} />
+              </TabPanel>
 
-          <TabPanel value={tabValue} index={3}>
-            <BrandingTab profile={profile} />
-          </TabPanel>
+              <TabPanel value={tabValue} index={3}>
+                <BrandingTab profile={profile} />
+              </TabPanel>
+            </>
+          )}
         </Box>
       </Paper>
     </AppLayout>

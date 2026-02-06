@@ -48,6 +48,16 @@ export const VALIDATION = {
   STATE_LENGTH: 16,
 } as const;
 
+export const BANKING = {
+  SALT_EDGE_BASE_URL: "https://www.saltedge.com/api/v6",
+  SYNC_INTERVAL_MINUTES: 30,
+  MATCH_AUTO_THRESHOLD: 0.9,
+  MATCH_SUGGEST_THRESHOLD: 0.5,
+  PAYMENT_REFERENCE_LENGTH: 6,
+  PAYMENT_REFERENCE_PREFIX: "INV",
+  TRANSACTIONS_PER_PAGE: 1000,
+} as const;
+
 export const UI = {
   ALPHA_HOVER: 0.04,
   ALPHA_LIGHT: 0.02,

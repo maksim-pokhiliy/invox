@@ -5,4 +5,4 @@ export { SendDialog, MarkPaidDialog, RecordPaymentDialog } from "./invoice-dialo
 export { InvoicePreviewDialog } from "./preview";
 export { InvoicesContent } from "./invoices-content";
 export { InvoiceRow } from "./invoice-row";
-export { NoInvoicesFound, EmptyInvoicesState } from "./empty-states";
+export { EmptyInvoicesState } from "./empty-states";

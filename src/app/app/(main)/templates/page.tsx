@@ -31,6 +31,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { AppLayout } from "@app/shared/layout/app-layout";
 import { Breadcrumbs } from "@app/shared/ui/breadcrumbs";
+import { EmptyState } from "@app/shared/ui/empty-state";
 import { TableSkeleton } from "@app/shared/ui/loading";
 import { useToast } from "@app/shared/ui/toast";
 import { ConfirmDialog, useConfirmDialog } from "@app/shared/ui/confirm-dialog";
@@ -108,7 +109,6 @@ export default function TemplatesPage() {
     <AppLayout>
       <Breadcrumbs items={[{ label: "Templates" }]} />
 
-      {/* Header */}
       <Box
         sx={{
           display: "flex",
@@ -149,7 +149,6 @@ export default function TemplatesPage() {
         calculateEstimatedTotal={calculateEstimatedTotal}
       />
 
-      {/* Actions Menu */}
       <Menu
         anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}
@@ -198,8 +197,6 @@ function TemplatesContent({
   onCreateTemplate,
   calculateEstimatedTotal,
 }: TemplatesContentProps) {
-  const theme = useTheme();
-
   if (isLoading) {
     return (
       <Paper sx={{ p: 3, borderRadius: 3 }}>
@@ -220,25 +217,17 @@ function TemplatesContent({
   }
 
   return (
-    <Paper
-      sx={{
-        p: 6,
-        textAlign: "center",
-        borderRadius: 3,
-        bgcolor: alpha(theme.palette.primary.main, 0.02),
-      }}
-    >
-      <DescriptionIcon sx={{ fontSize: 64, color: "text.disabled", mb: 2 }} />
-      <Typography variant="h6" gutterBottom>
-        No templates yet
-      </Typography>
-      <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Create a template to quickly generate invoices with predefined items
-      </Typography>
-      <Button variant="contained" startIcon={<AddIcon />} onClick={onCreateTemplate}>
-        Create Your First Template
-      </Button>
-    </Paper>
+    <EmptyState
+      icon={<DescriptionIcon sx={{ fontSize: 40, color: "primary.main" }} />}
+      title="No templates yet"
+      description="Create a template to quickly generate invoices with predefined items"
+      dashed
+      action={
+        <Button variant="contained" size="large" startIcon={<AddIcon />} onClick={onCreateTemplate}>
+          Create Your First Template
+        </Button>
+      }
+    />
   );
 }
 

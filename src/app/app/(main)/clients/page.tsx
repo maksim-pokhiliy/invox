@@ -38,6 +38,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import { AppLayout } from "@app/shared/layout/app-layout";
 import { Breadcrumbs } from "@app/shared/ui/breadcrumbs";
+import { EmptyState, NoResults } from "@app/shared/ui/empty-state";
 import { TableSkeleton, Spinner } from "@app/shared/ui/loading";
 import { useToast } from "@app/shared/ui/toast";
 import { ConfirmDialog, useConfirmDialog } from "@app/shared/ui/confirm-dialog";
@@ -391,8 +392,6 @@ function ClientsContent({
   setCreateDialogOpen,
   handleMenuOpen,
 }: ClientsContentProps) {
-  const theme = useTheme();
-
   if (isLoading) {
     return (
       <Paper sx={{ p: 3, borderRadius: 3 }}>
@@ -406,27 +405,7 @@ function ClientsContent({
   }
 
   if (clients && clients.length > 0 && filteredClients.length === 0) {
-    return (
-      <Paper
-        sx={{
-          p: 6,
-          textAlign: "center",
-          borderRadius: 3,
-          bgcolor: alpha(theme.palette.primary.main, 0.02),
-        }}
-      >
-        <SearchIcon sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
-        <Typography variant="h6" fontWeight={600} gutterBottom>
-          No clients found
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Try adjusting your search to find what you&apos;re looking for.
-        </Typography>
-        <Button variant="outlined" onClick={() => setSearchQuery("")}>
-          Clear Search
-        </Button>
-      </Paper>
-    );
+    return <NoResults entity="clients" onClear={() => setSearchQuery("")} />;
   }
 
   return <EmptyClientsState onAddClient={() => setCreateDialogOpen(true)} />;
@@ -507,43 +486,17 @@ function ClientsTable({
 }
 
 function EmptyClientsState({ onAddClient }: { onAddClient: () => void }) {
-  const theme = useTheme();
-
   return (
-    <Paper
-      sx={{
-        p: 8,
-        textAlign: "center",
-        borderRadius: 3,
-        bgcolor: alpha(theme.palette.primary.main, 0.02),
-        border: `2px dashed ${alpha(theme.palette.primary.main, 0.2)}`,
-      }}
-    >
-      <Box
-        sx={{
-          width: 80,
-          height: 80,
-          borderRadius: "50%",
-          bgcolor: alpha(theme.palette.primary.main, 0.1),
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          mx: "auto",
-          mb: 3,
-        }}
-      >
-        <PeopleIcon sx={{ fontSize: 40, color: "primary.main" }} />
-      </Box>
-      <Typography variant="h6" fontWeight={600} gutterBottom>
-        No clients yet
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: "auto" }}>
-        Add your first client to start creating invoices. Clients help you organize your billing and
-        keep track of who you&apos;re working with.
-      </Typography>
-      <Button variant="contained" size="large" startIcon={<AddIcon />} onClick={onAddClient}>
-        Add Your First Client
-      </Button>
-    </Paper>
+    <EmptyState
+      icon={<PeopleIcon sx={{ fontSize: 40, color: "primary.main" }} />}
+      title="No clients yet"
+      description="Add your first client to start creating invoices. Clients help you organize your billing and keep track of who you're working with."
+      dashed
+      action={
+        <Button variant="contained" size="large" startIcon={<AddIcon />} onClick={onAddClient}>
+          Add Your First Client
+        </Button>
+      }
+    />
   );
 }

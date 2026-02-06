@@ -98,12 +98,10 @@ export default function OnboardingPage() {
     >
       <Container maxWidth="sm">
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          {/* Logo above form */}
           <Box sx={{ mb: 4 }}>
             <Logo size="large" />
           </Box>
 
-          {/* Stepper */}
           <Stepper activeStep={1} alternativeLabel sx={{ mb: 4, width: "100%" }}>
             {steps.map((label) => (
               <Step key={label}>
@@ -113,7 +111,6 @@ export default function OnboardingPage() {
           </Stepper>
 
           <Paper sx={{ p: 4, borderRadius: 3, width: "100%" }}>
-            {/* Title */}
             <Box sx={{ textAlign: "center", mb: 4 }}>
               <Typography variant="h5" fontWeight={700} gutterBottom>
                 Set Up Your Business Profile
@@ -210,7 +207,6 @@ export default function OnboardingPage() {
             </Box>
           </Paper>
 
-          {/* Footer */}
           <Typography variant="caption" color="text.secondary" sx={{ mt: 4 }}>
             &copy; {new Date().getFullYear()} Invox
           </Typography>

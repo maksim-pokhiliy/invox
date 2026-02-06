@@ -9,6 +9,7 @@ import { InvoiceDates } from "./invoice-dates";
 import { InvoiceItemsTable } from "./invoice-items-table";
 import { InvoiceTotals } from "./invoice-totals";
 import { InvoiceActions } from "./invoice-actions";
+import { PaymentReferenceBlock } from "./payment-reference-block";
 
 interface InvoiceItem {
   id: string;
@@ -28,6 +29,7 @@ interface Invoice {
   dueDate: string;
   paidAt: string | null;
   createdAt: string;
+  paymentReference: string | null;
   client: {
     name: string;
     email: string;
@@ -129,26 +131,25 @@ export default function PublicInvoiceView({ publicId, invoice, branding, justPai
             client={invoice.client}
             primaryColor={branding.primaryColor}
           />
-
           <InvoiceDates
             createdAt={invoice.createdAt}
             dueDate={invoice.dueDate}
             paidAt={invoice.paidAt}
             isOverdue={isOverdue}
           />
-
           <Divider sx={{ my: 3 }} />
-
           <InvoiceItemsTable items={invoice.items} currency={invoice.currency} />
-
           <Divider sx={{ my: 3 }} />
-
           <InvoiceTotals
             subtotal={invoice.subtotal}
             total={invoice.total}
             currency={invoice.currency}
             primaryColor={branding.primaryColor}
           />
+
+          {invoice.paymentReference && !isPaid && (
+            <PaymentReferenceBlock paymentReference={invoice.paymentReference} />
+          )}
 
           <InvoiceActions isPaid={isPaid} accentColor={branding.accentColor} />
         </Paper>

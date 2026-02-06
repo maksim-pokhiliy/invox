@@ -32,7 +32,8 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import RepeatIcon from "@mui/icons-material/Repeat";
 import { AppLayout } from "@app/shared/layout/app-layout";
 import { Breadcrumbs } from "@app/shared/ui/breadcrumbs";
-import { PageLoader } from "@app/shared/ui/loading";
+import { EmptyState } from "@app/shared/ui/empty-state";
+import { TableSkeleton } from "@app/shared/ui/loading";
 import { useToast } from "@app/shared/ui/toast";
 import { ConfirmDialog } from "@app/shared/ui/confirm-dialog";
 import {
@@ -64,7 +65,6 @@ const statusConfig: Record<
 };
 
 export default function RecurringInvoicesPage() {
-  const theme = useTheme();
   const router = useRouter();
   const toast = useToast();
   const { data: recurring, isLoading } = useRecurringInvoices();
@@ -149,14 +149,6 @@ export default function RecurringInvoicesPage() {
     return afterDiscount + tax;
   };
 
-  if (isLoading) {
-    return (
-      <AppLayout>
-        <PageLoader message="Loading recurring invoices..." />
-      </AppLayout>
-    );
-  }
-
   return (
     <AppLayout>
       <Breadcrumbs items={[{ label: "Recurring Invoices" }]} />
@@ -179,120 +171,13 @@ export default function RecurringInvoicesPage() {
         </Button>
       </Box>
 
-      {recurring && recurring.length > 0 ? (
-        <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.02) }}>
-                <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Client</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Frequency</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Next Run</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 600 }}>
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {recurring.map((item) => (
-                <TableRow
-                  key={item.id}
-                  hover
-                  sx={{ "&:last-child td": { border: 0 }, cursor: "pointer" }}
-                  onClick={() => router.push(`/app/recurring/${item.id}`)}
-                >
-                  <TableCell>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Box
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 1.5,
-                          bgcolor: alpha(theme.palette.primary.main, 0.1),
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <RepeatIcon sx={{ fontSize: 18, color: "primary.main" }} />
-                      </Box>
-                      <Typography fontWeight={500}>{item.name}</Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">{item.client.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {item.client.email}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{frequencyLabels[item.frequency]}</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>
-                    {formatCurrency(calculateTotal(item), item.currency)}
-                  </TableCell>
-                  <TableCell>{formatDateCompact(item.nextRunAt)}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={statusConfig[item.status].label}
-                      color={statusConfig[item.status].color}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleMenuOpen(e, item);
-                      }}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : (
-        <Paper
-          sx={{
-            p: 6,
-            textAlign: "center",
-            borderRadius: 3,
-          }}
-        >
-          <Box
-            sx={{
-              width: 80,
-              height: 80,
-              borderRadius: "50%",
-              bgcolor: alpha(theme.palette.primary.main, 0.1),
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              mx: "auto",
-              mb: 3,
-            }}
-          >
-            <RepeatIcon sx={{ fontSize: 40, color: "primary.main" }} />
-          </Box>
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            No recurring invoices yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Set up automatic invoice generation for regular clients
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => router.push("/app/recurring/new")}
-          >
-            Create Recurring Invoice
-          </Button>
-        </Paper>
-      )}
+      <RecurringContent
+        isLoading={isLoading}
+        recurring={recurring}
+        router={router}
+        handleMenuOpen={handleMenuOpen}
+        calculateTotal={calculateTotal}
+      />
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         <MenuItem onClick={() => router.push(`/app/recurring/${selectedItem?.id}/edit`)}>
@@ -346,5 +231,127 @@ export default function RecurringInvoicesPage() {
         isLoading={deleteMutation.isPending}
       />
     </AppLayout>
+  );
+}
+
+function RecurringContent({
+  isLoading,
+  recurring,
+  router,
+  handleMenuOpen,
+  calculateTotal,
+}: {
+  isLoading: boolean;
+  recurring: RecurringInvoice[] | undefined;
+  router: ReturnType<typeof useRouter>;
+  handleMenuOpen: (event: React.MouseEvent<HTMLElement>, item: RecurringInvoice) => void;
+  calculateTotal: (item: RecurringInvoice) => number;
+}) {
+  const theme = useTheme();
+  if (isLoading) {
+    return (
+      <Paper sx={{ p: 3, borderRadius: 3 }}>
+        <TableSkeleton rows={5} columns={7} />
+      </Paper>
+    );
+  }
+
+  if (recurring && recurring.length > 0) {
+    return (
+      <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.02) }}>
+              <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Client</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Frequency</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Next Run</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Actions
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {recurring.map((item) => (
+              <TableRow
+                key={item.id}
+                hover
+                sx={{ "&:last-child td": { border: 0 }, cursor: "pointer" }}
+                onClick={() => router.push(`/app/recurring/${item.id}`)}
+              >
+                <TableCell>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 1.5,
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <RepeatIcon sx={{ fontSize: 18, color: "primary.main" }} />
+                    </Box>
+                    <Typography fontWeight={500}>{item.name}</Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">{item.client.name}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {item.client.email}
+                  </Typography>
+                </TableCell>
+                <TableCell>{frequencyLabels[item.frequency]}</TableCell>
+                <TableCell sx={{ fontWeight: 500 }}>
+                  {formatCurrency(calculateTotal(item), item.currency)}
+                </TableCell>
+                <TableCell>{formatDateCompact(item.nextRunAt)}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={statusConfig[item.status].label}
+                    color={statusConfig[item.status].color}
+                    size="small"
+                  />
+                </TableCell>
+                <TableCell align="right">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMenuOpen(e, item);
+                    }}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  }
+
+  return (
+    <EmptyState
+      icon={<RepeatIcon sx={{ fontSize: 40, color: "primary.main" }} />}
+      title="No recurring invoices yet"
+      description="Set up automatic invoice generation for regular clients"
+      dashed
+      action={
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={<AddIcon />}
+          onClick={() => router.push("/app/recurring/new")}
+        >
+          Create Recurring Invoice
+        </Button>
+      }
+    />
   );
 }

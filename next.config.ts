@@ -6,9 +6,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
-  // Enable experimental features for better performance
   experimental: {
-    // Optimize package imports to reduce bundle size
     optimizePackageImports: [
       "@mui/material",
       "@mui/icons-material",

@@ -1,7 +1,14 @@
+import { customAlphabet } from "nanoid";
 import { prisma } from "@app/server/db";
 import { sendInvoiceEmail } from "@app/server/email";
 import { getFollowUpRule, scheduleFollowUps } from "@app/server/followups";
 import { logInvoiceEvent, updateInvoiceStatus } from "@app/server/invoices";
+import { BANKING } from "@app/shared/config/config";
+
+const generateReference = customAlphabet(
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+  BANKING.PAYMENT_REFERENCE_LENGTH
+);
 
 export class InvoiceNotFoundError extends Error {
   constructor() {
@@ -69,8 +76,9 @@ export async function sendInvoice(invoiceId: string, userId: string) {
   }
 
   const sentAt = new Date();
+  const paymentReference = `${BANKING.PAYMENT_REFERENCE_PREFIX}-${generateReference()}`;
 
-  await updateInvoiceStatus(invoice.id, "SENT", { sentAt });
+  await updateInvoiceStatus(invoice.id, "SENT", { sentAt, paymentReference });
   await logInvoiceEvent(invoice.id, "SENT", { clientEmail: invoice.client.email });
 
   const followUpRule = await getFollowUpRule(userId);

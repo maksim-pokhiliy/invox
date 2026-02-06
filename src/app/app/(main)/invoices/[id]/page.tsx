@@ -210,7 +210,6 @@ export default function InvoiceDetailPage() {
         items={[{ label: "Invoices", href: "/app/invoices" }, { label: `#${invoice.publicId}` }]}
       />
 
-      {/* Header */}
       <Box
         sx={{
           display: "flex",
@@ -315,7 +314,6 @@ export default function InvoiceDetailPage() {
         </Box>
       </Box>
 
-      {/* Timeline */}
       <InvoiceTimeline
         dueDate={invoice.dueDate}
         sentAt={invoice.sentAt}
@@ -325,9 +323,7 @@ export default function InvoiceDetailPage() {
         isOverdue={isOverdue}
       />
 
-      {/* Main Content */}
       <Paper sx={{ p: 4, mb: 3, borderRadius: 3 }}>
-        {/* Client Info */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="overline" color="text.secondary" sx={{ mb: 1, display: "block" }}>
             Bill To
@@ -342,7 +338,6 @@ export default function InvoiceDetailPage() {
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Line Items */}
         <TableContainer>
           <Table>
             <TableHead>
@@ -378,7 +373,6 @@ export default function InvoiceDetailPage() {
 
         <Divider sx={{ my: 3 }} />
 
-        {/* Totals */}
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Box sx={{ minWidth: 280 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
@@ -447,7 +441,6 @@ export default function InvoiceDetailPage() {
         </Box>
       </Paper>
 
-      {/* Payments Section */}
       <PaymentHistory
         payments={invoice.payments || []}
         currency={invoice.currency}
@@ -457,7 +450,6 @@ export default function InvoiceDetailPage() {
         onDeletePayment={handleDeletePayment}
       />
 
-      {/* View Public Page */}
       {!isDraft && (
         <Box sx={{ textAlign: "center", mb: 3 }}>
           <Button
@@ -470,14 +462,12 @@ export default function InvoiceDetailPage() {
         </Box>
       )}
 
-      {/* Audit Log */}
       <ActivityHistory
         events={invoice.events || []}
         expanded={auditLogExpanded}
         onToggle={() => setAuditLogExpanded(!auditLogExpanded)}
       />
 
-      {/* Dialogs */}
       <SendDialog
         open={sendDialogOpen}
         onClose={() => setSendDialogOpen(false)}
