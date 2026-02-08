@@ -6,14 +6,11 @@ import { Spinner } from "@app/shared/ui/loading";
 import { useToast } from "@app/shared/ui/toast";
 import { useUpdateSenderProfile } from "@app/features/settings";
 import { ApiError } from "@app/shared/api";
+import { BRANDING } from "@app/shared/config/config";
 import type { SenderProfile } from "@app/shared/schemas/api";
 import { LogoPreview } from "./logo-preview";
 import { BrandColors } from "./brand-colors";
 import { BrandingPreview } from "./branding-preview";
-
-const DEFAULT_PRIMARY = "#1976d2";
-const DEFAULT_ACCENT = "#9c27b0";
-const DEFAULT_CURRENCY = "USD";
 
 const toUndefined = (val: string | null | undefined): string | undefined => val || undefined;
 
@@ -26,15 +23,15 @@ export function BrandingTab({ profile }: BrandingTabProps) {
   const mutation = useUpdateSenderProfile();
 
   const [logoUrl, setLogoUrl] = React.useState("");
-  const [primaryColor, setPrimaryColor] = React.useState(DEFAULT_PRIMARY);
-  const [accentColor, setAccentColor] = React.useState(DEFAULT_ACCENT);
+  const [primaryColor, setPrimaryColor] = React.useState(BRANDING.DEFAULT_PRIMARY_COLOR);
+  const [accentColor, setAccentColor] = React.useState(BRANDING.DEFAULT_ACCENT_COLOR);
   const [isDirty, setIsDirty] = React.useState(false);
 
   React.useEffect(() => {
     if (profile) {
       setLogoUrl(profile.logoUrl || "");
-      setPrimaryColor(profile.primaryColor || DEFAULT_PRIMARY);
-      setAccentColor(profile.accentColor || DEFAULT_ACCENT);
+      setPrimaryColor(profile.primaryColor || BRANDING.DEFAULT_PRIMARY_COLOR);
+      setAccentColor(profile.accentColor || BRANDING.DEFAULT_ACCENT_COLOR);
       setIsDirty(false);
     }
   }, [profile]);
@@ -48,7 +45,7 @@ export function BrandingTab({ profile }: BrandingTabProps) {
       emailFrom: toUndefined(profile?.emailFrom),
       address: toUndefined(profile?.address),
       taxId: toUndefined(profile?.taxId),
-      defaultCurrency: profile?.defaultCurrency || DEFAULT_CURRENCY,
+      defaultCurrency: profile?.defaultCurrency || BRANDING.DEFAULT_CURRENCY,
       logoUrl: toUndefined(logoUrl),
       primaryColor: toUndefined(primaryColor),
       accentColor: toUndefined(accentColor),

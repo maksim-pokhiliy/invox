@@ -6,7 +6,7 @@ import { Box, Paper, Typography, Chip, alpha, useTheme } from "@mui/material";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import { useCountUp } from "@app/shared/hooks";
-import { ANIMATION } from "@app/shared/config/config";
+import { ANIMATION, UI } from "@app/shared/config/config";
 
 interface MetricCardProps {
   title: string;
@@ -61,8 +61,8 @@ export function MetricCard({
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
         <Box
           sx={{
-            width: 44,
-            height: 44,
+            width: UI.METRIC_ICON_SIZE,
+            height: UI.METRIC_ICON_SIZE,
             borderRadius: 2.5,
             display: "flex",
             alignItems: "center",

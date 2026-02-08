@@ -1,13 +1,12 @@
 "use client";
 
-import { Menu, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import type { RecurringInvoice } from "@app/features/recurring";
-import { UI } from "@app/shared/config/config";
+import { OverflowMenu } from "@app/shared/ui/overflow-menu";
 
 interface RecurringOverflowMenuProps {
   anchorEl: HTMLElement | null;
@@ -28,49 +27,33 @@ export function RecurringOverflowMenu({
   onGenerateNow,
   onDelete,
 }: RecurringOverflowMenuProps) {
+  const isActive = selectedItem?.status === "ACTIVE";
+
   return (
-    <Menu
+    <OverflowMenu
       anchorEl={anchorEl}
-      open={Boolean(anchorEl)}
       onClose={onClose}
-      slotProps={{
-        paper: {
-          sx: { minWidth: UI.MENU_MIN_WIDTH, borderRadius: 2 },
+      items={[
+        { label: "Edit", icon: <EditIcon fontSize="small" />, onClick: onEdit },
+        {
+          label: isActive ? "Pause" : "Activate",
+          icon: isActive ? <PauseIcon fontSize="small" /> : <PlayArrowIcon fontSize="small" />,
+          onClick: onToggleStatus,
+          show: selectedItem?.status !== "CANCELED",
         },
-      }}
-    >
-      <MenuItem onClick={onEdit}>
-        <ListItemIcon>
-          <EditIcon fontSize="small" />
-        </ListItemIcon>
-        <ListItemText>Edit</ListItemText>
-      </MenuItem>
-      {selectedItem?.status !== "CANCELED" && (
-        <MenuItem onClick={onToggleStatus}>
-          <ListItemIcon>
-            {selectedItem?.status === "ACTIVE" ? (
-              <PauseIcon fontSize="small" />
-            ) : (
-              <PlayArrowIcon fontSize="small" />
-            )}
-          </ListItemIcon>
-          <ListItemText>{selectedItem?.status === "ACTIVE" ? "Pause" : "Activate"}</ListItemText>
-        </MenuItem>
-      )}
-      {selectedItem?.status === "ACTIVE" && (
-        <MenuItem onClick={onGenerateNow}>
-          <ListItemIcon>
-            <ReceiptIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Generate Now</ListItemText>
-        </MenuItem>
-      )}
-      <MenuItem onClick={onDelete} sx={{ color: "error.main" }}>
-        <ListItemIcon>
-          <DeleteIcon fontSize="small" color="error" />
-        </ListItemIcon>
-        <ListItemText>Delete</ListItemText>
-      </MenuItem>
-    </Menu>
+        {
+          label: "Generate Now",
+          icon: <ReceiptIcon fontSize="small" />,
+          onClick: onGenerateNow,
+          show: isActive,
+        },
+        {
+          label: "Delete",
+          icon: <DeleteIcon fontSize="small" />,
+          onClick: onDelete,
+          color: "error.main",
+        },
+      ]}
+    />
   );
 }

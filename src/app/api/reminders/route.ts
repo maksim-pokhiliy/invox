@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireUser, AuthenticationError } from "@app/server/auth/require-user";
 import { getFollowUpRule, createOrUpdateFollowUpRule } from "@app/server/followups";
 import { REMINDER } from "@app/shared/config/config";
+import { withAuth, parseBody } from "@app/shared/api/route-helpers";
 
 const updateReminderSettingsSchema = z.object({
   enabled: z.boolean(),
@@ -13,75 +13,36 @@ const updateReminderSettingsSchema = z.object({
     .max(REMINDER.MAX_REMINDER_COUNT),
 });
 
-export async function GET() {
-  try {
-    const user = await requireUser();
-    const rule = await getFollowUpRule(user.id);
+export const GET = withAuth(async (user) => {
+  const rule = await getFollowUpRule(user.id);
 
-    if (!rule) {
-      return NextResponse.json({
-        enabled: false,
-        mode: "AFTER_DUE",
-        delaysDays: [...REMINDER.DEFAULT_DAYS],
-      });
-    }
-
+  if (!rule) {
     return NextResponse.json({
-      enabled: rule.enabled,
-      mode: rule.mode,
-      delaysDays: rule.delaysDays,
+      enabled: false,
+      mode: "AFTER_DUE",
+      delaysDays: [...REMINDER.DEFAULT_DAYS],
     });
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      return NextResponse.json(
-        { error: { code: "UNAUTHORIZED", message: "Unauthorized" } },
-        { status: 401 }
-      );
-    }
-    console.error("Get reminder settings error:", error);
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred" } },
-      { status: 500 }
-    );
   }
-}
 
-export async function PUT(request: Request) {
-  try {
-    const user = await requireUser();
-    const body = await request.json();
-    const parsed = updateReminderSettingsSchema.safeParse(body);
+  return NextResponse.json({
+    enabled: rule.enabled,
+    mode: rule.mode,
+    delaysDays: rule.delaysDays,
+  });
+});
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: parsed.error.issues[0]?.message ?? "Invalid input",
-          },
-        },
-        { status: 400 }
-      );
-    }
+export const PUT = withAuth(async (user, request) => {
+  const { data, error } = await parseBody(request, updateReminderSettingsSchema);
 
-    const rule = await createOrUpdateFollowUpRule(user.id, parsed.data);
-
-    return NextResponse.json({
-      enabled: rule.enabled,
-      mode: rule.mode,
-      delaysDays: rule.delaysDays,
-    });
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      return NextResponse.json(
-        { error: { code: "UNAUTHORIZED", message: "Unauthorized" } },
-        { status: 401 }
-      );
-    }
-    console.error("Update reminder settings error:", error);
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred" } },
-      { status: 500 }
-    );
+  if (error) {
+    return error;
   }
-}
+
+  const rule = await createOrUpdateFollowUpRule(user.id, data);
+
+  return NextResponse.json({
+    enabled: rule.enabled,
+    mode: rule.mode,
+    delaysDays: rule.delaysDays,
+  });
+});

@@ -23,6 +23,7 @@ const eslintConfig = defineConfig([
       eqeqeq: ["error", "always"],
       curly: ["error", "all"],
       "no-nested-ternary": "error",
+      "max-lines": ["error", { max: 300, skipBlankLines: true, skipComments: true }],
       "max-lines-per-function": ["error", { max: 100, skipBlankLines: true, skipComments: true }],
       "max-depth": ["error", 4],
       complexity: ["error", 15],
@@ -45,37 +46,42 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ["src/lib/constants/**/*.ts", "src/lib/constants/**/*.tsx"],
+    files: ["src/shared/config/**/*.ts"],
     rules: {
       "no-magic-numbers": "off",
+      "max-lines": ["error", { max: 400, skipBlankLines: true, skipComments: true }],
     },
   },
   {
-    files: ["src/components/theme/**/*.ts"],
+    files: ["src/providers/theme*.ts"],
     rules: {
       "no-magic-numbers": "off",
     },
   },
   {
     files: [
-      "src/app/app/invoices/new/page.tsx",
-      "src/app/app/recurring/new/page.tsx",
-      "src/app/app/templates/new/page.tsx",
-      "src/hooks/useVirtualList.ts",
+      "src/app/app/(main)/invoices/new/page.tsx",
+      "src/app/app/(main)/recurring/new/page.tsx",
+      "src/app/app/(main)/templates/new/page.tsx",
     ],
     rules: {
       "react-hooks/incompatible-library": "off",
     },
   },
   {
-    files: ["src/app/**/page.tsx", "src/app/**/*.tsx", "src/components/**/*.tsx"],
+    files: [
+      "src/app/**/page.tsx",
+      "src/app/**/*.tsx",
+      "src/features/**/*.tsx",
+      "src/shared/**/*.tsx",
+    ],
     rules: {
       "max-lines-per-function": ["error", { max: 450, skipBlankLines: true, skipComments: true }],
       complexity: ["error", 50],
     },
   },
   {
-    files: ["src/lib/export/pdf.ts"],
+    files: ["src/shared/lib/export/pdf.ts"],
     rules: {
       "max-lines-per-function": ["error", { max: 200, skipBlankLines: true, skipComments: true }],
       complexity: ["error", 20],

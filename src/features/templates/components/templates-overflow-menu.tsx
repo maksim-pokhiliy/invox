@@ -1,10 +1,9 @@
 "use client";
 
-import { Menu, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { UI } from "@app/shared/config/config";
+import { OverflowMenu } from "@app/shared/ui/overflow-menu";
 import type { Template } from "@app/features/templates";
 
 interface TemplatesOverflowMenuProps {
@@ -25,35 +24,23 @@ export function TemplatesOverflowMenu({
   onDelete,
 }: TemplatesOverflowMenuProps) {
   return (
-    <Menu
+    <OverflowMenu
       anchorEl={anchorEl}
-      open={Boolean(anchorEl)}
       onClose={onClose}
-      onClick={(e) => e.stopPropagation()}
-      slotProps={{
-        paper: {
-          sx: { minWidth: UI.MENU_MIN_WIDTH, borderRadius: 2 },
+      items={[
+        {
+          label: "Use Template",
+          icon: <ContentCopyIcon fontSize="small" />,
+          onClick: () => selectedTemplate && onUseTemplate(selectedTemplate),
         },
-      }}
-    >
-      <MenuItem onClick={() => selectedTemplate && onUseTemplate(selectedTemplate)}>
-        <ListItemIcon>
-          <ContentCopyIcon fontSize="small" />
-        </ListItemIcon>
-        <ListItemText>Use Template</ListItemText>
-      </MenuItem>
-      <MenuItem onClick={onEdit}>
-        <ListItemIcon>
-          <EditIcon fontSize="small" />
-        </ListItemIcon>
-        <ListItemText>Edit</ListItemText>
-      </MenuItem>
-      <MenuItem onClick={onDelete} sx={{ color: "error.main" }}>
-        <ListItemIcon>
-          <DeleteIcon fontSize="small" color="error" />
-        </ListItemIcon>
-        <ListItemText>Delete</ListItemText>
-      </MenuItem>
-    </Menu>
+        { label: "Edit", icon: <EditIcon fontSize="small" />, onClick: onEdit },
+        {
+          label: "Delete",
+          icon: <DeleteIcon fontSize="small" />,
+          onClick: onDelete,
+          color: "error.main",
+        },
+      ]}
+    />
   );
 }

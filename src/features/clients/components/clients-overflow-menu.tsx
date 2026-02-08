@@ -1,9 +1,8 @@
 "use client";
 
-import { Menu, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { UI } from "@app/shared/config/config";
+import { OverflowMenu } from "@app/shared/ui/overflow-menu";
 
 interface ClientsOverflowMenuProps {
   anchorEl: HTMLElement | null;
@@ -19,31 +18,19 @@ export function ClientsOverflowMenu({
   onDelete,
 }: ClientsOverflowMenuProps) {
   return (
-    <Menu
+    <OverflowMenu
       anchorEl={anchorEl}
-      open={Boolean(anchorEl)}
       onClose={onClose}
-      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      transformOrigin={{ vertical: "top", horizontal: "right" }}
-      slotProps={{
-        paper: {
-          sx: { minWidth: UI.MENU_MIN_WIDTH, borderRadius: 2 },
+      ariaLabel="Client actions"
+      items={[
+        { label: "Edit", icon: <EditIcon fontSize="small" />, onClick: onEdit },
+        {
+          label: "Delete",
+          icon: <DeleteIcon fontSize="small" />,
+          onClick: onDelete,
+          color: "error.main",
         },
-      }}
-      aria-label="Client actions"
-    >
-      <MenuItem onClick={onEdit}>
-        <ListItemIcon>
-          <EditIcon fontSize="small" />
-        </ListItemIcon>
-        <ListItemText>Edit</ListItemText>
-      </MenuItem>
-      <MenuItem onClick={onDelete} sx={{ color: "error.main" }}>
-        <ListItemIcon>
-          <DeleteIcon fontSize="small" color="error" />
-        </ListItemIcon>
-        <ListItemText>Delete</ListItemText>
-      </MenuItem>
-    </Menu>
+      ]}
+    />
   );
 }

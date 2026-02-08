@@ -1,5 +1,7 @@
 import { Resend } from "resend";
 import { formatCurrency, formatDate } from "@app/shared/lib/format";
+import { EMAIL } from "@app/shared/config/config";
+import { buildEmailLayout, buildEmailButton, buildInvoiceDetailsBlock } from "./template";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -21,136 +23,56 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
   const invoiceUrl = `${APP_URL}/i/${data.publicId}`;
   const formattedTotal = formatCurrency(data.total, data.currency);
   const formattedDueDate = formatDate(data.dueDate);
+  const title = `Invoice from ${data.senderName}`;
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invoice from ${data.senderName}</title>
-</head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: #f5f5f5; padding: 30px; border-radius: 8px;">
-    <h1 style="margin: 0 0 20px; color: #1976d2;">Invoice from ${data.senderName}</h1>
-
+  const bodyHtml = `
     <p>Hi ${data.clientName},</p>
-
     <p>You have received a new invoice for <strong>${formattedTotal}</strong>.</p>
-
-    <div style="background: white; padding: 20px; border-radius: 4px; margin: 20px 0;">
-      <p style="margin: 0;"><strong>Amount Due:</strong> ${formattedTotal}</p>
-      <p style="margin: 10px 0 0;"><strong>Due Date:</strong> ${formattedDueDate}</p>
-    </div>
-
-    <p>
-      <a href="${invoiceUrl}" style="display: inline-block; background: #1976d2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 500;">View Invoice</a>
-    </p>
-
+    ${buildInvoiceDetailsBlock(formattedTotal, formattedDueDate)}
+    <p>${buildEmailButton(invoiceUrl, "View Invoice", EMAIL.PRIMARY_COLOR)}</p>
     <p style="color: #666; font-size: 14px; margin-top: 30px;">
       If you have any questions about this invoice, please reply to this email or contact ${data.senderName} directly.
-    </p>
-  </div>
-</body>
-</html>
-`;
+    </p>`;
 
-  const text = `
-Invoice from ${data.senderName}
+  const text = `${title}\n\nHi ${data.clientName},\n\nYou have received a new invoice for ${formattedTotal}.\n\nAmount Due: ${formattedTotal}\nDue Date: ${formattedDueDate}\n\nView Invoice: ${invoiceUrl}\n\nIf you have any questions about this invoice, please reply to this email or contact ${data.senderName} directly.`;
 
-Hi ${data.clientName},
-
-You have received a new invoice for ${formattedTotal}.
-
-Amount Due: ${formattedTotal}
-Due Date: ${formattedDueDate}
-
-View Invoice: ${invoiceUrl}
-
-If you have any questions about this invoice, please reply to this email or contact ${data.senderName} directly.
-`;
-
-  const result = await resend.emails.send({
+  return resend.emails.send({
     from: EMAIL_FROM,
     to: data.clientEmail,
     replyTo: data.senderEmail,
-    subject: `Invoice from ${data.senderName} - ${formattedTotal}`,
-    html,
+    subject: `${title} - ${formattedTotal}`,
+    html: buildEmailLayout(title, EMAIL.PRIMARY_COLOR, bodyHtml),
     text,
   });
-
-  return result;
 }
 
 export async function sendReminderEmail(data: InvoiceEmailData & { isOverdue: boolean }) {
   const invoiceUrl = `${APP_URL}/i/${data.publicId}`;
   const formattedTotal = formatCurrency(data.total, data.currency);
   const formattedDueDate = formatDate(data.dueDate);
-  const subject = data.isOverdue
+  const color = data.isOverdue ? EMAIL.OVERDUE_COLOR : EMAIL.PRIMARY_COLOR;
+  const title = data.isOverdue
     ? `Overdue Invoice Reminder from ${data.senderName}`
     : `Invoice Reminder from ${data.senderName}`;
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${subject}</title>
-</head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: #f5f5f5; padding: 30px; border-radius: 8px;">
-    <h1 style="margin: 0 0 20px; color: ${data.isOverdue ? "#d32f2f" : "#1976d2"};">
-      ${data.isOverdue ? "Overdue Invoice Reminder" : "Invoice Reminder"}
-    </h1>
-
+  const bodyHtml = `
     <p>Hi ${data.clientName},</p>
-
     <p>This is a friendly reminder about an outstanding invoice for <strong>${formattedTotal}</strong>.</p>
-
-    ${data.isOverdue ? '<p style="color: #d32f2f;"><strong>This invoice is now overdue.</strong></p>' : ""}
-
-    <div style="background: white; padding: 20px; border-radius: 4px; margin: 20px 0;">
-      <p style="margin: 0;"><strong>Amount Due:</strong> ${formattedTotal}</p>
-      <p style="margin: 10px 0 0;"><strong>Due Date:</strong> ${formattedDueDate}</p>
-    </div>
-
-    <p>
-      <a href="${invoiceUrl}" style="display: inline-block; background: ${data.isOverdue ? "#d32f2f" : "#1976d2"}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 500;">View & Pay Invoice</a>
-    </p>
-
+    ${data.isOverdue ? `<p style="color: ${EMAIL.OVERDUE_COLOR};"><strong>This invoice is now overdue.</strong></p>` : ""}
+    ${buildInvoiceDetailsBlock(formattedTotal, formattedDueDate)}
+    <p>${buildEmailButton(invoiceUrl, "View & Pay Invoice", color)}</p>
     <p style="color: #666; font-size: 14px; margin-top: 30px;">
       If you have already paid this invoice, please disregard this reminder. For any questions, please contact ${data.senderName} directly.
-    </p>
-  </div>
-</body>
-</html>
-`;
+    </p>`;
 
-  const text = `
-${data.isOverdue ? "Overdue Invoice Reminder" : "Invoice Reminder"}
+  const text = `${title}\n\nHi ${data.clientName},\n\nThis is a friendly reminder about an outstanding invoice for ${formattedTotal}.\n\n${data.isOverdue ? "This invoice is now overdue.\n\n" : ""}Amount Due: ${formattedTotal}\nDue Date: ${formattedDueDate}\n\nView & Pay Invoice: ${invoiceUrl}\n\nIf you have already paid this invoice, please disregard this reminder. For any questions, please contact ${data.senderName} directly.`;
 
-Hi ${data.clientName},
-
-This is a friendly reminder about an outstanding invoice for ${formattedTotal}.
-
-${data.isOverdue ? "This invoice is now overdue.\n" : ""}
-Amount Due: ${formattedTotal}
-Due Date: ${formattedDueDate}
-
-View & Pay Invoice: ${invoiceUrl}
-
-If you have already paid this invoice, please disregard this reminder. For any questions, please contact ${data.senderName} directly.
-`;
-
-  const result = await resend.emails.send({
+  return resend.emails.send({
     from: EMAIL_FROM,
     to: data.clientEmail,
     replyTo: data.senderEmail,
-    subject,
-    html,
+    subject: title,
+    html: buildEmailLayout(title, color, bodyHtml),
     text,
   });
-
-  return result;
 }

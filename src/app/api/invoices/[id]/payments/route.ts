@@ -1,129 +1,63 @@
 import { NextResponse } from "next/server";
-import { requireUser, AuthenticationError } from "@app/server/auth/require-user";
 import { recordPayment, getPayments, deletePayment } from "@app/server/invoices";
 import { recordPaymentApiSchema } from "@app/shared/schemas";
+import {
+  withAuth,
+  parseBody,
+  notFoundResponse,
+  errorResponse,
+} from "@app/shared/api/route-helpers";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const user = await requireUser();
-    const { id } = await params;
-    const payments = await getPayments(id, user.id);
+export const GET = withAuth(async (user, _request, context) => {
+  const { id } = await context.params;
+  const payments = await getPayments(id, user.id);
 
-    if (payments === null) {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Invoice not found" } },
-        { status: 404 }
-      );
-    }
+  if (payments === null) {
+    return notFoundResponse("Invoice");
+  }
 
-    return NextResponse.json(payments);
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      return NextResponse.json(
-        { error: { code: "UNAUTHORIZED", message: "Unauthorized" } },
-        { status: 401 }
-      );
-    }
-    console.error("Get payments error:", error);
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred" } },
-      { status: 500 }
+  return NextResponse.json(payments);
+});
+
+export const POST = withAuth(async (user, request, context) => {
+  const { id } = await context.params;
+  const { data, error } = await parseBody(request, recordPaymentApiSchema);
+
+  if (error) {
+    return error;
+  }
+
+  const invoice = await recordPayment(id, user.id, data);
+
+  if (!invoice) {
+    return errorResponse(
+      "BAD_REQUEST",
+      "Cannot record payment. Invoice may not exist, be a draft, or payment exceeds balance.",
+      400
     );
   }
-}
 
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const user = await requireUser();
-    const { id } = await params;
-    const body = await request.json();
-    const parsed = recordPaymentApiSchema.safeParse(body);
+  return NextResponse.json(invoice);
+});
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: parsed.error.issues[0]?.message ?? "Invalid input",
-          },
-        },
-        { status: 400 }
-      );
-    }
+export const DELETE = withAuth(async (user, request, context) => {
+  const { id: invoiceId } = await context.params;
+  const { searchParams } = new URL(request.url);
+  const paymentId = searchParams.get("paymentId");
 
-    const invoice = await recordPayment(id, user.id, parsed.data);
-
-    if (!invoice) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "BAD_REQUEST",
-            message:
-              "Cannot record payment. Invoice may not exist, be a draft, or payment exceeds balance.",
-          },
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(invoice);
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      return NextResponse.json(
-        { error: { code: "UNAUTHORIZED", message: "Unauthorized" } },
-        { status: 401 }
-      );
-    }
-    console.error("Record payment error:", error);
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred" } },
-      { status: 500 }
-    );
+  if (!paymentId) {
+    return errorResponse("VALIDATION_ERROR", "Payment ID is required", 400);
   }
-}
 
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const user = await requireUser();
-    const { id: invoiceId } = await params;
-    const { searchParams } = new URL(request.url);
-    const paymentId = searchParams.get("paymentId");
+  const invoice = await deletePayment(paymentId, user.id);
 
-    if (!paymentId) {
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "Payment ID is required" } },
-        { status: 400 }
-      );
-    }
-
-    const invoice = await deletePayment(paymentId, user.id);
-
-    if (!invoice) {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Payment not found or cannot be deleted" } },
-        { status: 404 }
-      );
-    }
-
-    if (invoice.id !== invoiceId) {
-      return NextResponse.json(
-        { error: { code: "BAD_REQUEST", message: "Payment does not belong to this invoice" } },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(invoice);
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      return NextResponse.json(
-        { error: { code: "UNAUTHORIZED", message: "Unauthorized" } },
-        { status: 401 }
-      );
-    }
-    console.error("Delete payment error:", error);
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred" } },
-      { status: 500 }
-    );
+  if (!invoice) {
+    return notFoundResponse("Payment not found or cannot be deleted");
   }
-}
+
+  if (invoice.id !== invoiceId) {
+    return errorResponse("BAD_REQUEST", "Payment does not belong to this invoice", 400);
+  }
+
+  return NextResponse.json(invoice);
+});

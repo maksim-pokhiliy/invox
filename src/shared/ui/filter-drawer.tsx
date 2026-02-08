@@ -2,6 +2,7 @@
 
 import { Box, Drawer, IconButton, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { UI } from "@app/shared/config/config";
 
 interface FilterDrawerProps {
   open: boolean;
@@ -21,7 +22,7 @@ export function FilterDrawer({ open, onClose, title = "Filters", children }: Fil
           sx: {
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
-            maxHeight: "80vh",
+            maxHeight: UI.FILTER_DRAWER_MAX_HEIGHT,
           },
         },
       }}
@@ -29,8 +30,8 @@ export function FilterDrawer({ open, onClose, title = "Filters", children }: Fil
       <Box sx={{ px: 3, pt: 2, pb: 0.5 }}>
         <Box
           sx={{
-            width: 40,
-            height: 4,
+            width: UI.FILTER_DRAWER_HANDLE_WIDTH,
+            height: UI.FILTER_DRAWER_HANDLE_HEIGHT,
             borderRadius: 2,
             bgcolor: "action.disabled",
             mx: "auto",

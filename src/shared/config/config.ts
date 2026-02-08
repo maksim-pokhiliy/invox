@@ -166,6 +166,32 @@ export const STORAGE_KEYS = {
   THEME_MODE: "theme-mode",
 } as const;
 
+export const EMAIL = {
+  PRIMARY_COLOR: "#1976d2",
+  OVERDUE_COLOR: "#d32f2f",
+  MAX_WIDTH: 600,
+  BUTTON_PADDING: "12px 24px",
+  BUTTON_BORDER_RADIUS: "4px",
+} as const;
+
+export const BRANDING: {
+  readonly DEFAULT_PRIMARY_COLOR: string;
+  readonly DEFAULT_ACCENT_COLOR: string;
+  readonly DEFAULT_CURRENCY: string;
+} = {
+  DEFAULT_PRIMARY_COLOR: "#1976d2",
+  DEFAULT_ACCENT_COLOR: "#9c27b0",
+  DEFAULT_CURRENCY: "USD",
+};
+
+export const CHART = {
+  HEIGHT: 320,
+  BAR_RADIUS: [4, 4, 0, 0] as [number, number, number, number],
+  TOOLTIP_BORDER_RADIUS: 8,
+  GRID_DASH: "3 3",
+  TOOLTIP_SHADOW: "0 4px 12px rgba(0,0,0,0.1)",
+} as const;
+
 export const UI = {
   ALPHA_HOVER: 0.04,
   ALPHA_LIGHT: 0.02,
@@ -182,6 +208,15 @@ export const UI = {
   TOAST_MIN_WIDTH: 300,
   TOAST_DURATION_DEFAULT: 5000,
   TOAST_DURATION_LONG: 8000,
+  TOAST_OFFSET: 80,
   MAX_VISIBLE_TOASTS: 5,
   PAGE_TRANSITION_DURATION: 300,
+  PROGRESS_BAR_HEIGHT: 6,
+  TOTALS_MIN_WIDTH: 280,
+  EMPTY_STATE_ICON_SIZE: 64,
+  METRIC_ICON_SIZE: 44,
+  COMMAND_PALETTE_MAX_HEIGHT: 400,
+  FILTER_DRAWER_MAX_HEIGHT: "80vh",
+  FILTER_DRAWER_HANDLE_WIDTH: 40,
+  FILTER_DRAWER_HANDLE_HEIGHT: 4,
 } as const;

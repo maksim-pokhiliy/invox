@@ -1,11 +1,10 @@
 "use client";
 
-import { Menu, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EditIcon from "@mui/icons-material/Edit";
-import { UI } from "@app/shared/config/config";
+import { OverflowMenu } from "@app/shared/ui/overflow-menu";
 
 interface InvoicesOverflowMenuProps {
   anchorEl: HTMLElement | null;
@@ -27,45 +26,26 @@ export function InvoicesOverflowMenu({
   onDelete,
 }: InvoicesOverflowMenuProps) {
   return (
-    <Menu
+    <OverflowMenu
       anchorEl={anchorEl}
-      open={Boolean(anchorEl)}
       onClose={onClose}
-      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      transformOrigin={{ vertical: "top", horizontal: "right" }}
-      slotProps={{
-        paper: {
-          sx: { minWidth: UI.MENU_MIN_WIDTH, borderRadius: 2 },
+      ariaLabel="Invoice actions"
+      items={[
+        { label: "View", icon: <OpenInNewIcon fontSize="small" />, onClick: onViewDetails },
+        {
+          label: "Edit",
+          icon: <EditIcon fontSize="small" />,
+          onClick: onEdit,
+          show: selectedInvoiceStatus === "DRAFT",
         },
-      }}
-      aria-label="Invoice actions"
-    >
-      <MenuItem onClick={onViewDetails}>
-        <ListItemIcon>
-          <OpenInNewIcon fontSize="small" />
-        </ListItemIcon>
-        <ListItemText>View</ListItemText>
-      </MenuItem>
-      {selectedInvoiceStatus === "DRAFT" && (
-        <MenuItem onClick={onEdit}>
-          <ListItemIcon>
-            <EditIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Edit</ListItemText>
-        </MenuItem>
-      )}
-      <MenuItem onClick={onDuplicate}>
-        <ListItemIcon>
-          <ContentCopyIcon fontSize="small" />
-        </ListItemIcon>
-        <ListItemText>Duplicate</ListItemText>
-      </MenuItem>
-      <MenuItem onClick={onDelete} sx={{ color: "error.main" }}>
-        <ListItemIcon>
-          <DeleteIcon fontSize="small" color="error" />
-        </ListItemIcon>
-        <ListItemText>Delete</ListItemText>
-      </MenuItem>
-    </Menu>
+        { label: "Duplicate", icon: <ContentCopyIcon fontSize="small" />, onClick: onDuplicate },
+        {
+          label: "Delete",
+          icon: <DeleteIcon fontSize="small" />,
+          onClick: onDelete,
+          color: "error.main",
+        },
+      ]}
+    />
   );
 }

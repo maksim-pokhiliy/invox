@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Box, Button, Fade, Grow, Paper, Typography, alpha, useTheme } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { ANIMATION } from "@app/shared/config/config";
+import { ANIMATION, UI } from "@app/shared/config/config";
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -38,8 +38,8 @@ export function EmptyState({ icon, illustration, title, description, action }: E
           ) : (
             <Box
               sx={{
-                width: 64,
-                height: 64,
+                width: UI.EMPTY_STATE_ICON_SIZE,
+                height: UI.EMPTY_STATE_ICON_SIZE,
                 borderRadius: "50%",
                 bgcolor: alpha(theme.palette.primary.main, 0.1),
                 display: "flex",

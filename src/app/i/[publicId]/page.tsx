@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getInvoiceByPublicId } from "@app/server/invoices";
+import { BRANDING } from "@app/shared/config/config";
 import PublicInvoiceView from "@app/features/public-invoice/components/public-invoice-view";
 
 interface Props {
@@ -25,8 +26,8 @@ export default async function PublicInvoicePage({ params, searchParams }: Props)
 
   const branding = {
     logoUrl: senderProfile?.logoUrl || null,
-    primaryColor: senderProfile?.primaryColor || "#1976d2",
-    accentColor: senderProfile?.accentColor || "#9c27b0",
+    primaryColor: senderProfile?.primaryColor || BRANDING.DEFAULT_PRIMARY_COLOR,
+    accentColor: senderProfile?.accentColor || BRANDING.DEFAULT_ACCENT_COLOR,
   };
 
   return (

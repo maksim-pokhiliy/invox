@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useCommandPalette, type CommandItem } from "@app/shared/hooks/use-command-palette";
+import { UI } from "@app/shared/config/config";
 
 const GROUP_ORDER = ["Navigation", "Actions", "Recent"] as const;
 
@@ -109,7 +110,7 @@ function PaletteList({
   }, [selectedIndex]);
 
   return (
-    <List ref={listRef} sx={{ maxHeight: 400, overflow: "auto", py: 1 }}>
+    <List ref={listRef} sx={{ maxHeight: UI.COMMAND_PALETTE_MAX_HEIGHT, overflow: "auto", py: 1 }}>
       {filtered.length === 0 && (
         <ListItem>
           <ListItemText
