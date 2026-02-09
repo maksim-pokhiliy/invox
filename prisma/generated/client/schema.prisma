@@ -1,0 +1,416 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// Auth.js (NextAuth) tables
+// ============================================================
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  emailVerified      DateTime?
+  passwordHash       String
+  saltEdgeCustomerId String?   @unique
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  accounts          Account[]
+  sessions          Session[]
+  senderProfile     SenderProfile?
+  clients           Client[]
+  invoices          Invoice[]
+  invoiceTemplates  InvoiceTemplate[]
+  followUpRules     FollowUpRule[]
+  recurringInvoices RecurringInvoice[]
+  bankConnections   BankConnection[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================================
+// Application tables
+// ============================================================
+
+model SenderProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  companyName     String?
+  displayName     String?
+  emailFrom       String?
+  address         String?
+  taxId           String?
+  defaultCurrency String   @default("USD")
+  // Branding customization
+  logoUrl         String?
+  primaryColor    String?  @default("#1976d2") // MUI default primary
+  accentColor     String?  @default("#9c27b0") // MUI default secondary
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices          Invoice[]
+  recurringInvoices RecurringInvoice[]
+
+  @@index([userId])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  VIEWED
+  OVERDUE
+  PARTIALLY_PAID
+  PAID
+}
+
+enum PaymentMethod {
+  MANUAL
+  BANK_TRANSFER
+  CASH
+  OTHER
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+model Invoice {
+  id             String         @id @default(cuid())
+  userId         String
+  clientId       String
+  publicId       String         @unique
+  currency       String         @default("USD")
+  status         InvoiceStatus  @default(DRAFT)
+  subtotal       Int            @default(0)
+  discountType   DiscountType?
+  discountValue  Int            @default(0) // Percentage (0-100) or fixed amount in cents
+  discountAmount Int            @default(0) // Calculated discount amount in cents
+  taxRate        Int            @default(0) // Tax rate as percentage (e.g., 20 for 20%)
+  taxAmount      Int            @default(0) // Calculated tax amount in cents
+  total          Int            @default(0)
+  paidAmount     Int            @default(0) // Total amount paid so far (in cents)
+  dueDate        DateTime
+  notes          String?        @db.Text
+  tags           Json           @default("[]") // Array of tag strings
+  sentAt         DateTime?
+  viewedAt       DateTime?
+  paidAt         DateTime?
+  paymentMethod  PaymentMethod?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  paymentReference String? @unique
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client           Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items            InvoiceItem[]
+  events           InvoiceEvent[]
+  payments         Payment[]
+  followUpJobs     FollowUpJob[]
+  bankTransactions BankTransaction[]
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([publicId])
+}
+
+model InvoiceItem {
+  id          String @id @default(cuid())
+  invoiceId   String
+  description String
+  quantity    Int
+  unitPrice   Int
+  amount      Int
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+enum InvoiceEventType {
+  CREATED
+  SENT
+  VIEWED
+  REMINDER_SENT
+  PAID_MANUAL
+  PAYMENT_RECORDED
+  STATUS_CHANGED
+}
+
+model InvoiceEvent {
+  id        String           @id @default(cuid())
+  invoiceId String
+  type      InvoiceEventType
+  payload   Json?
+  createdAt DateTime         @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  invoiceId String
+  amount    Int // Amount in cents
+  method    PaymentMethod
+  note      String?
+  paidAt    DateTime      @default(now())
+  createdAt DateTime      @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model InvoiceTemplate {
+  id            String        @id @default(cuid())
+  userId        String
+  name          String
+  description   String?
+  currency      String        @default("USD")
+  discountType  DiscountType?
+  discountValue Int           @default(0)
+  taxRate       Int           @default(0)
+  notes         String?       @db.Text
+  dueDays       Int           @default(30) // Days until due from invoice creation
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items InvoiceTemplateItem[]
+
+  @@index([userId])
+}
+
+model InvoiceTemplateItem {
+  id          String @id @default(cuid())
+  templateId  String
+  description String
+  quantity    Int
+  unitPrice   Int
+
+  template InvoiceTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+}
+
+enum FollowUpMode {
+  AFTER_SENT
+  AFTER_DUE
+}
+
+model FollowUpRule {
+  id         String       @id @default(cuid())
+  userId     String
+  enabled    Boolean      @default(true)
+  mode       FollowUpMode @default(AFTER_SENT)
+  delaysDays Json         @default("[1, 3, 7]")
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum FollowUpJobStatus {
+  PENDING
+  SENT
+  CANCELED
+}
+
+model FollowUpJob {
+  id           String            @id @default(cuid())
+  invoiceId    String
+  scheduledFor DateTime
+  sentAt       DateTime?
+  status       FollowUpJobStatus @default(PENDING)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([status, scheduledFor])
+}
+
+// ============================================================
+// Recurring Invoices
+// ============================================================
+
+enum RecurringFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum RecurringStatus {
+  ACTIVE
+  PAUSED
+  CANCELED
+}
+
+model RecurringInvoice {
+  id            String             @id @default(cuid())
+  userId        String
+  clientId      String
+  name          String // Name/description for this recurring invoice
+  frequency     RecurringFrequency @default(MONTHLY)
+  status        RecurringStatus    @default(ACTIVE)
+  currency      String             @default("USD")
+  discountType  DiscountType?
+  discountValue Int                @default(0)
+  taxRate       Int                @default(0)
+  notes         String?            @db.Text
+  dueDays       Int                @default(30) // Days until due from invoice creation
+  autoSend      Boolean            @default(false) // Auto-send invoice when created
+  nextRunAt     DateTime // Next scheduled run date
+  lastRunAt     DateTime? // Last time an invoice was generated
+  endDate       DateTime? // Optional end date for the schedule
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  user   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client                 @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items  RecurringInvoiceItem[]
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([status, nextRunAt])
+}
+
+model RecurringInvoiceItem {
+  id                 String @id @default(cuid())
+  recurringInvoiceId String
+  description        String
+  quantity           Int
+  unitPrice          Int
+
+  recurringInvoice RecurringInvoice @relation(fields: [recurringInvoiceId], references: [id], onDelete: Cascade)
+
+  @@index([recurringInvoiceId])
+}
+
+// ============================================================
+// Banking Integration (Salt Edge)
+// ============================================================
+
+enum BankTransactionStatus {
+  PENDING
+  AUTO_MATCHED
+  CONFIRMED
+  IGNORED
+}
+
+model BankConnection {
+  id                   String    @id @default(cuid())
+  userId               String
+  saltEdgeConnectionId String    @unique
+  provider             String
+  providerName         String
+  country              String
+  status               String    @default("active")
+  lastSyncAt           DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accounts BankAccount[]
+
+  @@index([userId])
+}
+
+model BankAccount {
+  id                String   @id @default(cuid())
+  connectionId      String
+  saltEdgeAccountId String   @unique
+  name              String
+  nature            String
+  balance           Int
+  currencyCode      String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  connection   BankConnection    @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  transactions BankTransaction[]
+
+  @@index([connectionId])
+}
+
+model BankTransaction {
+  id               String                @id @default(cuid())
+  accountId        String
+  saltEdgeId       String                @unique
+  amount           Int
+  currencyCode     String
+  description      String
+  madeOn           DateTime
+  status           BankTransactionStatus @default(PENDING)
+  matchedInvoiceId String?
+  matchConfidence  Float?
+  createdAt        DateTime              @default(now())
+
+  account        BankAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  matchedInvoice Invoice?    @relation(fields: [matchedInvoiceId], references: [id])
+
+  @@index([accountId])
+  @@index([matchedInvoiceId])
+}

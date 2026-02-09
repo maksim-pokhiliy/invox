@@ -4,10 +4,14 @@ import { EMAIL } from "@app/shared/config/config";
 import { env } from "@app/shared/config/env";
 import { buildEmailLayout, buildEmailButton, buildInvoiceDetailsBlock } from "./template";
 
-const resend = new Resend(env.RESEND_API_KEY);
+let resend: Resend | undefined;
 
-const APP_URL = env.APP_URL;
-const EMAIL_FROM = env.EMAIL_FROM;
+function getResend(): Resend {
+  if (!resend) {
+    resend = new Resend(env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 interface InvoiceEmailData {
   clientName: string;
@@ -21,7 +25,7 @@ interface InvoiceEmailData {
 }
 
 export async function sendInvoiceEmail(data: InvoiceEmailData) {
-  const invoiceUrl = `${APP_URL}/i/${data.publicId}`;
+  const invoiceUrl = `${env.APP_URL}/i/${data.publicId}`;
   const formattedTotal = formatCurrency(data.total, data.currency);
   const formattedDueDate = formatDate(data.dueDate);
   const title = `Invoice from ${data.senderName}`;
@@ -37,8 +41,8 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
 
   const text = `${title}\n\nHi ${data.clientName},\n\nYou have received a new invoice for ${formattedTotal}.\n\nAmount Due: ${formattedTotal}\nDue Date: ${formattedDueDate}\n\nView Invoice: ${invoiceUrl}\n\nIf you have any questions about this invoice, please reply to this email or contact ${data.senderName} directly.`;
 
-  return resend.emails.send({
-    from: EMAIL_FROM,
+  return getResend().emails.send({
+    from: env.EMAIL_FROM,
     to: data.clientEmail,
     replyTo: data.senderEmail,
     subject: `${title} - ${formattedTotal}`,
@@ -48,7 +52,7 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
 }
 
 export async function sendReminderEmail(data: InvoiceEmailData & { isOverdue: boolean }) {
-  const invoiceUrl = `${APP_URL}/i/${data.publicId}`;
+  const invoiceUrl = `${env.APP_URL}/i/${data.publicId}`;
   const formattedTotal = formatCurrency(data.total, data.currency);
   const formattedDueDate = formatDate(data.dueDate);
   const color = data.isOverdue ? EMAIL.OVERDUE_COLOR : EMAIL.PRIMARY_COLOR;
@@ -68,8 +72,8 @@ export async function sendReminderEmail(data: InvoiceEmailData & { isOverdue: bo
 
   const text = `${title}\n\nHi ${data.clientName},\n\nThis is a friendly reminder about an outstanding invoice for ${formattedTotal}.\n\n${data.isOverdue ? "This invoice is now overdue.\n\n" : ""}Amount Due: ${formattedTotal}\nDue Date: ${formattedDueDate}\n\nView & Pay Invoice: ${invoiceUrl}\n\nIf you have already paid this invoice, please disregard this reminder. For any questions, please contact ${data.senderName} directly.`;
 
-  return resend.emails.send({
-    from: EMAIL_FROM,
+  return getResend().emails.send({
+    from: env.EMAIL_FROM,
     to: data.clientEmail,
     replyTo: data.senderEmail,
     subject: title,
