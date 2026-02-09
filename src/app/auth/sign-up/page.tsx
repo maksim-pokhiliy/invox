@@ -28,6 +28,8 @@ import { LoadingButton } from "@app/shared/ui/loading-button";
 import { useToast } from "@app/shared/ui/toast";
 import { signUpSchema, SignUpInput } from "@app/shared/schemas";
 import { UI } from "@app/shared/config/config";
+import { ApiError } from "@app/shared/api/base";
+import { authApi } from "@app/features/auth";
 
 const FEATURES = [
   "Create professional invoices in minutes",
@@ -55,18 +57,7 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/sign-up", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        toast.error(result.error?.message || "Failed to create account");
-        return;
-      }
+      await authApi.signUp(data);
 
       const signInResult = await signIn("credentials", {
         email: data.email,
@@ -83,8 +74,8 @@ export default function SignUpPage() {
       toast.success("Welcome to Invox!");
       router.push("/app");
       router.refresh();
-    } catch {
-      toast.error("An unexpected error occurred");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }

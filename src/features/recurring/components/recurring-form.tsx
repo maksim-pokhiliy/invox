@@ -1,16 +1,22 @@
 "use client";
 
 import { useCallback } from "react";
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 import { PageHeader } from "@app/shared/ui/page-header";
 import { Spinner } from "@app/shared/ui/loading";
-import { LoadingButton } from "@app/shared/ui/loading-button";
+import { FormActions } from "@app/shared/ui/form-actions";
+import type { Client } from "@app/shared/schemas/api";
 import { useRecurringForm } from "./use-recurring-form";
 import { RecurringFormSchedule } from "./recurring-form-schedule";
 import { RecurringFormItems } from "./recurring-form-items";
 import { RecurringFormDiscounts } from "./recurring-form-discounts";
 
-export function RecurringForm() {
+interface RecurringFormProps {
+  clients: Client[] | undefined;
+  clientsLoading: boolean;
+}
+
+export function RecurringForm({ clients, clientsLoading }: RecurringFormProps) {
   const {
     register,
     handleSubmit,
@@ -23,11 +29,9 @@ export function RecurringForm() {
     discountType,
     subtotal,
     isPending,
-    clients,
-    clientsLoading,
     onSubmit,
     router,
-  } = useRecurringForm();
+  } = useRecurringForm({ clients, clientsLoading });
 
   const handleAppend = useCallback(
     () => append({ description: "", quantity: 1, unitPrice: 0 }),
@@ -66,14 +70,11 @@ export function RecurringForm() {
           currency={currency}
         />
 
-        <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-          <Button variant="outlined" onClick={() => router.back()}>
-            Cancel
-          </Button>
-          <LoadingButton type="submit" variant="contained" loading={isPending}>
-            Create Schedule
-          </LoadingButton>
-        </Box>
+        <FormActions
+          onCancel={() => router.back()}
+          submitLabel="Create Schedule"
+          loading={isPending}
+        />
       </Box>
     </>
   );

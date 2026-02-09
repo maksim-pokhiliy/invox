@@ -77,7 +77,8 @@ export function StatusBreakdown({ isLoading, statusCounts, clientCount }: Status
                   width: `${percentage}%`,
                   borderRadius: 3,
                   bgcolor: color,
-                  transition: "width 0.6s ease",
+                  transition: (t) =>
+                    t.transitions.create("width", { duration: t.transitions.duration.complex }),
                 }}
               />
             </Box>

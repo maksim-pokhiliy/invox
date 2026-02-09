@@ -19,7 +19,7 @@ import {
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { formatCurrency, formatDateCompact } from "@app/shared/lib/format";
-import { calculateTotals } from "@app/shared/lib/calculations";
+import { calculateTotals, buildDiscountInput } from "@app/shared/lib/calculations";
 import { UI } from "@app/shared/config/config";
 import type { Template } from "@app/features/templates";
 
@@ -164,11 +164,10 @@ export function TemplatesTable({
 }
 
 export function calculateEstimatedTotal(template: Template) {
-  const discount =
-    template.discountType && template.discountValue > 0
-      ? { type: template.discountType as "PERCENTAGE" | "FIXED", value: template.discountValue }
-      : null;
-
-  const { total } = calculateTotals(template.items, discount, template.taxRate);
+  const { total } = calculateTotals(
+    template.items,
+    buildDiscountInput(template.discountType, template.discountValue),
+    template.taxRate
+  );
   return total;
 }

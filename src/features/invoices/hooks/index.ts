@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys, STALE_TIME } from "@app/shared/config/query";
+import { INVOICE_STATUS } from "@app/shared/config/invoice-status";
 import { invoicesApi, type RecordPaymentInput } from "../api";
 import type { CreateInvoiceInput, UpdateInvoiceInput } from "@app/shared/schemas";
 import type { Invoice, InvoiceListItem } from "@app/shared/schemas/api";
@@ -61,13 +62,13 @@ export function useSendInvoice() {
       queryClient.setQueryData<InvoiceListItem[]>(queryKeys.invoices, (old) =>
         old?.map((invoice) =>
           invoice.id === id
-            ? { ...invoice, status: "SENT" as const, sentAt: new Date().toISOString() }
+            ? { ...invoice, status: INVOICE_STATUS.SENT, sentAt: new Date().toISOString() }
             : invoice
         )
       );
 
       queryClient.setQueryData<Invoice>(queryKeys.invoice(id), (old) =>
-        old ? { ...old, status: "SENT" as const, sentAt: new Date().toISOString() } : old
+        old ? { ...old, status: INVOICE_STATUS.SENT, sentAt: new Date().toISOString() } : old
       );
 
       return { previousInvoices, previousInvoice };
@@ -102,13 +103,13 @@ export function useMarkInvoicePaid() {
       queryClient.setQueryData<InvoiceListItem[]>(queryKeys.invoices, (old) =>
         old?.map((invoice) =>
           invoice.id === id
-            ? { ...invoice, status: "PAID" as const, paidAt: new Date().toISOString() }
+            ? { ...invoice, status: INVOICE_STATUS.PAID, paidAt: new Date().toISOString() }
             : invoice
         )
       );
 
       queryClient.setQueryData<Invoice>(queryKeys.invoice(id), (old) =>
-        old ? { ...old, status: "PAID" as const, paidAt: new Date().toISOString() } : old
+        old ? { ...old, status: INVOICE_STATUS.PAID, paidAt: new Date().toISOString() } : old
       );
 
       return { previousInvoices, previousInvoice };

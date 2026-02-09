@@ -258,6 +258,23 @@ export const sharedComponents = {
       },
     },
   },
+  MuiLink: {
+    styleOverrides: {
+      root: {
+        transition: transitionAll,
+      },
+    },
+  },
+  MuiLinearProgress: {
+    styleOverrides: {
+      root: {
+        borderRadius: 999,
+      },
+      bar: {
+        borderRadius: 999,
+      },
+    },
+  },
   MuiListItemButton: {
     styleOverrides: {
       root: {

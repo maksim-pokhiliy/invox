@@ -4,16 +4,21 @@ import { useRouter } from "next/navigation";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@app/shared/ui/toast";
-import { useClients } from "@app/features/clients";
 import { useCreateRecurring } from "@app/features/recurring";
+import type { Client } from "@app/shared/schemas/api";
 import { ApiError } from "@app/shared/api";
+import { buildDiscountInput } from "@app/shared/lib/calculations";
 import { useUnsavedChanges } from "@app/shared/hooks";
 import { recurringFormSchema, type RecurringFormData } from "@app/shared/schemas";
 
-export function useRecurringForm() {
+interface UseRecurringFormOptions {
+  clients: Client[] | undefined;
+  clientsLoading: boolean;
+}
+
+export function useRecurringForm({ clients, clientsLoading }: UseRecurringFormOptions) {
   const router = useRouter();
   const toast = useToast();
-  const { data: clients, isLoading: clientsLoading } = useClients();
   const createMutation = useCreateRecurring();
 
   const {
@@ -62,10 +67,7 @@ export function useRecurringForm() {
       name: data.name,
       frequency: data.frequency,
       currency: data.currency,
-      discount:
-        data.discountType !== "NONE"
-          ? { type: data.discountType as "PERCENTAGE" | "FIXED", value: data.discountValue }
-          : undefined,
+      discount: buildDiscountInput(data.discountType, data.discountValue) ?? undefined,
       taxRate: data.taxRate,
       notes: data.notes || undefined,
       dueDays: data.dueDays,

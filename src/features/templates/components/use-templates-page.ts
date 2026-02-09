@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTemplates, templatesApi, type Template } from "@app/features/templates";
-import { useOptimisticDelete, useDebouncedValue } from "@app/shared/hooks";
+import { useOptimisticDelete, useDebouncedValue, useItemMenu, useSort } from "@app/shared/hooks";
 import { useAnnounce } from "@app/shared/ui/screen-reader-announcer";
 import { queryKeys } from "@app/shared/config/query";
 import { SEARCH } from "@app/shared/config/config";
@@ -64,15 +64,12 @@ export function useTemplatesPage() {
     deleteFn: templatesApi.delete,
   });
 
-  const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedTemplateId, setSelectedTemplateId] = React.useState<string | null>(null);
-  const [sortColumn, setSortColumn] = React.useState<string>("updatedAt");
-  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("desc");
+  const menu = useItemMenu(templates);
+  const { sortColumn, sortDirection, handleSort } = useSort("updatedAt", "desc");
   const [searchQuery, setSearchQuery] = React.useState("");
 
   const announce = useAnnounce();
   const debouncedSearch = useDebouncedValue(searchQuery, SEARCH.DEBOUNCE_MS);
-  const selectedTemplate = templates?.find((t) => t.id === selectedTemplateId);
   const allTemplatesCount = templates ? templates.filter((t) => !pendingIds.has(t.id)).length : 0;
 
   const sortedTemplates = useSortedTemplates(
@@ -90,56 +87,29 @@ export function useTemplatesPage() {
     }
   }, [sortedCount, debouncedSearch, announce]);
 
-  const handleMenuOpen = React.useCallback(
-    (event: React.MouseEvent<HTMLElement>, templateId: string) => {
-      event.stopPropagation();
-      setMenuAnchorEl(event.currentTarget);
-      setSelectedTemplateId(templateId);
-    },
-    []
-  );
-
-  const handleMenuClose = React.useCallback(() => {
-    setMenuAnchorEl(null);
-    setSelectedTemplateId(null);
-  }, []);
-
   const handleDelete = React.useCallback(() => {
-    if (!selectedTemplate) {
+    if (!menu.selectedItem) {
       return;
     }
-    const template = selectedTemplate;
-    setMenuAnchorEl(null);
-    setSelectedTemplateId(null);
+    const template = menu.selectedItem;
+    menu.closeMenu();
     deleteItem(template);
-  }, [selectedTemplate, deleteItem]);
+  }, [menu, deleteItem]);
 
   const handleEdit = React.useCallback(() => {
-    if (!selectedTemplate) {
+    if (!menu.selectedItem) {
       return;
     }
-    setMenuAnchorEl(null);
-    setSelectedTemplateId(null);
-    router.push(`/app/templates/${selectedTemplate.id}/edit`);
-  }, [selectedTemplate, router]);
+    const templateId = menu.selectedItem.id;
+    menu.closeMenu();
+    router.push(`/app/templates/${templateId}/edit`);
+  }, [menu, router]);
 
   const handleUseTemplate = React.useCallback(
     (template: Template) => {
       router.push(`/app/invoices/new?templateId=${template.id}`);
     },
     [router]
-  );
-
-  const handleSort = React.useCallback(
-    (column: string) => {
-      if (sortColumn === column) {
-        setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-      } else {
-        setSortColumn(column);
-        setSortDirection("asc");
-      }
-    },
-    [sortColumn]
   );
 
   const navigateToNewTemplate = React.useCallback(() => {
@@ -153,12 +123,12 @@ export function useTemplatesPage() {
     allTemplatesCount,
     searchQuery,
     setSearchQuery,
-    menuAnchorEl,
-    selectedTemplate,
+    menuAnchorEl: menu.menuAnchorEl,
+    selectedTemplate: menu.selectedItem,
     sortColumn,
     sortDirection,
-    handleMenuOpen,
-    handleMenuClose,
+    handleMenuOpen: menu.openMenu,
+    handleMenuClose: menu.closeMenu,
     handleDelete,
     handleEdit,
     handleUseTemplate,

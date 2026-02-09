@@ -51,13 +51,15 @@ export function DesktopNav({ pathname }: DesktopNavProps) {
             startIcon={item.icon}
             sx={{
               color: isActive ? "primary.main" : "text.secondary",
-              bgcolor: isActive ? alpha(theme.palette.primary.main, 0.08) : "transparent",
+              bgcolor: isActive
+                ? alpha(theme.palette.primary.main, UI.ALPHA_MEDIUM)
+                : "transparent",
               fontWeight: isActive ? 600 : 500,
               px: 1.5,
               borderRadius: 2,
               "&:hover": {
                 bgcolor: isActive
-                  ? alpha(theme.palette.primary.main, 0.12)
+                  ? alpha(theme.palette.primary.main, UI.ALPHA_ACTIVE)
                   : alpha(theme.palette.text.primary, UI.ALPHA_HOVER),
               },
             }}

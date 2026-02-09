@@ -1,5 +1,11 @@
 import { prisma } from "@app/server/db";
 import { PaymentMethod } from "@prisma/client";
+import {
+  INVOICE_STATUS,
+  INVOICE_EVENT,
+  FOLLOWUP_STATUS,
+  type InvoiceStatusValue,
+} from "@app/shared/config/invoice-status";
 
 export interface RecordPaymentInput {
   amount: number;
@@ -17,7 +23,7 @@ export async function recordPayment(id: string, userId: string, data: RecordPaym
     return null;
   }
 
-  if (invoice.status === "DRAFT") {
+  if (invoice.status === INVOICE_STATUS.DRAFT) {
     return null;
   }
 
@@ -44,7 +50,7 @@ export async function recordPayment(id: string, userId: string, data: RecordPaym
       where: { id },
       data: {
         paidAmount: newPaidAmount,
-        status: isFullyPaid ? "PAID" : "PARTIALLY_PAID",
+        status: isFullyPaid ? INVOICE_STATUS.PAID : INVOICE_STATUS.PARTIALLY_PAID,
         paidAt: isFullyPaid ? new Date() : null,
         paymentMethod: isFullyPaid ? data.method : null,
       },
@@ -60,7 +66,7 @@ export async function recordPayment(id: string, userId: string, data: RecordPaym
     await tx.invoiceEvent.create({
       data: {
         invoiceId: id,
-        type: "PAYMENT_RECORDED",
+        type: INVOICE_EVENT.PAYMENT_RECORDED,
         payload: {
           amount: data.amount,
           method: data.method,
@@ -72,8 +78,8 @@ export async function recordPayment(id: string, userId: string, data: RecordPaym
 
     if (isFullyPaid) {
       await tx.followUpJob.updateMany({
-        where: { invoiceId: id, status: "PENDING" },
-        data: { status: "CANCELED" },
+        where: { invoiceId: id, status: FOLLOWUP_STATUS.PENDING },
+        data: { status: FOLLOWUP_STATUS.CANCELED },
       });
     }
 
@@ -108,19 +114,19 @@ export async function deletePayment(paymentId: string, userId: string) {
     return null;
   }
 
-  if (payment.invoice.status === "PAID") {
+  if (payment.invoice.status === INVOICE_STATUS.PAID) {
     return null;
   }
 
   const newPaidAmount = payment.invoice.paidAmount - payment.amount;
 
-  let newStatus: "PARTIALLY_PAID" | "VIEWED" | "SENT";
+  let newStatus: InvoiceStatusValue;
   if (newPaidAmount > 0) {
-    newStatus = "PARTIALLY_PAID";
+    newStatus = INVOICE_STATUS.PARTIALLY_PAID;
   } else if (payment.invoice.viewedAt) {
-    newStatus = "VIEWED";
+    newStatus = INVOICE_STATUS.VIEWED;
   } else {
-    newStatus = "SENT";
+    newStatus = INVOICE_STATUS.SENT;
   }
 
   return prisma.$transaction(async (tx) => {

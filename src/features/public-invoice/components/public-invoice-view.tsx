@@ -10,6 +10,7 @@ import { InvoiceItemsTable } from "./invoice-items-table";
 import { InvoiceTotals } from "./invoice-totals";
 import { InvoiceActions } from "./invoice-actions";
 import { PaymentReferenceBlock } from "./payment-reference-block";
+import { publicApi } from "../api";
 
 interface InvoiceItem {
   id: string;
@@ -71,7 +72,7 @@ export default function PublicInvoiceView({ publicId, invoice, branding, justPai
 
   React.useEffect(() => {
     if (!viewTracked) {
-      fetch(`/api/public/invoices/${publicId}/viewed`, { method: "POST" }).catch(console.error);
+      publicApi.markViewed(publicId).catch(console.error);
       setViewTracked(true);
     }
   }, [publicId, viewTracked]);

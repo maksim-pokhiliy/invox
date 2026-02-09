@@ -31,7 +31,8 @@ export function ConnectReturn() {
         setStatus("error");
         setTimeout(() => window.close(), BANKING.CONNECT_ERROR_DELAY);
       });
-  }, [completeConnection]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Box

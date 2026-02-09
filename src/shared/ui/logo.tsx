@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Box, Typography, alpha, useTheme } from "@mui/material";
+import { UI } from "@app/shared/config/config";
 
 interface LogoProps {
   size?: "small" | "medium" | "large";
@@ -29,7 +30,7 @@ export function Logo({ size = "medium", showText = true }: LogoProps) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.3)}`,
+          boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, UI.LOGO_SHADOW_ALPHA)}`,
         }}
       >
         <Typography

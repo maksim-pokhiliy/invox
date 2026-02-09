@@ -74,23 +74,23 @@ export function ActivityHistory({ events, expanded, onToggle }: ActivityHistoryP
                   <Box
                     sx={{
                       position: "absolute",
-                      left: 15,
-                      top: 32,
+                      left: UI.TIMELINE_LINE_LEFT,
+                      top: UI.TIMELINE_LINE_TOP,
                       bottom: 0,
-                      width: 2,
+                      width: UI.TIMELINE_LINE_WIDTH,
                       bgcolor: "divider",
                     }}
                   />
                 )}
                 <Box
                   sx={{
-                    width: 32,
-                    height: 32,
+                    width: UI.TIMELINE_DOT_SIZE,
+                    height: UI.TIMELINE_DOT_SIZE,
                     borderRadius: "50%",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_MUTED),
                     color: config.color,
                     flexShrink: 0,
                     zIndex: 1,

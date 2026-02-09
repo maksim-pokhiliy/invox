@@ -1,8 +1,9 @@
 import { nanoid } from "nanoid";
 import { prisma } from "@app/server/db";
 import { CreateInvoiceInput, UpdateInvoiceInput, InvoiceItemInput } from "@app/shared/schemas";
-import { InvoiceStatus, InvoiceEventType, PaymentMethod, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { NANOID, INVOICE, TIME } from "@app/shared/config/config";
+import { INVOICE_STATUS, INVOICE_EVENT } from "@app/shared/config/invoice-status";
 import { calculateTotals, type DiscountInput } from "@app/shared/lib/calculations";
 
 function buildBasicUpdateFields(data: UpdateInvoiceInput): Prisma.InvoiceUncheckedUpdateInput {
@@ -85,7 +86,7 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
       taxRate: data.taxRate || 0,
       taxAmount,
       total,
-      status: "DRAFT",
+      status: INVOICE_STATUS.DRAFT,
       items: {
         create: data.items.map((item) => ({
           description: item.description,
@@ -104,7 +105,7 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
   await prisma.invoiceEvent.create({
     data: {
       invoiceId: invoice.id,
-      type: "CREATED",
+      type: INVOICE_EVENT.CREATED,
       payload: {},
     },
   });
@@ -139,7 +140,7 @@ async function getItemsForCalculation(
 
 export async function updateInvoice(id: string, userId: string, data: UpdateInvoiceInput) {
   const invoice = await prisma.invoice.findFirst({
-    where: { id, userId, status: "DRAFT" },
+    where: { id, userId, status: INVOICE_STATUS.DRAFT },
   });
 
   if (!invoice) {
@@ -211,7 +212,7 @@ export async function duplicateInvoice(id: string, userId: string) {
       clientId: invoice.clientId,
       publicId,
       currency: invoice.currency,
-      status: "DRAFT",
+      status: INVOICE_STATUS.DRAFT,
       dueDate: new Date(Date.now() + INVOICE.DEFAULT_DUE_DAYS * TIME.DAY),
       subtotal: invoice.subtotal,
       total: invoice.total,
@@ -232,102 +233,4 @@ export async function duplicateInvoice(id: string, userId: string) {
   });
 
   return newInvoice;
-}
-
-export async function markInvoiceViewed(publicId: string) {
-  const invoice = await prisma.invoice.findUnique({
-    where: { publicId },
-  });
-
-  if (!invoice || invoice.viewedAt) {
-    return invoice;
-  }
-
-  const updated = await prisma.invoice.update({
-    where: { publicId },
-    data: {
-      viewedAt: new Date(),
-      status: invoice.status === "SENT" ? "VIEWED" : invoice.status,
-    },
-  });
-
-  await prisma.invoiceEvent.create({
-    data: {
-      invoiceId: invoice.id,
-      type: "VIEWED",
-      payload: {},
-    },
-  });
-
-  return updated;
-}
-
-export async function markInvoicePaid(
-  id: string,
-  userId: string,
-  method: PaymentMethod = "MANUAL"
-) {
-  const invoice = await prisma.invoice.findFirst({
-    where: { id, userId, paidAt: null },
-  });
-
-  if (!invoice) {
-    return null;
-  }
-
-  const updated = await prisma.invoice.update({
-    where: { id },
-    data: {
-      status: "PAID",
-      paidAt: new Date(),
-      paymentMethod: method,
-    },
-    include: {
-      client: true,
-      items: true,
-    },
-  });
-
-  await prisma.invoiceEvent.create({
-    data: {
-      invoiceId: invoice.id,
-      type: "PAID_MANUAL",
-      payload: {},
-    },
-  });
-
-  await prisma.followUpJob.updateMany({
-    where: { invoiceId: invoice.id, status: "PENDING" },
-    data: { status: "CANCELED" },
-  });
-
-  return updated;
-}
-
-export async function updateInvoiceStatus(
-  id: string,
-  status: InvoiceStatus,
-  additionalData: Record<string, unknown> = {}
-) {
-  return prisma.invoice.update({
-    where: { id },
-    data: {
-      status,
-      ...additionalData,
-    },
-  });
-}
-
-export async function logInvoiceEvent(
-  invoiceId: string,
-  type: InvoiceEventType,
-  payload: Prisma.InputJsonValue = {}
-) {
-  return prisma.invoiceEvent.create({
-    data: {
-      invoiceId,
-      type,
-      payload,
-    },
-  });
 }

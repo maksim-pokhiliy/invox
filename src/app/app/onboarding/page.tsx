@@ -24,6 +24,8 @@ import { Logo } from "@app/shared/ui/logo";
 import { LoadingButton } from "@app/shared/ui/loading-button";
 import { useToast } from "@app/shared/ui/toast";
 import { senderProfileFormSchema, SenderProfileFormInput } from "@app/shared/schemas";
+import { ApiError } from "@app/shared/api/base";
+import { senderProfileApi } from "@app/features/settings";
 
 const currencies = [
   { value: "USD", label: "USD - US Dollar" },
@@ -60,23 +62,11 @@ export default function OnboardingPage() {
     setError(null);
 
     try {
-      const response = await fetch("/api/sender-profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        setError(result.error?.message || "Failed to save profile");
-        return;
-      }
-
+      await senderProfileApi.create(data);
       toast.success("Profile saved successfully!");
       router.push("/app/invoices");
-    } catch {
-      setError("An unexpected error occurred");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }

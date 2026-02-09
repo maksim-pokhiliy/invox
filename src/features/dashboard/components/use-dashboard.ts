@@ -2,9 +2,15 @@
 
 import * as React from "react";
 import { useAnalytics } from "@app/features/dashboard";
-import { useClients } from "@app/features/clients";
-import { useInvoices } from "@app/features/invoices";
-import { useSenderProfile } from "@app/features/settings";
+
+interface ExternalData {
+  clientCount: number;
+  invoiceCount: number;
+  hasSentInvoice: boolean;
+  hasProfile: boolean;
+  isExternalDataLoading: boolean;
+}
+
 interface OnboardingStep {
   label: string;
   completed: boolean;
@@ -59,27 +65,26 @@ function buildOnboardingSteps(
   ];
 }
 
-export function useDashboard() {
+export function useDashboard(external: ExternalData) {
   const { data: analytics, isLoading, error } = useAnalytics();
-  const { data: clients, isLoading: isClientsLoading } = useClients();
-  const { data: invoices, isLoading: isInvoicesLoading } = useInvoices();
-  const { data: profile, isLoading: isProfileLoading } = useSenderProfile();
   const [selectedCurrency, setSelectedCurrency] = React.useState<string | null>(null);
-
-  const hasProfile = Boolean(profile?.companyName || profile?.displayName);
-  const hasSentInvoice = invoices?.some((inv) => inv.status !== "DRAFT") ?? false;
 
   const onboardingSteps = React.useMemo(
     () =>
-      buildOnboardingSteps(hasProfile, clients?.length ?? 0, invoices?.length ?? 0, hasSentInvoice),
-    [hasProfile, clients?.length, invoices?.length, hasSentInvoice]
+      buildOnboardingSteps(
+        external.hasProfile,
+        external.clientCount,
+        external.invoiceCount,
+        external.hasSentInvoice
+      ),
+    [external.hasProfile, external.clientCount, external.invoiceCount, external.hasSentInvoice]
   );
 
   React.useEffect(() => {
     if (analytics?.currencies && analytics.currencies.length > 0 && !selectedCurrency) {
       setSelectedCurrency(analytics.currencies[0]);
     }
-  }, [analytics, selectedCurrency]);
+  }, [analytics?.currencies, selectedCurrency]);
 
   const currencyValues = deriveCurrencyValues(analytics, selectedCurrency);
 
@@ -91,7 +96,7 @@ export function useDashboard() {
       : 0;
 
   const hasMultipleCurrencies = (analytics?.currencies?.length ?? 0) > 1;
-  const isOnboardingReady = !isClientsLoading && !isInvoicesLoading && !isProfileLoading;
+  const isOnboardingReady = !external.isExternalDataLoading;
 
   return {
     analytics,

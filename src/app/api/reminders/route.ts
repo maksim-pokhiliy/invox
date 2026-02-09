@@ -1,17 +1,8 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { getFollowUpRule, createOrUpdateFollowUpRule } from "@app/server/followups";
 import { REMINDER } from "@app/shared/config/config";
 import { withAuth, parseBody } from "@app/shared/api/route-helpers";
-
-const updateReminderSettingsSchema = z.object({
-  enabled: z.boolean(),
-  mode: z.enum(["AFTER_SENT", "AFTER_DUE"]),
-  delaysDays: z
-    .array(z.number().min(REMINDER.MIN_DAYS).max(REMINDER.MAX_DAYS))
-    .min(1)
-    .max(REMINDER.MAX_REMINDER_COUNT),
-});
+import { updateReminderSettingsSchema } from "@app/shared/schemas";
 
 export const GET = withAuth(async (user) => {
   const rule = await getFollowUpRule(user.id);

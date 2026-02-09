@@ -1,5 +1,6 @@
 import { prisma } from "@app/server/db";
 import { FollowUpMode } from "@prisma/client";
+import { FOLLOWUP_STATUS } from "@app/shared/config/invoice-status";
 
 export async function getFollowUpRule(userId: string) {
   return prisma.followUpRule.findFirst({
@@ -58,7 +59,7 @@ export async function scheduleFollowUps(
     return {
       invoiceId,
       scheduledFor,
-      status: "PENDING" as const,
+      status: FOLLOWUP_STATUS.PENDING,
     };
   });
 
@@ -72,7 +73,7 @@ export async function scheduleFollowUps(
 export async function getPendingFollowUpJobs() {
   return prisma.followUpJob.findMany({
     where: {
-      status: "PENDING",
+      status: FOLLOWUP_STATUS.PENDING,
       scheduledFor: {
         lte: new Date(),
       },
@@ -106,10 +107,10 @@ export async function cancelPendingFollowUps(invoiceId: string) {
   return prisma.followUpJob.updateMany({
     where: {
       invoiceId,
-      status: "PENDING",
+      status: FOLLOWUP_STATUS.PENDING,
     },
     data: {
-      status: "CANCELED",
+      status: FOLLOWUP_STATUS.CANCELED,
     },
   });
 }

@@ -44,9 +44,9 @@ function ShortcutBadge({ keys }: { keys: readonly string[] }) {
           sx={{
             px: 0.75,
             py: 0.25,
-            bgcolor: alpha(theme.palette.text.primary, 0.06),
+            bgcolor: alpha(theme.palette.text.primary, UI.ALPHA_HOVER),
             border: 1,
-            borderColor: alpha(theme.palette.text.primary, 0.12),
+            borderColor: alpha(theme.palette.text.primary, UI.ALPHA_ACTIVE),
             borderRadius: 1,
             fontFamily: "monospace",
             fontSize: "0.7rem",
@@ -81,7 +81,7 @@ function PaletteItem({
       sx={{
         mx: 1,
         borderRadius: 1.5,
-        "&.Mui-selected": { bgcolor: alpha(theme.palette.primary.main, 0.08) },
+        "&.Mui-selected": { bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_MEDIUM) },
       }}
     >
       {item.icon && <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>}

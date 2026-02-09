@@ -9,9 +9,17 @@ import { DashboardMetrics } from "./dashboard-metrics";
 import { DashboardCharts } from "./dashboard-charts";
 import { useDashboard } from "./use-dashboard";
 
-export function DashboardContent() {
+interface DashboardContentProps {
+  clientCount: number;
+  invoiceCount: number;
+  hasSentInvoice: boolean;
+  hasProfile: boolean;
+  isExternalDataLoading: boolean;
+}
+
+export function DashboardContent(props: DashboardContentProps) {
   const router = useRouter();
-  const dashboard = useDashboard();
+  const dashboard = useDashboard(props);
 
   if (dashboard.error) {
     return (

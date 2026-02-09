@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Button, Typography } from "@mui/material";
+import { UI } from "@app/shared/config/config";
 
 interface BrandingPreviewProps {
   logoUrl: string;
@@ -35,7 +36,11 @@ export function BrandingPreview({
               component="img"
               src={logoUrl}
               alt="Logo"
-              sx={{ maxWidth: 120, maxHeight: 40, objectFit: "contain" }}
+              sx={{
+                maxWidth: UI.BRANDING_PREVIEW_MAX_WIDTH,
+                maxHeight: UI.BRANDING_PREVIEW_MAX_HEIGHT,
+                objectFit: "contain",
+              }}
               onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                 e.currentTarget.style.display = "none";
               }}
