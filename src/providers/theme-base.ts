@@ -1,22 +1,22 @@
 import { alpha } from "@mui/material/styles";
+import { ANIMATION, UI } from "@app/shared/config/config";
 
 export const brand = {
-  primary: "#4338ca",
-  primaryLight: "#818cf8",
-  primaryDark: "#3730a3",
-  secondary: "#047857",
-  secondaryLight: "#34d399",
-  secondaryDark: "#065f46",
-  accent: "#d97706",
-  error: "#dc2626",
-  warning: "#d97706",
-  info: "#2563eb",
-  success: "#047857",
+  primary: "#0d9488",
+  primaryLight: "#2dd4bf",
+  primaryDark: "#0f766e",
+  secondary: "#6366f1",
+  secondaryLight: "#a5b4fc",
+  secondaryDark: "#4338ca",
+  accent: "#f97316",
+  error: "#ef4444",
+  warning: "#f59e0b",
+  info: "#3b82f6",
+  success: "#10b981",
 };
 
 export const typography = {
-  fontFamily:
-    '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   h1: {
     fontWeight: 800,
     fontSize: "2.5rem",
@@ -81,10 +81,12 @@ export const typography = {
   overline: {
     fontSize: "0.75rem",
     fontWeight: 600,
-    letterSpacing: "0.08em",
+    letterSpacing: "0.06em",
     textTransform: "uppercase" as const,
   },
 };
+
+const transitionAll = `all ${ANIMATION.FAST}ms ease`;
 
 export const sharedComponents = {
   MuiCssBaseline: {
@@ -100,15 +102,29 @@ export const sharedComponents = {
       },
     },
   },
+  MuiButtonBase: {
+    styleOverrides: {
+      root: {
+        transition: transitionAll,
+        "&:active": {
+          transform: `scale(${ANIMATION.BUTTON_PRESS_SCALE})`,
+        },
+      },
+    },
+  },
   MuiButton: {
     styleOverrides: {
       root: {
-        borderRadius: 10,
+        borderRadius: UI.BORDER_RADIUS_SM,
         padding: "10px 20px",
         fontSize: "0.9375rem",
         boxShadow: "none",
+        transition: transitionAll,
         "&:hover": {
           boxShadow: "none",
+        },
+        "&:active": {
+          transform: `scale(${ANIMATION.BUTTON_PRESS_SCALE})`,
         },
         "&:focus-visible": {
           outline: `2px solid ${brand.primary}`,
@@ -125,7 +141,7 @@ export const sharedComponents = {
       },
       contained: {
         "&:hover": {
-          boxShadow: `0 4px 12px ${alpha(brand.primary, 0.4)}`,
+          boxShadow: `0 4px 14px ${alpha(brand.primary, 0.35)}`,
         },
       },
       outlined: {
@@ -136,10 +152,17 @@ export const sharedComponents = {
       },
     },
   },
+  MuiIconButton: {
+    styleOverrides: {
+      root: {
+        transition: transitionAll,
+      },
+    },
+  },
   MuiPaper: {
     styleOverrides: {
       root: {
-        borderRadius: 14,
+        borderRadius: UI.BORDER_RADIUS_LG,
       },
       elevation1: {
         boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
@@ -152,7 +175,7 @@ export const sharedComponents = {
   MuiCard: {
     styleOverrides: {
       root: {
-        borderRadius: 14,
+        borderRadius: UI.BORDER_RADIUS_LG,
         boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
       },
     },
@@ -161,7 +184,11 @@ export const sharedComponents = {
     styleOverrides: {
       root: {
         "& .MuiOutlinedInput-root": {
-          borderRadius: 10,
+          borderRadius: UI.BORDER_RADIUS_SM,
+          transition: transitionAll,
+          "&.Mui-focused": {
+            boxShadow: `0 0 0 ${UI.FOCUS_RING_WIDTH}px ${alpha(brand.primary, UI.ALPHA_FOCUS_RING)}`,
+          },
         },
       },
     },
@@ -169,15 +196,20 @@ export const sharedComponents = {
   MuiOutlinedInput: {
     styleOverrides: {
       root: {
-        borderRadius: 10,
+        borderRadius: UI.BORDER_RADIUS_SM,
+        transition: transitionAll,
+        "&.Mui-focused": {
+          boxShadow: `0 0 0 ${UI.FOCUS_RING_WIDTH}px ${alpha(brand.primary, UI.ALPHA_FOCUS_RING)}`,
+        },
       },
     },
   },
   MuiChip: {
     styleOverrides: {
       root: {
-        borderRadius: 8,
+        borderRadius: UI.BORDER_RADIUS_SM,
         fontWeight: 500,
+        transition: transitionAll,
       },
     },
   },
@@ -185,9 +217,7 @@ export const sharedComponents = {
     styleOverrides: {
       head: {
         fontWeight: 600,
-        fontSize: "0.75rem",
-        textTransform: "uppercase" as const,
-        letterSpacing: "0.06em",
+        fontSize: "0.8125rem",
         color: "inherit",
       },
     },
@@ -195,14 +225,14 @@ export const sharedComponents = {
   MuiDialog: {
     styleOverrides: {
       paper: {
-        borderRadius: 18,
+        borderRadius: UI.BORDER_RADIUS_XL,
       },
     },
   },
   MuiAlert: {
     styleOverrides: {
       root: {
-        borderRadius: 10,
+        borderRadius: UI.BORDER_RADIUS_SM,
       },
     },
   },
@@ -216,7 +246,7 @@ export const sharedComponents = {
   MuiMenu: {
     styleOverrides: {
       paper: {
-        borderRadius: 12,
+        borderRadius: UI.BORDER_RADIUS_MD,
         boxShadow: "0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)",
       },
     },
@@ -224,7 +254,38 @@ export const sharedComponents = {
   MuiTooltip: {
     styleOverrides: {
       tooltip: {
-        borderRadius: 8,
+        borderRadius: UI.BORDER_RADIUS_SM,
+      },
+    },
+  },
+  MuiLink: {
+    styleOverrides: {
+      root: {
+        transition: transitionAll,
+      },
+    },
+  },
+  MuiLinearProgress: {
+    styleOverrides: {
+      root: {
+        borderRadius: 999,
+      },
+      bar: {
+        borderRadius: 999,
+      },
+    },
+  },
+  MuiListItemButton: {
+    styleOverrides: {
+      root: {
+        transition: transitionAll,
+      },
+    },
+  },
+  MuiTableRow: {
+    styleOverrides: {
+      root: {
+        transition: `background-color ${ANIMATION.FAST}ms ease`,
       },
     },
   },

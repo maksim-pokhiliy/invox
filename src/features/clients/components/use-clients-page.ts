@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useClients, clientsApi } from "@app/features/clients";
-import { useOptimisticDelete, useDebouncedValue } from "@app/shared/hooks";
+import { useOptimisticDelete, useDebouncedValue, useItemMenu, useSort } from "@app/shared/hooks";
 import { useAnnounce } from "@app/shared/ui/screen-reader-announcer";
 import { queryKeys } from "@app/shared/config/query";
 import { PAGINATION, SEARCH } from "@app/shared/config/config";
@@ -58,18 +58,15 @@ export function useClientsPage() {
   });
 
   const announce = useAnnounce();
-  const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedClientId, setSelectedClientId] = React.useState<string | null>(null);
+  const menu = useItemMenu(clients);
+  const { sortColumn, sortDirection, handleSort } = useSort("name");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
-  const [sortColumn, setSortColumn] = React.useState<string>("name");
-  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("asc");
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState<number>(PAGINATION.DEFAULT_PAGE_SIZE);
 
   const debouncedSearch = useDebouncedValue(searchQuery, SEARCH.DEBOUNCE_MS);
-  const selectedClient = clients?.find((c) => c.id === selectedClientId);
 
   const filteredClients = React.useMemo(
     () => filterAndSortClients(clients, pendingIds, debouncedSearch, sortColumn, sortDirection),
@@ -86,37 +83,17 @@ export function useClientsPage() {
     }
   }, [filteredClients.length, debouncedSearch, announce]);
 
-  const handleSort = (column: string) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column);
-      setSortDirection("asc");
-    }
-  };
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, clientId: string) => {
-    event.stopPropagation();
-    setMenuAnchorEl(event.currentTarget);
-    setSelectedClientId(clientId);
-  };
-
-  const handleMenuClose = () => {
-    setMenuAnchorEl(null);
-    setSelectedClientId(null);
-  };
-
   const handleDelete = () => {
-    if (!selectedClient) {
+    if (!menu.selectedItem) {
       return;
     }
-    const client = selectedClient;
-    handleMenuClose();
+    const client = menu.selectedItem;
+    menu.closeMenu();
     deleteItem(client);
   };
 
   const handleEdit = () => {
-    handleMenuClose();
+    menu.closeMenuKeepSelection();
     setEditDialogOpen(true);
   };
 
@@ -131,13 +108,13 @@ export function useClientsPage() {
     editDialogOpen,
     setEditDialogOpen,
     filteredClients,
-    selectedClient,
-    selectedClientId,
-    setSelectedClientId,
-    menuAnchorEl,
+    selectedClient: menu.selectedItem,
+    selectedClientId: menu.selectedId,
+    setSelectedClientId: (_id: string | null) => {},
+    menuAnchorEl: menu.menuAnchorEl,
     handleSort,
-    handleMenuOpen,
-    handleMenuClose,
+    handleMenuOpen: menu.openMenu,
+    handleMenuClose: menu.closeMenu,
     handleDelete,
     handleEdit,
     sortColumn,

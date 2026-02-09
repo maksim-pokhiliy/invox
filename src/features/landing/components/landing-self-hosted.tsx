@@ -32,7 +32,7 @@ export function LandingSelfHosted() {
           fontFamily: "monospace",
           fontSize: "0.95rem",
           mb: 5,
-          maxWidth: 500,
+          maxWidth: 550,
           mx: "auto",
           textAlign: "left",
         }}

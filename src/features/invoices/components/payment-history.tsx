@@ -23,6 +23,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { formatCurrency, formatDateTime } from "@app/shared/lib/format";
+import { UI } from "@app/shared/config/config";
 
 interface Payment {
   id: string;
@@ -71,7 +72,7 @@ export function PaymentHistory({
           justifyContent: "space-between",
           p: 2,
           cursor: "pointer",
-          "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+          "&:hover": { bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_HOVER) },
         }}
         onClick={onToggle}
       >

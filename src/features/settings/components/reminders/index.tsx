@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Box, Button, Typography } from "@mui/material";
-import { Spinner } from "@app/shared/ui/loading";
+import { Box, Typography } from "@mui/material";
+import { LoadingButton } from "@app/shared/ui/loading-button";
 import { useToast } from "@app/shared/ui/toast";
 import { useUpdateReminderSettings, type ReminderSettings } from "@app/features/settings";
 import { ApiError } from "@app/shared/api";
@@ -79,14 +79,14 @@ export function RemindersTab({ settings }: RemindersTabProps) {
       )}
 
       <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
-        <Button
+        <LoadingButton
           variant="contained"
           onClick={handleSave}
-          disabled={!isDirty || updateReminderMutation.isPending}
-          sx={{ minWidth: 150 }}
+          disabled={!isDirty}
+          loading={updateReminderMutation.isPending}
         >
-          {updateReminderMutation.isPending ? <Spinner size={20} /> : "Save Changes"}
-        </Button>
+          Save Changes
+        </LoadingButton>
       </Box>
     </>
   );

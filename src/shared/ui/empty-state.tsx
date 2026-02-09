@@ -27,7 +27,8 @@ export function EmptyState({ icon, illustration, title, description, action }: E
         p: illustration ? 6 : 8,
         textAlign: "center",
         borderRadius: 3,
-        bgcolor: alpha(theme.palette.primary.main, 0.02),
+        bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_LIGHT),
+        border: `1px dashed ${alpha(theme.palette.primary.main, UI.ALPHA_BORDER)}`,
       }}
       elevation={0}
     >
@@ -41,7 +42,7 @@ export function EmptyState({ icon, illustration, title, description, action }: E
                 width: UI.EMPTY_STATE_ICON_SIZE,
                 height: UI.EMPTY_STATE_ICON_SIZE,
                 borderRadius: "50%",
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_MUTED),
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -86,16 +87,16 @@ export function NoResults({ entity, onClear }: NoResultsProps) {
         p: 6,
         textAlign: "center",
         borderRadius: 3,
-        bgcolor: alpha(theme.palette.primary.main, 0.02),
+        bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_LIGHT),
       }}
       elevation={0}
     >
       <Box
         sx={{
-          width: 64,
-          height: 64,
+          width: UI.EMPTY_STATE_ICON_SIZE,
+          height: UI.EMPTY_STATE_ICON_SIZE,
           borderRadius: "50%",
-          bgcolor: alpha(theme.palette.action.active, 0.08),
+          bgcolor: alpha(theme.palette.action.active, UI.ALPHA_MEDIUM),
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -103,7 +104,7 @@ export function NoResults({ entity, onClear }: NoResultsProps) {
           mb: 3,
         }}
       >
-        <SearchIcon sx={{ fontSize: 40, color: "text.secondary" }} />
+        <SearchIcon sx={{ fontSize: UI.EMPTY_STATE_SEARCH_ICON_SIZE, color: "text.secondary" }} />
       </Box>
       <Typography variant="h6" fontWeight={600} gutterBottom>
         No {entity} found

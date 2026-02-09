@@ -16,7 +16,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import SearchIcon from "@mui/icons-material/Search";
-import { SHORTCUTS } from "@app/shared/config/config";
+import { SHORTCUTS, UI } from "@app/shared/config/config";
 
 interface KeyboardShortcutsDialogProps {
   open: boolean;
@@ -44,9 +44,9 @@ function KeyCombo({ keys }: { keys: string[] }) {
               px: 1,
               py: 0.5,
               minWidth: 28,
-              bgcolor: alpha(theme.palette.text.primary, 0.06),
+              bgcolor: alpha(theme.palette.text.primary, UI.ALPHA_HOVER),
               border: 1,
-              borderColor: alpha(theme.palette.text.primary, 0.12),
+              borderColor: alpha(theme.palette.text.primary, UI.ALPHA_ACTIVE),
               borderRadius: 1,
               fontFamily: "monospace",
               fontSize: "0.75rem",
@@ -122,7 +122,7 @@ function ShortcutGroup({
             alignItems: "center",
             p: 1.5,
             borderRadius: 2,
-            bgcolor: alpha(theme.palette.primary.main, 0.02),
+            bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_LIGHT),
             mb: 0.5,
           }}
         >

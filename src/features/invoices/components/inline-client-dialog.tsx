@@ -13,7 +13,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import { Spinner } from "@app/shared/ui/loading";
+import { LoadingButton } from "@app/shared/ui/loading-button";
 import { createClientSchema, CreateClientInput } from "@app/shared/schemas";
 
 interface InlineClientDialogProps {
@@ -80,9 +80,9 @@ export function InlineClientDialog({
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={onClose}>Cancel</Button>
-          <Button type="submit" variant="contained" disabled={isPending}>
-            {isPending ? <Spinner size={20} /> : "Add Client"}
-          </Button>
+          <LoadingButton type="submit" variant="contained" loading={isPending}>
+            Add Client
+          </LoadingButton>
         </DialogActions>
       </Box>
     </Dialog>

@@ -14,7 +14,7 @@ import {
 import SendIcon from "@mui/icons-material/Send";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AddIcon from "@mui/icons-material/Add";
-import { Spinner } from "@app/shared/ui/loading";
+import { LoadingButton } from "@app/shared/ui/loading-button";
 import { formatCurrency } from "@app/shared/lib/format";
 
 interface SendDialogProps {
@@ -37,14 +37,14 @@ export function SendDialog({ open, onClose, onConfirm, isLoading, clientEmail }:
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose}>Cancel</Button>
-        <Button
+        <LoadingButton
           variant="contained"
           onClick={onConfirm}
-          disabled={isLoading}
-          startIcon={isLoading ? <Spinner size={16} /> : <SendIcon />}
+          loading={isLoading}
+          startIcon={<SendIcon />}
         >
           Send Invoice
-        </Button>
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );
@@ -69,14 +69,14 @@ export function MarkPaidDialog({ open, onClose, onConfirm, isLoading }: MarkPaid
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose}>Cancel</Button>
-        <Button
+        <LoadingButton
           variant="contained"
           onClick={onConfirm}
-          disabled={isLoading}
-          startIcon={isLoading ? <Spinner size={16} /> : <CheckCircleIcon />}
+          loading={isLoading}
+          startIcon={<CheckCircleIcon />}
         >
           Mark as Paid
-        </Button>
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );
@@ -148,15 +148,16 @@ export function RecordPaymentDialog({
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button
+        <LoadingButton
           variant="contained"
           color="success"
           onClick={handleConfirm}
-          disabled={isLoading || !amount}
-          startIcon={isLoading ? <Spinner size={16} /> : <AddIcon />}
+          disabled={!amount}
+          loading={isLoading}
+          startIcon={<AddIcon />}
         >
           Record Payment
-        </Button>
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );

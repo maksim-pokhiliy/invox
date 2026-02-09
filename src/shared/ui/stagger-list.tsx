@@ -1,8 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { Fade } from "@mui/material";
-import { ANIMATION } from "@app/shared/config/config";
+import { keyframes, type SxProps, type Theme } from "@mui/material";
+import { ANIMATION, UI } from "@app/shared/config/config";
+
+const fadeSlideIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(${UI.PAGE_TRANSITION_OFFSET}px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+`;
 
 interface StaggerListProps {
   children: React.ReactNode;
@@ -10,27 +21,23 @@ interface StaggerListProps {
 }
 
 export function StaggerList({ children, staggerDelay = ANIMATION.STAGGER }: StaggerListProps) {
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <>
       {React.Children.map(children, (child, index) => {
         if (!React.isValidElement(child)) {
           return child;
         }
-        return (
-          <Fade
-            in={mounted}
-            timeout={ANIMATION.NORMAL}
-            style={{ transitionDelay: mounted ? `${index * staggerDelay}ms` : "0ms" }}
-          >
-            {child}
-          </Fade>
-        );
+
+        const animationSx: SxProps<Theme> = {
+          animation: `${fadeSlideIn} ${ANIMATION.NORMAL}ms ease-out ${index * staggerDelay}ms both`,
+        };
+
+        const existingSx = (child.props as { sx?: SxProps<Theme> }).sx;
+        const mergedSx: SxProps<Theme> = existingSx
+          ? [animationSx, ...(Array.isArray(existingSx) ? existingSx : [existingSx])]
+          : animationSx;
+
+        return React.cloneElement(child, { sx: mergedSx } as Record<string, unknown>);
       })}
     </>
   );

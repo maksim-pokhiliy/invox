@@ -8,3 +8,5 @@ export { useCountUp } from "./use-count-up";
 export { useRecentItems } from "./use-recent-items";
 export type { RecentItem } from "./use-recent-items";
 export { useTableKeyboardNav } from "./use-table-keyboard-nav";
+export { useItemMenu } from "./use-item-menu";
+export { useSort } from "./use-sort";

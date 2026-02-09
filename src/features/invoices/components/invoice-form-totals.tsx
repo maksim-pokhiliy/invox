@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { Box, Button, Divider, Typography, alpha, useTheme } from "@mui/material";
-import { Spinner } from "@app/shared/ui/loading";
+import { LoadingButton } from "@app/shared/ui/loading-button";
+import { UI } from "@app/shared/config/config";
 
 interface InvoiceFormTotalsProps {
   subtotal: number;
@@ -31,7 +32,7 @@ export function InvoiceFormTotals({
         <Box
           sx={{
             p: 3,
-            bgcolor: alpha(theme.palette.primary.main, 0.04),
+            bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_HOVER),
             borderRadius: 2,
             minWidth: { xs: "100%", sm: 250 },
           }}
@@ -60,10 +61,9 @@ export function InvoiceFormTotals({
         <Button variant="outlined" onClick={() => router.push(cancelPath)}>
           Cancel
         </Button>
-        <Button type="submit" variant="contained" disabled={isPending} sx={{ minWidth: 150 }}>
-          {isPending && <Spinner size={20} />}
-          {!isPending && (mode === "create" ? "Create Invoice" : "Save Changes")}
-        </Button>
+        <LoadingButton type="submit" variant="contained" loading={isPending}>
+          {mode === "create" ? "Create Invoice" : "Save Changes"}
+        </LoadingButton>
       </Box>
     </>
   );

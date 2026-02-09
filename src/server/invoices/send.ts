@@ -4,6 +4,7 @@ import { sendInvoiceEmail } from "@app/server/email";
 import { getFollowUpRule, scheduleFollowUps } from "@app/server/followups";
 import { logInvoiceEvent, updateInvoiceStatus } from "@app/server/invoices";
 import { BANKING } from "@app/shared/config/config";
+import { INVOICE_STATUS, INVOICE_EVENT } from "@app/shared/config/invoice-status";
 
 const generateReference = customAlphabet(
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
@@ -48,7 +49,7 @@ export async function sendInvoice(invoiceId: string, userId: string) {
     throw new InvoiceNotFoundError();
   }
 
-  if (invoice.status !== "DRAFT") {
+  if (invoice.status !== INVOICE_STATUS.DRAFT) {
     throw new InvoiceAlreadySentError();
   }
 
@@ -78,8 +79,8 @@ export async function sendInvoice(invoiceId: string, userId: string) {
   const sentAt = new Date();
   const paymentReference = `${BANKING.PAYMENT_REFERENCE_PREFIX}-${generateReference()}`;
 
-  await updateInvoiceStatus(invoice.id, "SENT", { sentAt, paymentReference });
-  await logInvoiceEvent(invoice.id, "SENT", { clientEmail: invoice.client.email });
+  await updateInvoiceStatus(invoice.id, INVOICE_STATUS.SENT, { sentAt, paymentReference });
+  await logInvoiceEvent(invoice.id, INVOICE_EVENT.SENT, { clientEmail: invoice.client.email });
 
   const followUpRule = await getFollowUpRule(userId);
   if (followUpRule?.enabled) {

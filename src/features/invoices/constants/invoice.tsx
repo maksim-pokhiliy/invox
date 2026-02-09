@@ -7,7 +7,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PaymentIcon from "@mui/icons-material/Payment";
 import HistoryIcon from "@mui/icons-material/History";
 
-export { STATUS_CONFIG, STATUS_COLORS } from "@app/shared/config/invoice-status";
+export { STATUS_CONFIG, getStatusColor } from "@app/shared/config/invoice-status";
 export { CURRENCIES } from "@app/shared/config/currencies";
 export { FREQUENCIES } from "@app/shared/config/frequencies";
 

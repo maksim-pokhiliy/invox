@@ -53,7 +53,7 @@ export function Breadcrumbs({ items, showHome = true }: BreadcrumbsProps) {
               gap: 0.5,
               color: "text.secondary",
               textDecoration: "none",
-              transition: "color 0.2s ease",
+              transition: (t) => t.transitions.create("color"),
               maxWidth: 200,
               "&:hover": {
                 color: "primary.main",

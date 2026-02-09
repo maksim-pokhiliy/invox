@@ -13,7 +13,9 @@ import {
   Switch,
   FormControlLabel,
 } from "@mui/material";
-import type { Control, FieldErrors, UseFormRegister } from "react-hook-form";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
+import { Controller, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import type { Client } from "@app/shared/schemas/api";
 import { CURRENCIES } from "@app/shared/config/currencies";
 import { FREQUENCIES } from "@app/shared/config/frequencies";
@@ -27,7 +29,12 @@ interface RecurringFormScheduleProps {
   control: Control<RecurringFormData>;
 }
 
-export function RecurringFormSchedule({ register, errors, clients }: RecurringFormScheduleProps) {
+export function RecurringFormSchedule({
+  register,
+  errors,
+  clients,
+  control,
+}: RecurringFormScheduleProps) {
   return (
     <Paper sx={{ p: 4, borderRadius: 3, mb: 3 }}>
       <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 3 }}>
@@ -85,23 +92,41 @@ export function RecurringFormSchedule({ register, errors, clients }: RecurringFo
           </Select>
         </FormControl>
 
-        <TextField
-          {...register("startDate")}
-          label="Start Date"
-          type="date"
-          fullWidth
-          error={!!errors.startDate}
-          helperText={errors.startDate?.message}
-          slotProps={{ inputLabel: { shrink: true } }}
+        <Controller
+          name="startDate"
+          control={control}
+          render={({ field }) => (
+            <DatePicker
+              label="Start Date"
+              value={field.value ? dayjs(field.value) : null}
+              onChange={(date) => field.onChange(date?.format("YYYY-MM-DD") || "")}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  error: !!errors.startDate,
+                  helperText: errors.startDate?.message,
+                },
+              }}
+            />
+          )}
         />
 
-        <TextField
-          {...register("endDate")}
-          label="End Date (Optional)"
-          type="date"
-          fullWidth
-          slotProps={{ inputLabel: { shrink: true } }}
-          helperText="Leave empty for indefinite"
+        <Controller
+          name="endDate"
+          control={control}
+          render={({ field }) => (
+            <DatePicker
+              label="End Date (Optional)"
+              value={field.value ? dayjs(field.value) : null}
+              onChange={(date) => field.onChange(date?.format("YYYY-MM-DD") || "")}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  helperText: "Leave empty for indefinite",
+                },
+              }}
+            />
+          )}
         />
 
         <TextField

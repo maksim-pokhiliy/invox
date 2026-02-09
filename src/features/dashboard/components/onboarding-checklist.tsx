@@ -15,7 +15,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { STORAGE_KEYS } from "@app/shared/config/config";
+import { STORAGE_KEYS, UI } from "@app/shared/config/config";
+import { storage } from "@app/shared/lib/storage";
 
 const COLLAPSED_KEY = STORAGE_KEYS.ONBOARDING_DISMISSED;
 
@@ -52,7 +53,9 @@ function ChecklistSteps({
             p: 1,
             borderRadius: 1.5,
             cursor: step.completed ? "default" : "pointer",
-            "&:hover": step.completed ? {} : { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+            "&:hover": step.completed
+              ? {}
+              : { bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_HOVER) },
           }}
           onClick={step.completed ? undefined : () => onNavigate(step.href)}
         >
@@ -83,7 +86,7 @@ export function OnboardingChecklist({ steps, isLoading, onNavigate }: Onboarding
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    setExpanded(localStorage.getItem(COLLAPSED_KEY) !== "true");
+    setExpanded(storage.get(COLLAPSED_KEY) !== "true");
     setMounted(true);
   }, []);
 
@@ -99,9 +102,9 @@ export function OnboardingChecklist({ steps, isLoading, onNavigate }: Onboarding
     const next = !expanded;
     setExpanded(next);
     if (next) {
-      localStorage.removeItem(COLLAPSED_KEY);
+      storage.remove(COLLAPSED_KEY);
     } else {
-      localStorage.setItem(COLLAPSED_KEY, "true");
+      storage.set(COLLAPSED_KEY, "true");
     }
   };
 
@@ -124,7 +127,7 @@ export function OnboardingChecklist({ steps, isLoading, onNavigate }: Onboarding
           alignItems: "center",
           gap: 2,
           cursor: "pointer",
-          "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+          "&:hover": { bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_HOVER) },
           borderRadius: 3,
         }}
       >

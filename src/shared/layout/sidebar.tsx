@@ -2,11 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import {
   Box,
   Button,
-  Divider,
   IconButton,
   List,
   ListItem,
@@ -14,133 +12,28 @@ import {
   ListItemIcon,
   ListItemText,
   Tooltip,
-  Typography,
   alpha,
   useTheme,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
-import LogoutIcon from "@mui/icons-material/Logout";
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Logo } from "@app/shared/ui/logo";
-import { useThemeMode } from "@app/providers/theme-registry";
-import { UI } from "@app/shared/config/config";
-import { NAV_ITEMS, isNavActive } from "./components/desktop-nav";
+import { ANIMATION, UI } from "@app/shared/config/config";
+import { SidebarNav } from "./components/sidebar-nav";
+import { SidebarUserProfile } from "./components/sidebar-user-profile";
 
-function SidebarNav({ pathname }: { pathname: string }) {
-  const theme = useTheme();
-
-  return (
-    <List sx={{ px: 1, flex: 1 }}>
-      {NAV_ITEMS.map((item) => {
-        const isActive = isNavActive(pathname, item);
-        return (
-          <ListItem key={item.href} disablePadding>
-            <ListItemButton
-              component={Link}
-              href={item.href}
-              sx={{
-                borderRadius: 2,
-                mb: 0.5,
-                bgcolor: isActive ? alpha(theme.palette.primary.main, 0.08) : "transparent",
-                "&:hover": {
-                  bgcolor: isActive
-                    ? alpha(theme.palette.primary.main, 0.12)
-                    : alpha(theme.palette.text.primary, 0.04),
-                },
-              }}
-            >
-              <ListItemIcon
-                sx={{ minWidth: 36, color: isActive ? "primary.main" : "text.secondary" }}
-              >
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.label}
-                primaryTypographyProps={{
-                  fontWeight: isActive ? 600 : 500,
-                  fontSize: "0.9375rem",
-                  color: isActive ? "primary.main" : "text.primary",
-                }}
-              />
-            </ListItemButton>
-          </ListItem>
-        );
-      })}
-    </List>
-  );
+interface SidebarProps {
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-function SidebarFooter({ pathname }: { pathname: string }) {
-  const theme = useTheme();
-  const { mode, toggleTheme } = useThemeMode();
-
-  return (
-    <Box sx={{ mt: "auto" }}>
-      <Divider />
-      <List sx={{ px: 1, py: 1 }}>
-        <ListItem disablePadding>
-          <ListItemButton
-            component={Link}
-            href="/app/settings"
-            sx={{
-              borderRadius: 2,
-              mb: 0.5,
-              bgcolor: pathname.startsWith("/app/settings")
-                ? alpha(theme.palette.primary.main, 0.08)
-                : "transparent",
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 36, color: "text.secondary" }}>
-              <SettingsIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Settings" primaryTypographyProps={{ fontSize: "0.9375rem" }} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-
-      <Box
-        sx={{
-          px: 2,
-          pb: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Tooltip title={mode === "dark" ? "Light mode" : "Dark mode"}>
-          <IconButton size="small" onClick={toggleTheme} sx={{ color: "text.secondary" }}>
-            {mode === "dark" ? (
-              <Brightness7Icon fontSize="small" />
-            ) : (
-              <Brightness4Icon fontSize="small" />
-            )}
-          </IconButton>
-        </Tooltip>
-
-        <Typography variant="caption" color="text.secondary">
-          {mode === "dark" ? "Dark" : "Light"}
-        </Typography>
-
-        <Tooltip title="Sign out">
-          <IconButton
-            size="small"
-            onClick={() => signOut({ callbackUrl: "/auth/sign-in" })}
-            sx={{ color: "text.secondary" }}
-          >
-            <LogoutIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </Box>
-    </Box>
-  );
-}
-
-export function Sidebar() {
+export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const theme = useTheme();
+  const sidebarWidth = collapsed ? UI.SIDEBAR_COLLAPSED_WIDTH : UI.SIDEBAR_WIDTH;
 
   return (
     <Box
@@ -148,7 +41,7 @@ export function Sidebar() {
       sx={{
         display: { xs: "none", md: "flex" },
         flexDirection: "column",
-        width: UI.SIDEBAR_WIDTH,
+        width: sidebarWidth,
         height: "100vh",
         position: "fixed",
         top: 0,
@@ -157,30 +50,116 @@ export function Sidebar() {
         borderRight: 1,
         borderColor: "divider",
         zIndex: theme.zIndex.drawer,
+        transition: `width ${ANIMATION.NORMAL}ms ease`,
+        overflow: "hidden",
       }}
     >
       <Box
-        component={Link}
-        href="/app"
-        sx={{ display: "flex", alignItems: "center", px: 2.5, py: 2.5, textDecoration: "none" }}
+        sx={{
+          display: "flex",
+          flexDirection: collapsed ? "column" : "row",
+          alignItems: "center",
+          justifyContent: collapsed ? "center" : "space-between",
+          px: collapsed ? 1 : 2.5,
+          py: collapsed ? 1 : 2.5,
+          minHeight: UI.TOP_BAR_HEIGHT,
+          gap: 0.5,
+        }}
       >
-        <Logo size="medium" />
+        <Box component={Link} href="/app" sx={{ textDecoration: "none" }}>
+          <Logo size={collapsed ? "small" : "medium"} showText={!collapsed} />
+        </Box>
+        <Tooltip title={collapsed ? "Expand sidebar" : "Collapse sidebar"} placement="right" arrow>
+          <IconButton
+            size="small"
+            onClick={onToggleCollapse}
+            sx={{ color: "text.secondary" }}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? (
+              <ChevronRightIcon fontSize="small" />
+            ) : (
+              <ChevronLeftIcon fontSize="small" />
+            )}
+          </IconButton>
+        </Tooltip>
       </Box>
 
-      <Box sx={{ px: 2, mb: 2 }}>
-        <Button
-          variant="contained"
-          fullWidth
-          startIcon={<AddIcon />}
-          onClick={() => router.push("/app/invoices/new")}
-          sx={{ py: 1.25 }}
-        >
-          New Invoice
-        </Button>
+      <Box sx={{ px: collapsed ? 0.75 : 2, mb: 2 }}>
+        {collapsed ? (
+          <Tooltip title="New Invoice" placement="right" arrow>
+            <IconButton
+              onClick={() => router.push("/app/invoices/new")}
+              sx={{
+                width: "100%",
+                borderRadius: 2,
+                bgcolor: "primary.main",
+                color: "primary.contrastText",
+                "&:hover": { bgcolor: "primary.dark" },
+              }}
+            >
+              <AddIcon />
+            </IconButton>
+          </Tooltip>
+        ) : (
+          <Button
+            variant="contained"
+            fullWidth
+            startIcon={<AddIcon />}
+            onClick={() => router.push("/app/invoices/new")}
+            sx={{ py: 1.25 }}
+          >
+            New Invoice
+          </Button>
+        )}
       </Box>
 
-      <SidebarNav pathname={pathname} />
-      <SidebarFooter pathname={pathname} />
+      <SidebarNav pathname={pathname} collapsed={collapsed} />
+
+      {collapsed ? (
+        <Box sx={{ px: 0.75, mb: 1 }}>
+          <Tooltip title="Settings" placement="right" arrow>
+            <ListItemButton
+              component={Link}
+              href="/app/settings"
+              sx={{
+                borderRadius: 2,
+                justifyContent: "center",
+                px: 1.5,
+                minHeight: UI.NAV_PILL_HEIGHT,
+                bgcolor: pathname.startsWith("/app/settings")
+                  ? alpha(theme.palette.primary.main, UI.ALPHA_MEDIUM)
+                  : "transparent",
+              }}
+            >
+              <SettingsIcon fontSize="small" sx={{ color: "text.secondary" }} />
+            </ListItemButton>
+          </Tooltip>
+        </Box>
+      ) : (
+        <List sx={{ px: 1, py: 0 }}>
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              href="/app/settings"
+              sx={{
+                borderRadius: 2,
+                mb: 0.5,
+                bgcolor: pathname.startsWith("/app/settings")
+                  ? alpha(theme.palette.primary.main, UI.ALPHA_MEDIUM)
+                  : "transparent",
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 36, color: "text.secondary" }}>
+                <SettingsIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Settings" primaryTypographyProps={{ fontSize: "0.9375rem" }} />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      )}
+
+      <SidebarUserProfile collapsed={collapsed} />
     </Box>
   );
 }

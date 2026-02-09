@@ -2,6 +2,12 @@
 
 import * as React from "react";
 import { AUTOSAVE } from "@app/shared/config/config";
+import { storage } from "@app/shared/lib/storage";
+
+interface AutosavePayload<T> {
+  data: T;
+  timestamp: string;
+}
 
 interface UseAutosaveOptions<T> {
   key: string;
@@ -22,16 +28,9 @@ export function useAutosave<T>({ key, data, onRestore, enabled = true }: UseAuto
     }
     initialCheckDone.current = true;
 
-    try {
-      const saved = localStorage.getItem(key);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.data && parsed.timestamp) {
-          setHasDraft(true);
-        }
-      }
-    } catch (error) {
-      console.warn("[autosave] localStorage operation failed:", error);
+    const saved = storage.getJson<AutosavePayload<T>>(key);
+    if (saved?.data && saved?.timestamp) {
+      setHasDraft(true);
     }
   }, [key, enabled]);
 
@@ -45,17 +44,13 @@ export function useAutosave<T>({ key, data, onRestore, enabled = true }: UseAuto
     }
 
     timeoutRef.current = setTimeout(() => {
-      try {
-        const payload = {
-          data,
-          timestamp: new Date().toISOString(),
-        };
-        localStorage.setItem(key, JSON.stringify(payload));
-        setLastSaved(new Date());
-        setHasDraft(true);
-      } catch (error) {
-        console.warn("[autosave] localStorage operation failed:", error);
-      }
+      const payload: AutosavePayload<T> = {
+        data,
+        timestamp: new Date().toISOString(),
+      };
+      storage.setJson(key, payload);
+      setLastSaved(new Date());
+      setHasDraft(true);
     }, AUTOSAVE.DELAY_MS);
 
     return () => {
@@ -66,42 +61,24 @@ export function useAutosave<T>({ key, data, onRestore, enabled = true }: UseAuto
   }, [key, data, enabled]);
 
   const restoreDraft = React.useCallback(() => {
-    try {
-      const saved = localStorage.getItem(key);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.data && onRestore) {
-          onRestore(parsed.data);
-          return true;
-        }
-      }
-    } catch (error) {
-      console.warn("[autosave] localStorage operation failed:", error);
+    const saved = storage.getJson<AutosavePayload<T>>(key);
+    if (saved?.data && onRestore) {
+      onRestore(saved.data);
+      return true;
     }
     return false;
   }, [key, onRestore]);
 
   const clearDraft = React.useCallback(() => {
-    try {
-      localStorage.removeItem(key);
-      setHasDraft(false);
-      setLastSaved(null);
-    } catch (error) {
-      console.warn("[autosave] localStorage operation failed:", error);
-    }
+    storage.remove(key);
+    setHasDraft(false);
+    setLastSaved(null);
   }, [key]);
 
   const getDraftTimestamp = React.useCallback((): Date | null => {
-    try {
-      const saved = localStorage.getItem(key);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.timestamp) {
-          return new Date(parsed.timestamp);
-        }
-      }
-    } catch (error) {
-      console.warn("[autosave] localStorage operation failed:", error);
+    const saved = storage.getJson<AutosavePayload<T>>(key);
+    if (saved?.timestamp) {
+      return new Date(saved.timestamp);
     }
     return null;
   }, [key]);

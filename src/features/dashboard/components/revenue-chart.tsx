@@ -1,7 +1,15 @@
 "use client";
 
 import { Box, useTheme } from "@mui/material";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { CardSkeleton } from "@app/shared/ui/loading";
 import { formatCurrencyCompact } from "@app/shared/lib/format";
 import { CHART } from "@app/shared/config/config";
@@ -17,6 +25,8 @@ interface RevenueChartProps {
   displayCurrency: string;
 }
 
+const GRADIENT_ID = "revenueGradient";
+
 export function RevenueChart({ isLoading, monthlyRevenue, displayCurrency }: RevenueChartProps) {
   const theme = useTheme();
 
@@ -27,7 +37,13 @@ export function RevenueChart({ isLoading, monthlyRevenue, displayCurrency }: Rev
   return (
     <Box role="img" aria-label={`Revenue chart showing last 6 months in ${displayCurrency}`}>
       <ResponsiveContainer width="100%" height={CHART.HEIGHT}>
-        <BarChart data={monthlyRevenue}>
+        <AreaChart data={monthlyRevenue}>
+          <defs>
+            <linearGradient id={GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={theme.palette.primary.main} stopOpacity={0.3} />
+              <stop offset="100%" stopColor={theme.palette.primary.main} stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
           <CartesianGrid strokeDasharray={CHART.GRID_DASH} vertical={false} />
           <XAxis dataKey="month" axisLine={false} tickLine={false} />
           <YAxis
@@ -51,10 +67,17 @@ export function RevenueChart({ isLoading, monthlyRevenue, displayCurrency }: Rev
               borderRadius: CHART.TOOLTIP_BORDER_RADIUS,
               border: "none",
               boxShadow: CHART.TOOLTIP_SHADOW,
+              backgroundColor: theme.palette.background.paper,
             }}
           />
-          <Bar dataKey="revenue" fill={theme.palette.primary.main} radius={CHART.BAR_RADIUS} />
-        </BarChart>
+          <Area
+            type="monotone"
+            dataKey="revenue"
+            stroke={theme.palette.primary.main}
+            strokeWidth={2.5}
+            fill={`url(#${GRADIENT_ID})`}
+          />
+        </AreaChart>
       </ResponsiveContainer>
     </Box>
   );

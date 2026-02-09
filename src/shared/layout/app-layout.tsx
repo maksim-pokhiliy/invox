@@ -13,7 +13,8 @@ import { ErrorBoundary } from "@app/shared/ui/error-boundary";
 import { useKeyboardShortcuts } from "@app/shared/hooks";
 import { useCommandPalette } from "@app/shared/hooks/use-command-palette";
 import { useThemeMode } from "@app/providers/theme-registry";
-import { UI, SHORTCUTS } from "@app/shared/config/config";
+import { ANIMATION, UI, SHORTCUTS, STORAGE_KEYS } from "@app/shared/config/config";
+import { storage } from "@app/shared/lib/storage";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -121,6 +122,17 @@ export function AppLayout({ children, maxWidth = "lg", disablePadding = false }:
   const { mode, toggleTheme } = useThemeMode();
   const [shortcutsDialogOpen, setShortcutsDialogOpen] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(
+    () => storage.get(STORAGE_KEYS.SIDEBAR_COLLAPSED) === "true"
+  );
+
+  const handleToggleSidebar = React.useCallback(() => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      storage.set(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(next));
+      return next;
+    });
+  }, []);
 
   const shortcuts = React.useMemo(
     () => buildShortcuts(router, openCommandPalette, () => setShortcutsDialogOpen(true)),
@@ -144,6 +156,8 @@ export function AppLayout({ children, maxWidth = "lg", disablePadding = false }:
     await signOut({ callbackUrl: "/auth/sign-in" });
   };
 
+  const sidebarWidth = sidebarCollapsed ? UI.SIDEBAR_COLLAPSED_WIDTH : UI.SIDEBAR_WIDTH;
+
   return (
     <Box
       sx={{
@@ -153,15 +167,16 @@ export function AppLayout({ children, maxWidth = "lg", disablePadding = false }:
       }}
     >
       <SkipLink />
-      <Sidebar />
+      <Sidebar collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
 
       <Box
         sx={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          ml: { xs: 0, md: `${UI.SIDEBAR_WIDTH}px` },
+          ml: { xs: 0, md: `${sidebarWidth}px` },
           minHeight: "100vh",
+          transition: `margin-left ${ANIMATION.NORMAL}ms ease`,
         }}
       >
         <TopBar onMobileMenuOpen={() => setMobileMenuOpen(true)} />

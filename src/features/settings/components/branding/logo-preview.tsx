@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Typography, alpha, useTheme } from "@mui/material";
+import { UI } from "@app/shared/config/config";
 
 interface LogoPreviewProps {
   logoUrl: string;
@@ -31,8 +32,8 @@ export function LogoPreview({ logoUrl }: LogoPreviewProps) {
         src={logoUrl}
         alt="Logo preview"
         sx={{
-          maxWidth: 200,
-          maxHeight: 60,
+          maxWidth: UI.BRANDING_LOGO_MAX_WIDTH,
+          maxHeight: UI.BRANDING_LOGO_MAX_HEIGHT,
           objectFit: "contain",
         }}
         onError={(e: React.SyntheticEvent<HTMLImageElement>) => {

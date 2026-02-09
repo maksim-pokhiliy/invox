@@ -13,7 +13,7 @@ import {
   type RecurringStatus,
 } from "@app/features/recurring";
 import { useOptimisticDelete, useDebouncedValue } from "@app/shared/hooks";
-import { calculateTotals } from "@app/shared/lib/calculations";
+import { calculateTotals, buildDiscountInput } from "@app/shared/lib/calculations";
 import { useAnnounce } from "@app/shared/ui/screen-reader-announcer";
 import { queryKeys } from "@app/shared/config/query";
 import { PAGINATION, SEARCH } from "@app/shared/config/config";
@@ -132,12 +132,11 @@ function useRecurringActions(selectedItem: RecurringInvoice | null, handleMenuCl
 }
 
 const calculateTotal = (item: RecurringInvoice) => {
-  const discount =
-    item.discountType && item.discountValue > 0
-      ? { type: item.discountType as "PERCENTAGE" | "FIXED", value: item.discountValue }
-      : null;
-
-  const { total } = calculateTotals(item.items, discount, item.taxRate);
+  const { total } = calculateTotals(
+    item.items,
+    buildDiscountInput(item.discountType, item.discountValue),
+    item.taxRate
+  );
   return total;
 };
 

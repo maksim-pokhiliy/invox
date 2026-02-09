@@ -59,7 +59,7 @@ export function LandingFeatures() {
                 borderRadius: 3,
                 border: 1,
                 borderColor: "divider",
-                transition: "border-color 0.2s",
+                transition: (t) => t.transitions.create("border-color"),
                 "&:hover": { borderColor: "primary.main" },
               }}
             >

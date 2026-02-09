@@ -7,7 +7,6 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
-  Button,
   Container,
   TextField,
   Typography,
@@ -15,6 +14,8 @@ import {
   Link as MuiLink,
   InputAdornment,
   IconButton,
+  alpha,
+  useTheme,
 } from "@mui/material";
 import Link from "next/link";
 import EmailIcon from "@mui/icons-material/Email";
@@ -22,7 +23,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Logo } from "@app/shared/ui/logo";
-import { Spinner } from "@app/shared/ui/loading";
+import { LoadingButton } from "@app/shared/ui/loading-button";
 import { useToast } from "@app/shared/ui/toast";
 import { signInSchema, SignInInput } from "@app/shared/schemas";
 
@@ -30,6 +31,7 @@ export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
+  const theme = useTheme();
   const callbackUrl = searchParams.get("callbackUrl") || "/app";
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
@@ -76,9 +78,23 @@ export default function SignInPage() {
         alignItems: "center",
         justifyContent: "center",
         py: 4,
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <Container maxWidth="sm">
+      <Box
+        sx={{
+          position: "absolute",
+          top: "-20%",
+          right: "-10%",
+          width: "50%",
+          height: "60%",
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.06)} 0%, transparent 70%)`,
+          pointerEvents: "none",
+        }}
+      />
+      <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Box sx={{ mb: 4 }}>
             <Logo size="large" />
@@ -140,16 +156,16 @@ export default function SignInPage() {
                   ),
                 }}
               />
-              <Button
+              <LoadingButton
                 type="submit"
                 variant="contained"
                 fullWidth
                 size="large"
                 sx={{ mt: 3, py: 1.5 }}
-                disabled={isLoading}
+                loading={isLoading}
               >
-                {isLoading ? <Spinner size={24} /> : "Sign In"}
-              </Button>
+                Sign In
+              </LoadingButton>
             </Box>
 
             <Box

@@ -1,0 +1,140 @@
+import { prisma } from "@app/server/db";
+import { nanoid } from "nanoid";
+import type { RecurringFrequency } from "@prisma/client";
+import { NANOID } from "@app/shared/config/config";
+import { calculateTotals, buildDiscountInput } from "@app/shared/lib/calculations";
+import {
+  INVOICE_STATUS,
+  INVOICE_EVENT,
+  type DiscountTypeValue,
+} from "@app/shared/config/invoice-status";
+
+export function calculateNextRunDate(currentDate: Date, frequency: RecurringFrequency): Date {
+  const next = new Date(currentDate);
+
+  switch (frequency) {
+    case "WEEKLY":
+      next.setDate(next.getDate() + 7);
+      break;
+    case "BIWEEKLY":
+      next.setDate(next.getDate() + 14);
+      break;
+    case "MONTHLY":
+      next.setMonth(next.getMonth() + 1);
+      break;
+    case "QUARTERLY":
+      next.setMonth(next.getMonth() + 3);
+      break;
+    case "YEARLY":
+      next.setFullYear(next.getFullYear() + 1);
+      break;
+  }
+
+  return next;
+}
+
+export async function generateInvoiceFromRecurring(recurringInvoice: {
+  id: string;
+  userId: string;
+  clientId: string;
+  currency: string;
+  discountType: DiscountTypeValue | null;
+  discountValue: number;
+  taxRate: number;
+  notes: string | null;
+  dueDays: number;
+  autoSend: boolean;
+  frequency: RecurringFrequency;
+  items: { description: string; quantity: number; unitPrice: number }[];
+}) {
+  const discount = buildDiscountInput(
+    recurringInvoice.discountType,
+    recurringInvoice.discountValue
+  );
+
+  const { subtotal, discountAmount, taxAmount, total } = calculateTotals(
+    recurringInvoice.items,
+    discount,
+    recurringInvoice.taxRate
+  );
+
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + recurringInvoice.dueDays);
+
+  const invoice = await prisma.invoice.create({
+    data: {
+      userId: recurringInvoice.userId,
+      clientId: recurringInvoice.clientId,
+      publicId: nanoid(NANOID.PUBLIC_ID_LENGTH),
+      currency: recurringInvoice.currency,
+      status: recurringInvoice.autoSend ? INVOICE_STATUS.SENT : INVOICE_STATUS.DRAFT,
+      subtotal,
+      discountType: recurringInvoice.discountType,
+      discountValue: recurringInvoice.discountValue,
+      discountAmount,
+      taxRate: recurringInvoice.taxRate,
+      taxAmount,
+      total,
+      dueDate,
+      notes: recurringInvoice.notes,
+      sentAt: recurringInvoice.autoSend ? new Date() : null,
+      items: {
+        create: recurringInvoice.items.map((item) => ({
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          amount: item.quantity * item.unitPrice,
+        })),
+      },
+      events: {
+        create: {
+          type: INVOICE_EVENT.CREATED,
+          payload: { source: "recurring", recurringInvoiceId: recurringInvoice.id },
+        },
+      },
+    },
+  });
+
+  const nextRunAt = calculateNextRunDate(new Date(), recurringInvoice.frequency);
+  await prisma.recurringInvoice.update({
+    where: { id: recurringInvoice.id },
+    data: {
+      lastRunAt: new Date(),
+      nextRunAt,
+    },
+  });
+
+  return invoice;
+}
+
+export async function processDueRecurringInvoices() {
+  const now = new Date();
+
+  const dueRecurring = await prisma.recurringInvoice.findMany({
+    where: {
+      status: "ACTIVE",
+      nextRunAt: { lte: now },
+      OR: [{ endDate: null }, { endDate: { gt: now } }],
+    },
+    include: {
+      items: true,
+    },
+  });
+
+  const results = [];
+
+  for (const recurring of dueRecurring) {
+    try {
+      const invoice = await generateInvoiceFromRecurring(recurring);
+      results.push({ success: true, recurringId: recurring.id, invoiceId: invoice.id });
+    } catch (error) {
+      results.push({
+        success: false,
+        recurringId: recurring.id,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
+
+  return results;
+}

@@ -6,6 +6,7 @@ import { useAutosave } from "@app/shared/hooks";
 import type { InvoiceFormInput } from "@app/shared/schemas";
 import type { UseFormReset } from "react-hook-form";
 import { STORAGE_KEYS } from "@app/shared/config/config";
+import { storage } from "@app/shared/lib/storage";
 
 const DRAFT_KEY = STORAGE_KEYS.INVOICE_DRAFT;
 
@@ -35,13 +36,8 @@ export function useInvoiceDraft({ mode, formValues, isDirty, reset }: UseInvoice
     if (!isCreateMode) {
       return;
     }
-    try {
-      const saved = localStorage.getItem(DRAFT_KEY);
-      if (saved) {
-        setShowDraftBanner(true);
-      }
-    } catch (error) {
-      console.warn("[invoice-draft] Failed to check draft:", error);
+    if (storage.get(DRAFT_KEY)) {
+      setShowDraftBanner(true);
     }
   }, [isCreateMode]);
 

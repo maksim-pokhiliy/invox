@@ -1,3 +1,39 @@
+import type { Theme } from "@mui/material";
+
+export const INVOICE_STATUS = {
+  DRAFT: "DRAFT",
+  SENT: "SENT",
+  VIEWED: "VIEWED",
+  PAID: "PAID",
+  PARTIALLY_PAID: "PARTIALLY_PAID",
+  OVERDUE: "OVERDUE",
+} as const;
+
+export type InvoiceStatusValue = (typeof INVOICE_STATUS)[keyof typeof INVOICE_STATUS];
+
+export const DISCOUNT_TYPE = {
+  PERCENTAGE: "PERCENTAGE",
+  FIXED: "FIXED",
+} as const;
+
+export type DiscountTypeValue = (typeof DISCOUNT_TYPE)[keyof typeof DISCOUNT_TYPE];
+
+export const INVOICE_EVENT = {
+  CREATED: "CREATED",
+  SENT: "SENT",
+  VIEWED: "VIEWED",
+  PAID_MANUAL: "PAID_MANUAL",
+  PAID_BANK: "PAID_BANK",
+  PAYMENT_RECORDED: "PAYMENT_RECORDED",
+  PAYMENT_DELETED: "PAYMENT_DELETED",
+  REMINDER_SENT: "REMINDER_SENT",
+} as const;
+
+export const FOLLOWUP_STATUS = {
+  PENDING: "PENDING",
+  CANCELED: "CANCELED",
+} as const;
+
 export const STATUS_CONFIG: Record<
   string,
   { color: "success" | "error" | "info" | "warning" | "default"; label: string }
@@ -10,11 +46,10 @@ export const STATUS_CONFIG: Record<
   DRAFT: { color: "default", label: "Draft" },
 };
 
-export const STATUS_COLORS: Record<string, string> = {
-  PAID: "#10b981",
-  OVERDUE: "#ef4444",
-  SENT: "#3b82f6",
-  VIEWED: "#3b82f6",
-  DRAFT: "#94a3b8",
-  PARTIALLY_PAID: "#f59e0b",
-};
+export function getStatusColor(theme: Theme, status: string): string {
+  const config = STATUS_CONFIG[status];
+  if (!config || config.color === "default") {
+    return theme.palette.text.secondary;
+  }
+  return theme.palette[config.color].main;
+}

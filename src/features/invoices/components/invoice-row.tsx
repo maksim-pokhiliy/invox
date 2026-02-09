@@ -4,6 +4,7 @@ import { TableRow, TableCell, Typography, Chip, IconButton, alpha, useTheme } fr
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { formatCurrency, formatDateCompact } from "@app/shared/lib/format";
 import { STATUS_CONFIG } from "../constants/invoice";
+import { UI } from "@app/shared/config/config";
 
 export interface InvoiceData {
   id: string;
@@ -42,10 +43,9 @@ export function InvoiceRow({
       hover
       sx={{
         cursor: "pointer",
-        transition: "background-color 0.2s",
         height,
         "&:hover": {
-          bgcolor: alpha(theme.palette.primary.main, 0.04),
+          bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_HOVER),
         },
       }}
       onMouseEnter={() => onPrefetch(invoice.id)}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Box, Button, alpha, useTheme } from "@mui/material";
+import { UI } from "@app/shared/config/config";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import PeopleIcon from "@mui/icons-material/People";
@@ -50,14 +51,16 @@ export function DesktopNav({ pathname }: DesktopNavProps) {
             startIcon={item.icon}
             sx={{
               color: isActive ? "primary.main" : "text.secondary",
-              bgcolor: isActive ? alpha(theme.palette.primary.main, 0.08) : "transparent",
+              bgcolor: isActive
+                ? alpha(theme.palette.primary.main, UI.ALPHA_MEDIUM)
+                : "transparent",
               fontWeight: isActive ? 600 : 500,
               px: 1.5,
               borderRadius: 2,
               "&:hover": {
                 bgcolor: isActive
-                  ? alpha(theme.palette.primary.main, 0.12)
-                  : alpha(theme.palette.text.primary, 0.04),
+                  ? alpha(theme.palette.primary.main, UI.ALPHA_ACTIVE)
+                  : alpha(theme.palette.text.primary, UI.ALPHA_HOVER),
               },
             }}
           >

@@ -2,6 +2,7 @@ export * from "./auth";
 export * from "./client";
 export * from "./invoice";
 export * from "./payment";
+export * from "./reminder";
 export * from "./sender-profile";
 export * from "./template";
 export * from "./recurring";

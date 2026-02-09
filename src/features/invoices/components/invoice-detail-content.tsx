@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { Box, Button, Alert } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { AppLayout } from "@app/shared/layout/app-layout";
-import { PageLoader } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/loading";
 import { ConfirmDialog } from "@app/shared/ui/confirm-dialog";
 import { useInvoice } from "@app/features/invoices";
 import { STATUS_CONFIG } from "@app/shared/config/invoice-status";
@@ -79,7 +79,7 @@ export function InvoiceDetailContent() {
   if (isLoading) {
     return (
       <AppLayout>
-        <PageLoader message="Loading invoice..." />
+        <CardSkeleton />
       </AppLayout>
     );
   }

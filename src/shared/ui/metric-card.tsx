@@ -37,6 +37,7 @@ export function MetricCard({
   const animatedValue = useCountUp(numericValue ?? 0, ANIMATION.SLOW);
   const displayValue =
     numericValue !== undefined && formatValue ? formatValue(animatedValue) : value;
+  const cardColor = color || theme.palette.primary.main;
 
   return (
     <Paper
@@ -47,17 +48,30 @@ export function MetricCard({
         height: "100%",
         display: "flex",
         flexDirection: "column",
+        position: "relative",
+        overflow: "hidden",
         ...(href && {
           cursor: "pointer",
-          transition: "all 0.2s ease",
+          transition: `all ${ANIMATION.FAST}ms ease`,
           "&:hover": {
-            boxShadow: 6,
-            transform: "translateY(-1px)",
+            boxShadow: `0 8px 24px ${alpha(cardColor, 0.15)}`,
+            transform: "translateY(-2px)",
           },
         }),
       }}
       onClick={href ? () => router.push(href) : undefined}
     >
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 3,
+          bgcolor: cardColor,
+          borderRadius: "16px 16px 0 0",
+        }}
+      />
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
         <Box
           sx={{
@@ -67,8 +81,8 @@ export function MetricCard({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            bgcolor: alpha(color || theme.palette.primary.main, 0.1),
-            color: color || theme.palette.primary.main,
+            bgcolor: alpha(cardColor, UI.ALPHA_MUTED),
+            color: cardColor,
           }}
         >
           {icon}

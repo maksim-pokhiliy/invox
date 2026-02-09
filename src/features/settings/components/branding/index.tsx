@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Box, Button, Typography, TextField, Divider } from "@mui/material";
-import { Spinner } from "@app/shared/ui/loading";
+import { Box, Typography, TextField, Divider } from "@mui/material";
+import { LoadingButton } from "@app/shared/ui/loading-button";
 import { useToast } from "@app/shared/ui/toast";
 import { useUpdateSenderProfile } from "@app/features/settings";
 import { ApiError } from "@app/shared/api";
@@ -107,14 +107,14 @@ export function BrandingTab({ profile }: BrandingTabProps) {
       </Box>
 
       <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
-        <Button
+        <LoadingButton
           variant="contained"
           onClick={handleSave}
-          disabled={!isDirty || mutation.isPending}
-          sx={{ minWidth: 150 }}
+          disabled={!isDirty}
+          loading={mutation.isPending}
         >
-          {mutation.isPending ? <Spinner size={20} /> : "Save Changes"}
-        </Button>
+          Save Changes
+        </LoadingButton>
       </Box>
     </>
   );

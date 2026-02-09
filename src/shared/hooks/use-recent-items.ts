@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { STORAGE_KEYS } from "@app/shared/config/config";
+import { storage } from "@app/shared/lib/storage";
 
-const STORAGE_KEY = STORAGE_KEYS.RECENT_ITEMS;
 const MAX_ITEMS = 10;
 
 export interface RecentItem {
@@ -15,24 +15,7 @@ export interface RecentItem {
 }
 
 function loadItems(): RecentItem[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch (error) {
-    console.warn("[recent-items] Failed to load from localStorage:", error);
-    return [];
-  }
-}
-
-function saveItems(items: RecentItem[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  } catch (error) {
-    console.warn("[recent-items] Failed to save to localStorage:", error);
-  }
+  return storage.getJson<RecentItem[]>(STORAGE_KEYS.RECENT_ITEMS) ?? [];
 }
 
 export function useRecentItems() {
@@ -42,7 +25,7 @@ export function useRecentItems() {
     setItems((prev) => {
       const filtered = prev.filter((existing) => existing.id !== item.id);
       const next = [{ ...item, timestamp: Date.now() }, ...filtered].slice(0, MAX_ITEMS);
-      saveItems(next);
+      storage.setJson(STORAGE_KEYS.RECENT_ITEMS, next);
       return next;
     });
   }, []);

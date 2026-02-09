@@ -37,3 +37,13 @@ export function calculateTotals(
 
   return { subtotal, discountAmount, taxAmount, total };
 }
+
+export function buildDiscountInput(
+  discountType: string | null | undefined,
+  discountValue: number | null | undefined
+): DiscountInput | null {
+  if (!discountType || discountType === "NONE" || !discountValue || discountValue <= 0) {
+    return null;
+  }
+  return { type: discountType as DiscountInput["type"], value: discountValue };
+}

@@ -6,7 +6,8 @@ import { EmptyState } from "@app/shared/ui/empty-state";
 import { EmptyInvoicesIllustration } from "@app/shared/ui/illustrations/empty-invoices";
 import { CardSkeleton } from "@app/shared/ui/loading";
 import { formatCurrency, formatDateShort } from "@app/shared/lib/format";
-import { STATUS_COLORS, STATUS_CONFIG } from "@app/shared/config/invoice-status";
+import { STATUS_CONFIG, getStatusColor } from "@app/shared/config/invoice-status";
+import { UI } from "@app/shared/config/config";
 
 interface RecentInvoice {
   id: string;
@@ -66,7 +67,7 @@ export function RecentInvoicesContent({
               borderBottom: "1px solid",
               borderColor: "divider",
               cursor: "pointer",
-              "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+              "&:hover": { bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_HOVER) },
               "&:last-child": { borderBottom: "none" },
               mx: -1,
               px: 1,
@@ -94,8 +95,8 @@ export function RecentInvoicesContent({
                 size="small"
                 label={statusLabel}
                 sx={{
-                  bgcolor: alpha(STATUS_COLORS[invoice.status] || "#9ca3af", 0.1),
-                  color: STATUS_COLORS[invoice.status] || "#9ca3af",
+                  bgcolor: alpha(getStatusColor(theme, invoice.status), UI.ALPHA_MUTED),
+                  color: getStatusColor(theme, invoice.status),
                   fontWeight: 600,
                   fontSize: "0.7rem",
                 }}

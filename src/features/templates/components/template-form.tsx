@@ -4,12 +4,19 @@ import { useCallback } from "react";
 import { Box, Button } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import { PageHeader } from "@app/shared/ui/page-header";
-import { Spinner } from "@app/shared/ui/loading";
+import { LoadingButton } from "@app/shared/ui/loading-button";
+import type { TemplateFormData } from "@app/shared/schemas";
 import { useTemplateForm } from "./use-template-form";
 import { TemplateFormDetails } from "./template-form-details";
 import { TemplateFormItems } from "./template-form-items";
 
-export function TemplateForm() {
+interface TemplateFormProps {
+  mode?: "create" | "edit";
+  templateId?: string;
+  initialData?: TemplateFormData;
+}
+
+export function TemplateForm({ mode = "create", templateId, initialData }: TemplateFormProps) {
   const {
     register,
     handleSubmit,
@@ -20,9 +27,10 @@ export function TemplateForm() {
     currency,
     discountType,
     isPending,
+    isEdit,
     onSubmit,
     router,
-  } = useTemplateForm();
+  } = useTemplateForm({ mode, templateId, initialData });
 
   const handleAppend = useCallback(
     () => append({ description: "", quantity: 1, unitPrice: 0 }),
@@ -32,8 +40,10 @@ export function TemplateForm() {
   return (
     <>
       <PageHeader
-        title="Create Template"
-        subtitle="Create a reusable template for common invoices"
+        title={isEdit ? "Edit Template" : "Create Template"}
+        subtitle={
+          isEdit ? "Update your invoice template" : "Create a reusable template for common invoices"
+        }
       />
 
       <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -57,14 +67,14 @@ export function TemplateForm() {
           <Button variant="outlined" onClick={() => router.push("/app/templates")}>
             Cancel
           </Button>
-          <Button
+          <LoadingButton
             type="submit"
             variant="contained"
-            startIcon={isPending ? <Spinner size={16} /> : <SaveIcon />}
-            disabled={isPending}
+            startIcon={<SaveIcon />}
+            loading={isPending}
           >
-            Create Template
-          </Button>
+            {isEdit ? "Save Changes" : "Create Template"}
+          </LoadingButton>
         </Box>
       </Box>
     </>

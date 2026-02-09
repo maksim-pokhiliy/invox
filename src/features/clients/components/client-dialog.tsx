@@ -13,7 +13,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import { Spinner } from "@app/shared/ui/loading";
+import { LoadingButton } from "@app/shared/ui/loading-button";
 import { useToast } from "@app/shared/ui/toast";
 import { useCreateClient, useUpdateClient } from "@app/features/clients";
 import { ApiError } from "@app/shared/api";
@@ -121,10 +121,9 @@ export function ClientDialog({ open, onClose, mode, client }: ClientDialogProps)
           <Button onClick={onClose} disabled={isPending}>
             Cancel
           </Button>
-          <Button type="submit" variant="contained" disabled={isPending}>
-            {isPending && <Spinner size={20} />}
-            {!isPending && (mode === "create" ? "Add Client" : "Save Changes")}
-          </Button>
+          <LoadingButton type="submit" variant="contained" loading={isPending}>
+            {mode === "create" ? "Add Client" : "Save Changes"}
+          </LoadingButton>
         </DialogActions>
       </Box>
     </Dialog>

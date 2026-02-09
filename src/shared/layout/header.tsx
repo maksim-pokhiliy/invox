@@ -65,8 +65,8 @@ export function Header() {
         sx={{
           maxWidth: "lg",
           mx: "auto",
-          bgcolor: alpha(theme.palette.background.paper, 0.85),
-          backdropFilter: "blur(12px)",
+          bgcolor: alpha(theme.palette.background.paper, UI.HEADER_BG_ALPHA),
+          backdropFilter: `blur(${UI.HEADER_BACKDROP_BLUR}px)`,
           borderRadius: 3,
           border: 1,
           borderColor: "divider",

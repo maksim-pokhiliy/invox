@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Box, Button, Alert } from "@mui/material";
+import { Box, Alert } from "@mui/material";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { senderProfileFormSchema, SenderProfileFormInput } from "@app/shared/schemas";
-import { Spinner } from "@app/shared/ui/loading";
+import { LoadingButton } from "@app/shared/ui/loading-button";
 import { useToast } from "@app/shared/ui/toast";
 import { useUpdateSenderProfile } from "@app/features/settings";
 import { ApiError } from "@app/shared/api";
@@ -85,14 +85,14 @@ export function BusinessProfileTab({ profile }: BusinessProfileTabProps) {
         <CurrencySelector register={register} errors={errors} currentValue={currency} />
 
         <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
-          <Button
+          <LoadingButton
             type="submit"
             variant="contained"
-            disabled={!isDirty || updateProfileMutation.isPending}
-            sx={{ minWidth: 150 }}
+            disabled={!isDirty}
+            loading={updateProfileMutation.isPending}
           >
-            {updateProfileMutation.isPending ? <Spinner size={20} /> : "Save Changes"}
-          </Button>
+            Save Changes
+          </LoadingButton>
         </Box>
       </Box>
     </>

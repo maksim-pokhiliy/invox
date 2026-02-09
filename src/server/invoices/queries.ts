@@ -1,5 +1,6 @@
 import { prisma } from "@app/server/db";
 import { InvoiceStatus } from "@prisma/client";
+import { INVOICE_STATUS } from "@app/shared/config/invoice-status";
 
 function computeOverdueStatus(invoice: {
   status: InvoiceStatus;
@@ -8,8 +9,8 @@ function computeOverdueStatus(invoice: {
   paidAmount?: number;
   total?: number;
 }) {
-  if (invoice.status === "PAID" || invoice.paidAt) {
-    return "PAID";
+  if (invoice.status === INVOICE_STATUS.PAID || invoice.paidAt) {
+    return INVOICE_STATUS.PAID;
   }
   if (
     invoice.paidAmount &&
@@ -17,10 +18,14 @@ function computeOverdueStatus(invoice: {
     invoice.paidAmount > 0 &&
     invoice.paidAmount < invoice.total
   ) {
-    return "PARTIALLY_PAID";
+    return INVOICE_STATUS.PARTIALLY_PAID;
   }
-  if (invoice.status !== "DRAFT" && invoice.dueDate < new Date() && invoice.status !== "OVERDUE") {
-    return "OVERDUE";
+  if (
+    invoice.status !== INVOICE_STATUS.DRAFT &&
+    invoice.dueDate < new Date() &&
+    invoice.status !== INVOICE_STATUS.OVERDUE
+  ) {
+    return INVOICE_STATUS.OVERDUE;
   }
   return invoice.status;
 }

@@ -7,7 +7,6 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
   Box,
-  Button,
   Container,
   TextField,
   Typography,
@@ -25,16 +24,19 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Logo } from "@app/shared/ui/logo";
-import { Spinner } from "@app/shared/ui/loading";
+import { LoadingButton } from "@app/shared/ui/loading-button";
 import { useToast } from "@app/shared/ui/toast";
 import { signUpSchema, SignUpInput } from "@app/shared/schemas";
+import { UI } from "@app/shared/config/config";
+import { ApiError } from "@app/shared/api/base";
+import { authApi } from "@app/features/auth";
 
-const features = [
+const FEATURES = [
   "Create professional invoices in minutes",
   "Track payments and send reminders",
   "Record payments with multiple methods",
   "Manage all your clients in one place",
-];
+] as const;
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -55,18 +57,7 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/sign-up", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        toast.error(result.error?.message || "Failed to create account");
-        return;
-      }
+      await authApi.signUp(data);
 
       const signInResult = await signIn("credentials", {
         email: data.email,
@@ -83,8 +74,8 @@ export default function SignUpPage() {
       toast.success("Welcome to Invox!");
       router.push("/app");
       router.refresh();
-    } catch {
-      toast.error("An unexpected error occurred");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -99,9 +90,23 @@ export default function SignUpPage() {
         alignItems: "center",
         justifyContent: "center",
         py: 4,
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <Container maxWidth="sm">
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: "-20%",
+          left: "-10%",
+          width: "50%",
+          height: "60%",
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.06)} 0%, transparent 70%)`,
+          pointerEvents: "none",
+        }}
+      />
+      <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Box sx={{ mb: 4 }}>
             <Logo size="large" />
@@ -122,10 +127,10 @@ export default function SignUpPage() {
                 mb: 4,
                 p: 2.5,
                 borderRadius: 2,
-                bgcolor: alpha(theme.palette.primary.main, 0.04),
+                bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_HOVER),
               }}
             >
-              {features.map((feature) => (
+              {FEATURES.map((feature) => (
                 <Box
                   key={feature}
                   sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 0.75 }}
@@ -184,16 +189,16 @@ export default function SignUpPage() {
                   ),
                 }}
               />
-              <Button
+              <LoadingButton
                 type="submit"
                 variant="contained"
                 fullWidth
                 size="large"
                 sx={{ mt: 3, py: 1.5 }}
-                disabled={isLoading}
+                loading={isLoading}
               >
-                {isLoading ? <Spinner size={24} /> : "Create Account"}
-              </Button>
+                Create Account
+              </LoadingButton>
             </Box>
 
             <Box

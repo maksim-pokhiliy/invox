@@ -9,7 +9,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import { Spinner } from "./loading";
+import { LoadingButton } from "./loading-button";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -44,9 +44,14 @@ export function ConfirmDialog({
         <Button onClick={onClose} disabled={isLoading}>
           {cancelText}
         </Button>
-        <Button variant="contained" color={confirmColor} onClick={onConfirm} disabled={isLoading}>
-          {isLoading ? <Spinner size={20} /> : confirmText}
-        </Button>
+        <LoadingButton
+          variant="contained"
+          color={confirmColor}
+          onClick={onConfirm}
+          loading={isLoading}
+        >
+          {confirmText}
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );
