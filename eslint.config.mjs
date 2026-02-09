@@ -87,6 +87,19 @@ const eslintConfig = defineConfig([
       complexity: ["error", 20],
     },
   },
+  {
+    files: ["src/**/*.ts", "src/**/*.tsx"],
+    ignores: ["src/shared/config/env.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "MemberExpression[object.name='process'][property.name='env']",
+          message: "Use `env` from '@app/shared/config/env' instead of process.env.",
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

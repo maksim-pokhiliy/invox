@@ -6,6 +6,10 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  env: {
+    NEXT_PUBLIC_BANKING_ENABLED: process.env.SALT_EDGE_APP_ID ? "true" : "",
+  },
   experimental: {
     optimizePackageImports: [
       "@mui/material",

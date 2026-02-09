@@ -1,12 +1,13 @@
 import { Resend } from "resend";
 import { formatCurrency, formatDate } from "@app/shared/lib/format";
 import { EMAIL } from "@app/shared/config/config";
+import { env } from "@app/shared/config/env";
 import { buildEmailLayout, buildEmailButton, buildInvoiceDetailsBlock } from "./template";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(env.RESEND_API_KEY);
 
-const APP_URL = process.env.APP_URL || "http://localhost:3000";
-const EMAIL_FROM = process.env.EMAIL_FROM || "invoices@example.com";
+const APP_URL = env.APP_URL;
+const EMAIL_FROM = env.EMAIL_FROM;
 
 interface InvoiceEmailData {
   clientName: string;

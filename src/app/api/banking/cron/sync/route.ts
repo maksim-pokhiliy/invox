@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { syncAllConnections } from "@app/server/banking/sync";
+import { env } from "@app/shared/config/env";
 
 export async function POST(request: Request) {
   try {
     const cronSecret = request.headers.get("x-cron-secret");
 
-    if (cronSecret !== process.env.CRON_SECRET) {
+    if (cronSecret !== env.CRON_SECRET) {
       return NextResponse.json(
         { error: { code: "UNAUTHORIZED", message: "Invalid cron secret" } },
         { status: 401 }

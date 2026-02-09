@@ -22,28 +22,39 @@ import {
   ConnectBankButton,
   PendingMatches,
 } from "@app/features/banking/components";
+import { env } from "@app/shared/config/env";
+
+const BANKING_ENABLED = env.NEXT_PUBLIC_BANKING_ENABLED;
+
+interface TabDef {
+  key: string;
+  label: string;
+  icon: React.ReactElement;
+}
+
+const ALL_TABS: TabDef[] = [
+  { key: "profile", label: "Business Profile", icon: <BusinessIcon /> },
+  ...(BANKING_ENABLED ? [{ key: "payments", label: "Payments", icon: <PaymentIcon /> }] : []),
+  { key: "reminders", label: "Reminders", icon: <NotificationsIcon /> },
+  { key: "branding", label: "Branding", icon: <BrushIcon /> },
+];
+
+const TAB_MAP = Object.fromEntries(ALL_TABS.map((t, i) => [t.key, i]));
 
 interface TabPanelProps {
   children?: React.ReactNode;
-  index: number;
-  value: number;
+  tabKey: string;
+  activeKey: string;
 }
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
+function TabPanel({ children, tabKey, activeKey, ...other }: TabPanelProps) {
+  const isActive = tabKey === activeKey;
   return (
-    <Box role="tabpanel" hidden={value !== index} {...other}>
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+    <Box role="tabpanel" hidden={!isActive} {...other}>
+      {isActive && <Box sx={{ pt: 3 }}>{children}</Box>}
     </Box>
   );
 }
-
-const TAB_MAP: Record<string, number> = {
-  profile: 0,
-  payments: 1,
-  reminders: 2,
-  branding: 3,
-};
 
 export default function SettingsPage() {
   const theme = useTheme();
@@ -52,6 +63,8 @@ export default function SettingsPage() {
   const tabParam = searchParams.get("tab");
   const initialTab = tabParam ? (TAB_MAP[tabParam] ?? 0) : 0;
   const [tabValue, setTabValue] = React.useState(initialTab);
+
+  const activeKey = ALL_TABS[tabValue]?.key ?? "profile";
 
   const { data: profile, isLoading } = useSenderProfile();
   const { data: reminderSettings, isLoading: reminderLoading } = useReminderSettings();
@@ -81,25 +94,15 @@ export default function SettingsPage() {
             bgcolor: alpha(theme.palette.primary.main, 0.02),
           }}
         >
-          <Tab
-            icon={<BusinessIcon />}
-            iconPosition="start"
-            label="Business Profile"
-            sx={{ minHeight: 64 }}
-          />
-          <Tab
-            icon={<PaymentIcon />}
-            iconPosition="start"
-            label="Payments"
-            sx={{ minHeight: 64 }}
-          />
-          <Tab
-            icon={<NotificationsIcon />}
-            iconPosition="start"
-            label="Reminders"
-            sx={{ minHeight: 64 }}
-          />
-          <Tab icon={<BrushIcon />} iconPosition="start" label="Branding" sx={{ minHeight: 64 }} />
+          {ALL_TABS.map((tab) => (
+            <Tab
+              key={tab.key}
+              icon={tab.icon}
+              iconPosition="start"
+              label={tab.label}
+              sx={{ minHeight: 64 }}
+            />
+          ))}
         </Tabs>
 
         <Box sx={{ p: 4 }}>
@@ -107,31 +110,33 @@ export default function SettingsPage() {
             <CardSkeleton />
           ) : (
             <>
-              <TabPanel value={tabValue} index={0}>
+              <TabPanel tabKey="profile" activeKey={activeKey}>
                 <BusinessProfileTab profile={profile} />
               </TabPanel>
 
-              <TabPanel value={tabValue} index={1}>
-                <PaymentsTab>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="flex-end"
-                    sx={{ mb: 2 }}
-                  >
-                    <ConnectBankButton />
-                  </Stack>
-                  <ConnectionList />
-                  <Divider sx={{ my: 4 }} />
-                  <PendingMatches />
-                </PaymentsTab>
-              </TabPanel>
+              {BANKING_ENABLED && (
+                <TabPanel tabKey="payments" activeKey={activeKey}>
+                  <PaymentsTab>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="flex-end"
+                      sx={{ mb: 2 }}
+                    >
+                      <ConnectBankButton />
+                    </Stack>
+                    <ConnectionList />
+                    <Divider sx={{ my: 4 }} />
+                    <PendingMatches />
+                  </PaymentsTab>
+                </TabPanel>
+              )}
 
-              <TabPanel value={tabValue} index={2}>
+              <TabPanel tabKey="reminders" activeKey={activeKey}>
                 <RemindersTab settings={reminderSettings} />
               </TabPanel>
 
-              <TabPanel value={tabValue} index={3}>
+              <TabPanel tabKey="branding" activeKey={activeKey}>
                 <BrandingTab profile={profile} />
               </TabPanel>
             </>

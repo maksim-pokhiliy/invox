@@ -1,8 +1,9 @@
 import { BANKING, TIME } from "@app/shared/config/config";
+import { env } from "@app/shared/config/env";
 
-const APP_ID = process.env.SALT_EDGE_APP_ID ?? "";
-const SECRET = process.env.SALT_EDGE_SECRET ?? "";
-const BASE_URL = process.env.SALT_EDGE_BASE_URL || BANKING.SALT_EDGE_BASE_URL;
+const APP_ID = env.SALT_EDGE_APP_ID ?? "";
+const SECRET = env.SALT_EDGE_SECRET ?? "";
+const BASE_URL = env.SALT_EDGE_BASE_URL;
 
 interface SaltEdgeCustomer {
   customer_id: string;

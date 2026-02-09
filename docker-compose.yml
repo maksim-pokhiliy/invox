@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: invox
+      POSTGRES_USER: invox
+      POSTGRES_PASSWORD: invox
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U invox"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://invox:invox@db:5432/invox?schema=public"
+      NEXTAUTH_SECRET: "${NEXTAUTH_SECRET:-change-me-to-a-random-secret}"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
+      APP_URL: "${APP_URL:-http://localhost:3000}"
+      # Optional: uncomment to enable email sending
+      # RESEND_API_KEY: "${RESEND_API_KEY}"
+      # EMAIL_FROM: "${EMAIL_FROM}"
+      # Optional: uncomment to enable banking integration
+      # SALT_EDGE_APP_ID: "${SALT_EDGE_APP_ID}"
+      # SALT_EDGE_SECRET: "${SALT_EDGE_SECRET}"
+
+volumes:
+  pgdata:

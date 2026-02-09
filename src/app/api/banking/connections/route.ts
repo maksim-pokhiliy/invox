@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser, AuthenticationError } from "@app/server/auth/require-user";
 import { getConnections, createConnectSession } from "@app/server/banking/connections";
+import { env } from "@app/shared/config/env";
 
 export async function GET() {
   try {
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
   try {
     const user = await requireUser();
     const body = await request.json();
-    const returnUrl = body.returnUrl || `${process.env.APP_URL}/app/banking-return`;
+    const returnUrl = body.returnUrl || `${env.APP_URL}/app/banking-return`;
 
     const session = await createConnectSession(user.id, returnUrl);
     return NextResponse.json({ connectUrl: session.connect_url });
