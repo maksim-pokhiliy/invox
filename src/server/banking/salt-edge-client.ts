@@ -1,10 +1,6 @@
 import { BANKING, TIME } from "@app/shared/config/config";
 import { env } from "@app/shared/config/env";
 
-const APP_ID = env.SALT_EDGE_APP_ID ?? "";
-const SECRET = env.SALT_EDGE_SECRET ?? "";
-const BASE_URL = env.SALT_EDGE_BASE_URL;
-
 interface SaltEdgeCustomer {
   customer_id: string;
   identifier: string;
@@ -44,13 +40,13 @@ interface SaltEdgeTransaction {
 }
 
 async function saltEdgeFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${BASE_URL}${path}`, {
+  const response = await fetch(`${env.SALT_EDGE_BASE_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
-      "App-id": APP_ID,
-      Secret: SECRET,
+      "App-id": env.SALT_EDGE_APP_ID ?? "",
+      Secret: env.SALT_EDGE_SECRET ?? "",
       ...options.headers,
     },
   });

@@ -1,6 +1,7 @@
 {
   "name": "invox",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -20,9 +21,6 @@
     "postinstall": "prisma generate",
     "db:seed": "prisma db seed"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
     "@dnd-kit/core": "^6.3.1",
@@ -34,7 +32,8 @@
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.7",
     "@mui/x-date-pickers": "^8.27.0",
-    "@prisma/client": "^5.22.0",
+    "@prisma/adapter-pg": "^7.0.0",
+    "@prisma/client": "^7.0.0",
     "@tanstack/react-query": "^5.90.20",
     "@tanstack/react-virtual": "^3.13.18",
     "bcryptjs": "^3.0.3",
@@ -44,6 +43,7 @@
     "nanoid": "^5.1.6",
     "next": "16.1.6",
     "next-auth": "5.0.0-beta.30",
+    "pg": "^8.16.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.1",
@@ -56,15 +56,24 @@
     "@commitlint/config-conventional": "^20.4.1",
     "@next/bundle-analyzer": "^16.1.6",
     "@types/node": "^20",
+    "@types/pg": "^8.15.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.5.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "lefthook": "^2.1.0",
     "prettier": "^3.8.1",
-    "prisma": "^5.22.0",
+    "prisma": "^7.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "@prisma/client": "7"
+      }
+    }
   },
   "packageManager": "pnpm@10.28.2+sha512.41872f037ad22f7348e3b1debbaf7e867cfd448f2726d9cf74c08f19507c31d2c8e7a11525b983febc2df640b5438dee6023ebb1f84ed43cc2d654d2bc326264"
 }

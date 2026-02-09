@@ -9,7 +9,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U invox"]
       interval: 5s
@@ -28,6 +28,7 @@ services:
       DATABASE_URL: "postgresql://invox:invox@db:5432/invox?schema=public"
       NEXTAUTH_SECRET: "${NEXTAUTH_SECRET:-change-me-to-a-random-secret}"
       NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
+      AUTH_TRUST_HOST: "true"
       APP_URL: "${APP_URL:-http://localhost:3000}"
       # Optional: uncomment to enable email sending
       # RESEND_API_KEY: "${RESEND_API_KEY}"
