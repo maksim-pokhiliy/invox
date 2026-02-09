@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Box, Button, Alert } from "@mui/material";
 import { AppLayout } from "@app/shared/layout/app-layout";
 import { Breadcrumbs } from "@app/shared/ui/breadcrumbs";
-import { PageLoader } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/loading";
 import { InvoiceForm } from "@app/features/invoices/components";
 import { useInvoice } from "@app/features/invoices";
 import { useClients, useCreateClient } from "@app/features/clients";
@@ -20,7 +20,7 @@ export default function EditInvoicePage() {
   if (isLoading) {
     return (
       <AppLayout>
-        <PageLoader message="Loading invoice..." />
+        <CardSkeleton />
       </AppLayout>
     );
   }

@@ -1,18 +1,7 @@
 "use client";
 
-import {
-  Box,
-  Checkbox,
-  Chip,
-  IconButton,
-  TableCell,
-  TableRow,
-  Tooltip,
-  Typography,
-  alpha,
-  useTheme,
-} from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { Box, Checkbox, Chip, TableCell, Typography, alpha, useTheme } from "@mui/material";
+import { DataTableRow, DataTableActions } from "@app/shared/ui/data-table";
 import { formatCurrency, formatDateCompact } from "@app/shared/lib/format";
 import { STATUS_CONFIG, getStatusColor } from "../../constants/invoice";
 import { UI } from "@app/shared/config/config";
@@ -44,17 +33,12 @@ export function InvoiceTableRow({
   const statusColor = getStatusColor(theme, invoice.status);
 
   return (
-    <TableRow
-      data-index={dataIndex}
-      hover
-      selected={selected}
-      sx={{
-        cursor: "pointer",
-        height,
-        "&:hover": { bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_HOVER) },
-      }}
-      onMouseEnter={() => onPrefetch(invoice.id)}
+    <DataTableRow
       onClick={() => onRowClick(invoice.id)}
+      onMouseEnter={() => onPrefetch(invoice.id)}
+      selected={selected}
+      height={height}
+      dataIndex={dataIndex}
     >
       {onToggleSelect && (
         <TableCell padding="checkbox">
@@ -125,21 +109,10 @@ export function InvoiceTableRow({
           {formatDateCompact(invoice.createdAt)}
         </Typography>
       </TableCell>
-      <TableCell>
-        <Tooltip title="Actions">
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              onMenuOpen(e, invoice.id);
-            }}
-            sx={{ color: "text.secondary" }}
-            aria-label={`Actions for invoice ${invoice.publicId}`}
-          >
-            <MoreVertIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </TableCell>
-    </TableRow>
+      <DataTableActions
+        onMenuOpen={(e) => onMenuOpen(e, invoice.id)}
+        ariaLabel={`Actions for invoice ${invoice.publicId}`}
+      />
+    </DataTableRow>
   );
 }

@@ -6,17 +6,27 @@ import { PageHeader } from "@app/shared/ui/page-header";
 import { Spinner } from "@app/shared/ui/loading";
 import { FormActions } from "@app/shared/ui/form-actions";
 import type { Client } from "@app/shared/schemas/api";
+import type { RecurringFormData } from "@app/shared/schemas";
 import { useRecurringForm } from "./use-recurring-form";
 import { RecurringFormSchedule } from "./recurring-form-schedule";
 import { RecurringFormItems } from "./recurring-form-items";
 import { RecurringFormDiscounts } from "./recurring-form-discounts";
 
 interface RecurringFormProps {
+  mode?: "create" | "edit";
+  recurringId?: string;
+  initialData?: RecurringFormData;
   clients: Client[] | undefined;
   clientsLoading: boolean;
 }
 
-export function RecurringForm({ clients, clientsLoading }: RecurringFormProps) {
+export function RecurringForm({
+  mode = "create",
+  recurringId,
+  initialData,
+  clients,
+  clientsLoading,
+}: RecurringFormProps) {
   const {
     register,
     handleSubmit,
@@ -29,9 +39,10 @@ export function RecurringForm({ clients, clientsLoading }: RecurringFormProps) {
     discountType,
     subtotal,
     isPending,
+    isEdit,
     onSubmit,
     router,
-  } = useRecurringForm({ clients, clientsLoading });
+  } = useRecurringForm({ mode, recurringId, initialData, clients, clientsLoading });
 
   const handleAppend = useCallback(
     () => append({ description: "", quantity: 1, unitPrice: 0 }),
@@ -44,7 +55,10 @@ export function RecurringForm({ clients, clientsLoading }: RecurringFormProps) {
 
   return (
     <>
-      <PageHeader title="New Recurring Invoice" subtitle="Set up automatic invoice generation" />
+      <PageHeader
+        title={isEdit ? "Edit Recurring Invoice" : "New Recurring Invoice"}
+        subtitle={isEdit ? "Update your recurring schedule" : "Set up automatic invoice generation"}
+      />
 
       <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
         <RecurringFormSchedule
@@ -72,7 +86,7 @@ export function RecurringForm({ clients, clientsLoading }: RecurringFormProps) {
 
         <FormActions
           onCancel={() => router.back()}
-          submitLabel="Create Schedule"
+          submitLabel={isEdit ? "Save Changes" : "Create Schedule"}
           loading={isPending}
         />
       </Box>

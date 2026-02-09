@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@app/shared/ui/toast";
-import { useCreateRecurring } from "@app/features/recurring";
+import { useCreateRecurring, useUpdateRecurring } from "@app/features/recurring";
 import type { Client } from "@app/shared/schemas/api";
 import { ApiError } from "@app/shared/api";
 import { buildDiscountInput } from "@app/shared/lib/calculations";
@@ -12,14 +12,46 @@ import { useUnsavedChanges } from "@app/shared/hooks";
 import { recurringFormSchema, type RecurringFormData } from "@app/shared/schemas";
 
 interface UseRecurringFormOptions {
+  mode?: "create" | "edit";
+  recurringId?: string;
+  initialData?: RecurringFormData;
   clients: Client[] | undefined;
   clientsLoading: boolean;
 }
 
-export function useRecurringForm({ clients, clientsLoading }: UseRecurringFormOptions) {
+function buildSubmitData(data: RecurringFormData) {
+  return {
+    clientId: data.clientId,
+    name: data.name,
+    frequency: data.frequency,
+    currency: data.currency,
+    discount: buildDiscountInput(data.discountType, data.discountValue) ?? undefined,
+    taxRate: data.taxRate,
+    notes: data.notes || undefined,
+    dueDays: data.dueDays,
+    autoSend: data.autoSend,
+    startDate: data.startDate,
+    endDate: data.endDate || undefined,
+    items: data.items.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      unitPrice: Math.round(item.unitPrice * 100),
+    })),
+  };
+}
+
+export function useRecurringForm({
+  mode = "create",
+  recurringId,
+  initialData,
+  clients,
+  clientsLoading,
+}: UseRecurringFormOptions) {
   const router = useRouter();
   const toast = useToast();
   const createMutation = useCreateRecurring();
+  const updateMutation = useUpdateRecurring();
+  const isEdit = mode === "edit";
 
   const {
     register,
@@ -28,7 +60,7 @@ export function useRecurringForm({ clients, clientsLoading }: UseRecurringFormOp
     formState: { errors, isDirty },
   } = useForm<RecurringFormData>({
     resolver: zodResolver(recurringFormSchema),
-    defaultValues: {
+    defaultValues: initialData ?? {
       clientId: "",
       name: "",
       frequency: "MONTHLY",
@@ -62,34 +94,34 @@ export function useRecurringForm({ clients, clientsLoading }: UseRecurringFormOp
   );
 
   const onSubmit = (data: RecurringFormData) => {
-    const submitData = {
-      clientId: data.clientId,
-      name: data.name,
-      frequency: data.frequency,
-      currency: data.currency,
-      discount: buildDiscountInput(data.discountType, data.discountValue) ?? undefined,
-      taxRate: data.taxRate,
-      notes: data.notes || undefined,
-      dueDays: data.dueDays,
-      autoSend: data.autoSend,
-      startDate: data.startDate,
-      endDate: data.endDate || undefined,
-      items: data.items.map((item) => ({
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: Math.round(item.unitPrice * 100),
-      })),
-    };
+    const submitData = buildSubmitData(data);
 
-    createMutation.mutate(submitData, {
-      onSuccess: () => {
-        toast.success("Recurring invoice created");
-        router.push("/app/recurring");
-      },
-      onError: (err) => {
-        toast.error(err instanceof ApiError ? err.message : "Failed to create recurring invoice");
-      },
-    });
+    if (isEdit && recurringId) {
+      updateMutation.mutate(
+        { id: recurringId, data: submitData },
+        {
+          onSuccess: () => {
+            toast.success("Recurring invoice updated");
+            router.push("/app/recurring");
+          },
+          onError: (err) => {
+            toast.error(
+              err instanceof ApiError ? err.message : "Failed to update recurring invoice"
+            );
+          },
+        }
+      );
+    } else {
+      createMutation.mutate(submitData, {
+        onSuccess: () => {
+          toast.success("Recurring invoice created");
+          router.push("/app/recurring");
+        },
+        onError: (err) => {
+          toast.error(err instanceof ApiError ? err.message : "Failed to create recurring invoice");
+        },
+      });
+    }
   };
 
   return {
@@ -105,7 +137,8 @@ export function useRecurringForm({ clients, clientsLoading }: UseRecurringFormOp
     discountType,
     items,
     subtotal,
-    isPending: createMutation.isPending,
+    isPending: isEdit ? updateMutation.isPending : createMutation.isPending,
+    isEdit,
     clients,
     clientsLoading,
     onSubmit,

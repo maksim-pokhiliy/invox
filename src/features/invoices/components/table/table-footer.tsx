@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Button, TablePagination, Typography } from "@mui/material";
+import { PAGINATION } from "@app/shared/config/config";
 
 const SHOW_ALL_THRESHOLD = 50;
 
@@ -63,7 +64,7 @@ export function InvoicesTableFooter({
         onPageChange={onPageChange}
         rowsPerPage={rowsPerPage}
         onRowsPerPageChange={onRowsPerPageChange}
-        rowsPerPageOptions={[5, 10, 25, 50]}
+        rowsPerPageOptions={[...PAGINATION.PAGE_SIZE_OPTIONS]}
         sx={{ flex: 1 }}
       />
       {filteredCount > SHOW_ALL_THRESHOLD && (

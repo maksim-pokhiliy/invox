@@ -1,12 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Paper, Table, TableBody, TableContainer, alpha, useTheme } from "@mui/material";
-import { InvoicesTableHeader } from "./table-header";
+import { Checkbox } from "@mui/material";
+import { DataTable, type DataTableColumn } from "@app/shared/ui/data-table";
+import { useTableKeyboardNav } from "@app/shared/hooks";
 import { InvoicesTableFooter } from "./table-footer";
 import { VirtualizedRows, PaginatedRows } from "./table-rows";
-import { useTableKeyboardNav } from "@app/shared/hooks";
-import { UI } from "@app/shared/config/config";
 import type { InvoiceData } from "../invoice-row";
 
 interface VirtualItem {
@@ -16,6 +15,15 @@ interface VirtualItem {
 }
 
 const VIRTUAL_MAX_HEIGHT = 600;
+
+const COLUMNS: DataTableColumn[] = [
+  { id: "publicId", label: "Invoice #" },
+  { id: "client", label: "Client" },
+  { id: "total", label: "Amount" },
+  { id: "dueDate", label: "Due Date", hideOnMobile: true },
+  { id: "status", label: "Status" },
+  { id: "createdAt", label: "Created", hideOnMobile: true },
+];
 
 interface InvoicesTableProps {
   filteredInvoices: InvoiceData[];
@@ -62,7 +70,6 @@ export function InvoicesTable({
   onToggleSelect,
   onToggleSelectAll,
 }: InvoicesTableProps) {
-  const theme = useTheme();
   const displayedInvoices = showAll ? filteredInvoices : paginatedInvoices;
   const { onKeyDown: tableKeyDown } = useTableKeyboardNav(displayedInvoices.length, {
     onActivate: (index) => {
@@ -81,48 +88,38 @@ export function InvoicesTable({
       : undefined,
   });
 
-  return (
-    <Paper sx={{ borderRadius: 3, overflow: "hidden" }} onKeyDown={tableKeyDown}>
-      <TableContainer
-        ref={showAll ? parentRef : undefined}
-        sx={{
-          maxHeight: showAll ? VIRTUAL_MAX_HEIGHT : undefined,
-          "& .MuiTableHead-root": { bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_HOVER) },
-        }}
-      >
-        <Table stickyHeader={showAll}>
-          <InvoicesTableHeader
-            sortColumn={sortColumn}
-            sortDirection={sortDirection}
-            onSort={onSort}
-            selectionCount={selectedIds?.size}
-            totalCount={filteredInvoices.length}
-            onToggleSelectAll={onToggleSelectAll}
+  const selectionCount = selectedIds?.size ?? 0;
+  const totalCount = displayedInvoices.length;
+
+  const selectionColumn: DataTableColumn | null = onToggleSelectAll
+    ? {
+        id: "_select",
+        label: "",
+        sortable: false,
+        renderHeader: () => (
+          <Checkbox
+            indeterminate={selectionCount > 0 && selectionCount < totalCount}
+            checked={totalCount > 0 && selectionCount === totalCount}
+            onChange={onToggleSelectAll}
+            size="small"
           />
-          <TableBody>
-            {showAll ? (
-              <VirtualizedRows
-                filteredInvoices={filteredInvoices}
-                virtualItems={virtualItems}
-                totalSize={totalSize}
-                selectedIds={selectedIds}
-                onToggleSelect={onToggleSelect}
-                onRowClick={onRowClick}
-                onMenuOpen={onMenuOpen}
-                onPrefetch={onPrefetch}
-              />
-            ) : (
-              <PaginatedRows
-                invoices={paginatedInvoices}
-                selectedIds={selectedIds}
-                onToggleSelect={onToggleSelect}
-                onRowClick={onRowClick}
-                onMenuOpen={onMenuOpen}
-                onPrefetch={onPrefetch}
-              />
-            )}
-          </TableBody>
-        </Table>
+        ),
+      }
+    : null;
+
+  const allColumns = selectionColumn ? [selectionColumn, ...COLUMNS] : COLUMNS;
+
+  return (
+    <DataTable
+      columns={allColumns}
+      sortColumn={sortColumn}
+      sortDirection={sortDirection}
+      onSort={onSort}
+      stickyHeader={showAll}
+      maxHeight={showAll ? VIRTUAL_MAX_HEIGHT : undefined}
+      containerRef={showAll ? parentRef : undefined}
+      onKeyDown={tableKeyDown}
+      footer={
         <InvoicesTableFooter
           showAll={showAll}
           setShowAll={setShowAll}
@@ -132,7 +129,29 @@ export function InvoicesTable({
           onPageChange={onPageChange}
           onRowsPerPageChange={onRowsPerPageChange}
         />
-      </TableContainer>
-    </Paper>
+      }
+    >
+      {showAll ? (
+        <VirtualizedRows
+          filteredInvoices={filteredInvoices}
+          virtualItems={virtualItems}
+          totalSize={totalSize}
+          selectedIds={selectedIds}
+          onToggleSelect={onToggleSelect}
+          onRowClick={onRowClick}
+          onMenuOpen={onMenuOpen}
+          onPrefetch={onPrefetch}
+        />
+      ) : (
+        <PaginatedRows
+          invoices={paginatedInvoices}
+          selectedIds={selectedIds}
+          onToggleSelect={onToggleSelect}
+          onRowClick={onRowClick}
+          onMenuOpen={onMenuOpen}
+          onPrefetch={onPrefetch}
+        />
+      )}
+    </DataTable>
   );
 }
