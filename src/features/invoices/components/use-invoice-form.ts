@@ -68,6 +68,36 @@ interface CreateClientMutation {
   isPending: boolean;
 }
 
+function useInitialRate(
+  mode: "create" | "edit",
+  hasInitialData: boolean,
+  hasTemplate: boolean,
+  resolvedRate: number,
+  items: InvoiceFormInput["items"],
+  setValue: (name: `items.${number}.unitPrice`, value: number) => void
+) {
+  const applied = React.useRef(false);
+
+  React.useEffect(() => {
+    if (
+      mode !== "create" ||
+      hasInitialData ||
+      hasTemplate ||
+      applied.current ||
+      resolvedRate <= 0
+    ) {
+      return;
+    }
+    const rateInDollars = resolvedRate / 100;
+    items.forEach((item, index) => {
+      if (item.unitPrice === 0) {
+        setValue(`items.${index}.unitPrice`, rateInDollars);
+      }
+    });
+    applied.current = true;
+  }, [mode, hasInitialData, hasTemplate, resolvedRate, items, setValue]);
+}
+
 function useTemplateApplication(
   mode: "create" | "edit",
   template: TemplateData | undefined,
@@ -96,6 +126,41 @@ function useTemplateApplication(
   }, [mode, template, templateApplied, templateLoading, reset, toast]);
 }
 
+function useClientDialog(createClientMutation: CreateClientMutation) {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const [open, setOpen] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const handleSuccess = React.useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.clients });
+    setOpen(false);
+    setError(null);
+    toast.success("Client added successfully!");
+  }, [queryClient, toast]);
+
+  const handleCreate = React.useCallback(
+    (data: CreateClientInput) => {
+      setError(null);
+      createClientMutation.mutate(data, {
+        onSuccess: () => handleSuccess(),
+        onError: (err) => {
+          setError(err instanceof ApiError ? err.message : "Failed to create client");
+        },
+      });
+    },
+    [createClientMutation, handleSuccess]
+  );
+
+  return {
+    open,
+    setOpen,
+    error,
+    handleCreate,
+    isPending: createClientMutation.isPending,
+  };
+}
+
 interface UseInvoiceFormOptions {
   mode: "create" | "edit";
   invoiceId?: string;
@@ -112,6 +177,7 @@ interface UseInvoiceFormOptions {
   template?: TemplateData;
   templateLoading: boolean;
   createClientMutation: CreateClientMutation;
+  defaultRate?: number;
 }
 
 export function useInvoiceForm({
@@ -123,11 +189,9 @@ export function useInvoiceForm({
   template,
   templateLoading,
   createClientMutation,
+  defaultRate = 0,
 }: UseInvoiceFormOptions) {
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const [clientDialogOpen, setClientDialogOpen] = React.useState(false);
-  const [clientDialogError, setClientDialogError] = React.useState<string | null>(null);
+  const clientDialog = useClientDialog(createClientMutation);
   const [defaultDueDate] = React.useState(getDefaultDueDate);
 
   const {
@@ -135,6 +199,7 @@ export function useInvoiceForm({
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors, isDirty },
   } = useForm<InvoiceFormInput>({
     resolver: zodResolver(invoiceFormSchema),
@@ -170,24 +235,24 @@ export function useInvoiceForm({
     0
   );
 
-  const handleClientDialogSuccess = React.useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.clients });
-    setClientDialogOpen(false);
-    setClientDialogError(null);
-    toast.success("Client added successfully!");
-  }, [queryClient, toast]);
+  const clientId = useWatch({ control, name: "clientId" });
+  const selectedClient = clients?.find((c) => c.id === clientId);
+  const resolvedRate = selectedClient?.defaultRate ?? defaultRate;
 
-  const handleCreateClient = React.useCallback(
-    (data: CreateClientInput) => {
-      setClientDialogError(null);
-      createClientMutation.mutate(data, {
-        onSuccess: () => handleClientDialogSuccess(),
-        onError: (err) => {
-          setClientDialogError(err instanceof ApiError ? err.message : "Failed to create client");
-        },
-      });
+  useInitialRate(mode, !!initialData, !!template, resolvedRate, items, setValue);
+
+  const duplicateItem = React.useCallback(
+    (index: number) => {
+      const item = items[index];
+      if (item) {
+        append({
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        });
+      }
     },
-    [createClientMutation, handleClientDialogSuccess]
+    [items, append]
   );
 
   return {
@@ -201,8 +266,8 @@ export function useInvoiceForm({
     sensors,
     handleDragEnd,
     error,
-    clientDialogOpen,
-    setClientDialogOpen,
+    clientDialogOpen: clientDialog.open,
+    setClientDialogOpen: clientDialog.setOpen,
     showDraftBanner: draft.showDraftBanner,
     isPending,
     subtotal,
@@ -212,10 +277,12 @@ export function useInvoiceForm({
     onSubmit,
     handleRestoreDraft: draft.handleRestoreDraft,
     handleDiscardDraft: draft.handleDiscardDraft,
-    handleCreateClient,
-    isCreatingClient: createClientMutation.isPending,
-    clientDialogError,
+    handleCreateClient: clientDialog.handleCreate,
+    isCreatingClient: clientDialog.isPending,
+    clientDialogError: clientDialog.error,
     clients,
     clientsLoading,
+    resolvedRate,
+    duplicateItem,
   };
 }

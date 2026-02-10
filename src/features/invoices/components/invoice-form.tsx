@@ -46,6 +46,7 @@ interface InvoiceFormProps {
   template?: TemplateData;
   templateLoading: boolean;
   createClientMutation: CreateClientMutation;
+  defaultRate?: number;
 }
 
 export function InvoiceForm({
@@ -58,6 +59,7 @@ export function InvoiceForm({
   template,
   templateLoading,
   createClientMutation,
+  defaultRate,
 }: InvoiceFormProps) {
   const form = useInvoiceForm({
     mode,
@@ -69,6 +71,7 @@ export function InvoiceForm({
     template,
     templateLoading,
     createClientMutation,
+    defaultRate,
   });
 
   return (
@@ -115,8 +118,11 @@ export function InvoiceForm({
             register={form.register}
             errors={form.errors}
             currency={form.currency}
-            onAppend={() => form.append({ description: "", quantity: 1, unitPrice: 0 })}
+            onAppend={() =>
+              form.append({ description: "", quantity: 1, unitPrice: form.resolvedRate / 100 })
+            }
             onRemove={form.remove}
+            onDuplicate={form.duplicateItem}
           />
           <InvoiceFormTotals
             subtotal={form.subtotal}

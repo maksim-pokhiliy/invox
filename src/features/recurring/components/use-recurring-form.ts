@@ -40,6 +40,52 @@ function buildSubmitData(data: RecurringFormData) {
   };
 }
 
+function useRecurringSubmit(mode: "create" | "edit", recurringId?: string) {
+  const router = useRouter();
+  const toast = useToast();
+  const createMutation = useCreateRecurring();
+  const updateMutation = useUpdateRecurring();
+  const isEdit = mode === "edit";
+
+  const onSubmit = (data: RecurringFormData) => {
+    const submitData = buildSubmitData(data);
+
+    if (isEdit && recurringId) {
+      updateMutation.mutate(
+        { id: recurringId, data: submitData },
+        {
+          onSuccess: () => {
+            toast.success("Recurring invoice updated");
+            router.push("/app/recurring");
+          },
+          onError: (err) => {
+            toast.error(
+              err instanceof ApiError ? err.message : "Failed to update recurring invoice"
+            );
+          },
+        }
+      );
+    } else {
+      createMutation.mutate(submitData, {
+        onSuccess: () => {
+          toast.success("Recurring invoice created");
+          router.push("/app/recurring");
+        },
+        onError: (err) => {
+          toast.error(err instanceof ApiError ? err.message : "Failed to create recurring invoice");
+        },
+      });
+    }
+  };
+
+  return {
+    onSubmit,
+    isPending: isEdit ? updateMutation.isPending : createMutation.isPending,
+    isEdit,
+    router,
+  };
+}
+
 export function useRecurringForm({
   mode = "create",
   recurringId,
@@ -47,11 +93,7 @@ export function useRecurringForm({
   clients,
   clientsLoading,
 }: UseRecurringFormOptions) {
-  const router = useRouter();
-  const toast = useToast();
-  const createMutation = useCreateRecurring();
-  const updateMutation = useUpdateRecurring();
-  const isEdit = mode === "edit";
+  const { onSubmit, isPending, isEdit, router } = useRecurringSubmit(mode, recurringId);
 
   const {
     register,
@@ -93,33 +135,13 @@ export function useRecurringForm({
     0
   );
 
-  const onSubmit = (data: RecurringFormData) => {
-    const submitData = buildSubmitData(data);
-
-    if (isEdit && recurringId) {
-      updateMutation.mutate(
-        { id: recurringId, data: submitData },
-        {
-          onSuccess: () => {
-            toast.success("Recurring invoice updated");
-            router.push("/app/recurring");
-          },
-          onError: (err) => {
-            toast.error(
-              err instanceof ApiError ? err.message : "Failed to update recurring invoice"
-            );
-          },
-        }
-      );
-    } else {
-      createMutation.mutate(submitData, {
-        onSuccess: () => {
-          toast.success("Recurring invoice created");
-          router.push("/app/recurring");
-        },
-        onError: (err) => {
-          toast.error(err instanceof ApiError ? err.message : "Failed to create recurring invoice");
-        },
+  const duplicateItem = (index: number) => {
+    const item = items[index];
+    if (item) {
+      append({
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
       });
     }
   };
@@ -133,11 +155,12 @@ export function useRecurringForm({
     fields,
     append,
     remove,
+    duplicateItem,
     currency,
     discountType,
     items,
     subtotal,
-    isPending: isEdit ? updateMutation.isPending : createMutation.isPending,
+    isPending,
     isEdit,
     clients,
     clientsLoading,

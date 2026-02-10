@@ -8,6 +8,7 @@ import { CardSkeleton } from "@app/shared/ui/loading";
 import { InvoiceForm } from "@app/features/invoices/components";
 import { useInvoice } from "@app/features/invoices";
 import { useClients, useCreateClient } from "@app/features/clients";
+import { useSenderProfile } from "@app/features/settings";
 
 export default function EditInvoicePage() {
   const params = useParams();
@@ -16,6 +17,7 @@ export default function EditInvoicePage() {
   const { data: invoice, isLoading, error } = useInvoice(invoiceId);
   const { data: clients, isLoading: clientsLoading } = useClients();
   const createClientMutation = useCreateClient();
+  const { data: senderProfile } = useSenderProfile();
 
   if (isLoading) {
     return (
@@ -78,6 +80,7 @@ export default function EditInvoicePage() {
         template={undefined}
         templateLoading={false}
         createClientMutation={createClientMutation}
+        defaultRate={senderProfile?.defaultRate ?? undefined}
       />
     </AppLayout>
   );

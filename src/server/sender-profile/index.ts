@@ -15,6 +15,7 @@ function normalizeProfileData(data: SenderProfileInput, isCreate: boolean) {
     footerText: data.footerText ?? null,
     fontFamily: data.fontFamily ?? null,
     invoicePrefix: data.invoicePrefix ?? null,
+    defaultRate: data.defaultRate ?? null,
   };
 }
 

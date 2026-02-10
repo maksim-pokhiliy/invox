@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, IconButton, TextField, Typography, Tooltip, alpha, useTheme } from "@mui/material";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import { useSortable } from "@dnd-kit/sortable";
@@ -16,6 +17,7 @@ interface SortableItemProps {
   register: ReturnType<typeof useForm<InvoiceFormInput>>["register"];
   errors: ReturnType<typeof useForm<InvoiceFormInput>>["formState"]["errors"];
   onRemove: () => void;
+  onDuplicate: () => void;
 }
 
 export function SortableItem({
@@ -26,6 +28,7 @@ export function SortableItem({
   register,
   errors,
   onRemove,
+  onDuplicate,
 }: SortableItemProps) {
   const theme = useTheme();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -44,7 +47,7 @@ export function SortableItem({
       style={style}
       sx={{
         display: "grid",
-        gridTemplateColumns: { xs: "1fr", sm: "24px 2fr 100px 120px 40px" },
+        gridTemplateColumns: { xs: "1fr", sm: "24px 2fr 100px 120px 72px" },
         gap: 2,
         mb: 2,
         alignItems: "start",
@@ -105,13 +108,20 @@ export function SortableItem({
         error={!!errors.items?.[index]?.unitPrice}
         sx={{ "& label": { display: { sm: "none" } } }}
       />
-      <Tooltip title="Remove item">
-        <span>
-          <IconButton onClick={onRemove} disabled={!canDelete} color="error" size="small">
-            <DeleteIcon fontSize="small" />
+      <Box sx={{ display: "flex", gap: 0.5 }}>
+        <Tooltip title="Duplicate item">
+          <IconButton onClick={onDuplicate} size="small">
+            <ContentCopyIcon fontSize="small" />
           </IconButton>
-        </span>
-      </Tooltip>
+        </Tooltip>
+        <Tooltip title="Remove item">
+          <span>
+            <IconButton onClick={onRemove} disabled={!canDelete} color="error" size="small">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </span>
+        </Tooltip>
+      </Box>
     </Box>
   );
 }

@@ -10,6 +10,7 @@ export const senderProfileFormSchema = z
     address: z.string().optional(),
     taxId: z.string().optional(),
     defaultCurrency: z.string(),
+    defaultRate: z.number().min(0).optional(),
   })
   .refine((data) => data.companyName || data.displayName, {
     message: "Either company name or display name is required",
@@ -46,6 +47,7 @@ export const senderProfileSchema = z.object({
   footerText: z.string().optional(),
   fontFamily: z.string().optional(),
   invoicePrefix: z.string().optional(),
+  defaultRate: z.number().int().min(0).optional(),
 });
 
 export const createSenderProfileSchema = senderProfileSchema.refine(

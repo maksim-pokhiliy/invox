@@ -12,18 +12,19 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  InputAdornment,
 } from "@mui/material";
 import { LoadingButton } from "@app/shared/ui/loading-button";
 import { useToast } from "@app/shared/ui/toast";
 import { useCreateClient, useUpdateClient } from "@app/features/clients";
 import { ApiError } from "@app/shared/api";
-import { createClientSchema, CreateClientInput } from "@app/shared/schemas";
+import { clientFormSchema, ClientFormInput } from "@app/shared/schemas";
 
 interface ClientDialogProps {
   open: boolean;
   onClose: () => void;
   mode: "create" | "edit";
-  client?: { id: string; name: string; email: string };
+  client?: { id: string; name: string; email: string; defaultRate?: number | null };
 }
 
 export function ClientDialog({ open, onClose, mode, client }: ClientDialogProps) {
@@ -35,11 +36,12 @@ export function ClientDialog({ open, onClose, mode, client }: ClientDialogProps)
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CreateClientInput>({
-    resolver: zodResolver(createClientSchema),
+  } = useForm<ClientFormInput>({
+    resolver: zodResolver(clientFormSchema),
     defaultValues: {
       name: client?.name || "",
       email: client?.email || "",
+      defaultRate: client?.defaultRate ? client.defaultRate / 100 : undefined,
     },
   });
 
@@ -48,6 +50,7 @@ export function ClientDialog({ open, onClose, mode, client }: ClientDialogProps)
       reset({
         name: client?.name || "",
         email: client?.email || "",
+        defaultRate: client?.defaultRate ? client.defaultRate / 100 : undefined,
       });
       setError(null);
     }
@@ -56,8 +59,12 @@ export function ClientDialog({ open, onClose, mode, client }: ClientDialogProps)
   const createMutation = useCreateClient();
   const updateMutation = useUpdateClient();
 
-  const onSubmit = (data: CreateClientInput) => {
+  const onSubmit = (formData: ClientFormInput) => {
     setError(null);
+    const data = {
+      ...formData,
+      defaultRate: formData.defaultRate ? Math.round(formData.defaultRate * 100) : undefined,
+    };
     if (mode === "create") {
       createMutation.mutate(data, {
         onSuccess: () => {
@@ -115,6 +122,23 @@ export function ClientDialog({ open, onClose, mode, client }: ClientDialogProps)
             margin="normal"
             error={!!errors.email}
             helperText={errors.email?.message}
+          />
+          <TextField
+            {...register("defaultRate", { valueAsNumber: true })}
+            type="number"
+            label="Default Hourly Rate"
+            fullWidth
+            margin="normal"
+            slotProps={{
+              htmlInput: { min: 0, step: 0.01 },
+              input: {
+                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              },
+            }}
+            error={!!errors.defaultRate}
+            helperText={
+              errors.defaultRate?.message || "Overrides account default rate for this client"
+            }
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>

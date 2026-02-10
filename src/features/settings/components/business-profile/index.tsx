@@ -50,6 +50,7 @@ export function BusinessProfileTab({ profile }: BusinessProfileTabProps) {
         address: profile.address || "",
         taxId: profile.taxId || "",
         defaultCurrency: profile.defaultCurrency || "USD",
+        defaultRate: profile.defaultRate ? profile.defaultRate / 100 : undefined,
       });
     }
   }, [profile, reset]);
@@ -58,7 +59,11 @@ export function BusinessProfileTab({ profile }: BusinessProfileTabProps) {
 
   const onSubmit = (data: SenderProfileFormInput) => {
     setError(null);
-    updateProfileMutation.mutate(data, {
+    const payload = {
+      ...data,
+      defaultRate: data.defaultRate ? Math.round(data.defaultRate * 100) : undefined,
+    };
+    updateProfileMutation.mutate(payload, {
       onSuccess: () => {
         toast.success("Settings saved successfully!");
         setError(null);

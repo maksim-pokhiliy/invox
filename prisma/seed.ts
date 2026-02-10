@@ -32,16 +32,16 @@ function cents(dollars: number): number {
 }
 
 const CLIENT_DATA = [
-  { name: "Acme Corporation", email: "billing@acme.corp" },
-  { name: "Globex Industries", email: "accounts@globex.io" },
-  { name: "Initech Solutions", email: "finance@initech.com" },
-  { name: "Umbrella Labs", email: "payments@umbrella-labs.org" },
-  { name: "Stark Enterprises", email: "ap@stark-ent.com" },
-  { name: "Wayne Technologies", email: "invoices@waynetech.co" },
-  { name: "Pied Piper Inc", email: "billing@piedpiper.io" },
-  { name: "Hooli Systems", email: "finance@hooli.systems" },
-  { name: "Cyberdyne Analytics", email: "payments@cyberdyne.ai" },
-  { name: "Aperture Creative", email: "accounts@aperture.design" },
+  { name: "Acme Corporation", email: "billing@acme.corp", defaultRate: cents(175) },
+  { name: "Globex Industries", email: "accounts@globex.io", defaultRate: cents(120) },
+  { name: "Initech Solutions", email: "finance@initech.com", defaultRate: null },
+  { name: "Umbrella Labs", email: "payments@umbrella-labs.org", defaultRate: null },
+  { name: "Stark Enterprises", email: "ap@stark-ent.com", defaultRate: cents(200) },
+  { name: "Wayne Technologies", email: "invoices@waynetech.co", defaultRate: null },
+  { name: "Pied Piper Inc", email: "billing@piedpiper.io", defaultRate: null },
+  { name: "Hooli Systems", email: "finance@hooli.systems", defaultRate: cents(160) },
+  { name: "Cyberdyne Analytics", email: "payments@cyberdyne.ai", defaultRate: null },
+  { name: "Aperture Creative", email: "accounts@aperture.design", defaultRate: null },
 ];
 
 const LINE_ITEM_CATALOG = [
@@ -200,6 +200,7 @@ async function main() {
         footerText: "Thank you for your business!\nPayment is due within the specified period.",
         fontFamily: "system",
         invoicePrefix: "DEMO",
+        defaultRate: cents(150),
       },
     });
     console.log(`Created sender profile: ${senderProfile.companyName}`);
@@ -207,7 +208,7 @@ async function main() {
     const clients = await Promise.all(
       CLIENT_DATA.map((c) =>
         tx.client.create({
-          data: { userId: user.id, name: c.name, email: c.email },
+          data: { userId: user.id, name: c.name, email: c.email, defaultRate: c.defaultRate },
         })
       )
     );

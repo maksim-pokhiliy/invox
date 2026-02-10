@@ -88,6 +88,7 @@ model SenderProfile {
   footerText      String?  @db.Text
   fontFamily      String?
   invoicePrefix   String?
+  defaultRate     Int?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -97,9 +98,10 @@ model SenderProfile {
 model Client {
   id        String   @id @default(cuid())
   userId    String
-  name      String
-  email     String
-  createdAt DateTime @default(now())
+  name        String
+  email       String
+  defaultRate Int?
+  createdAt   DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)

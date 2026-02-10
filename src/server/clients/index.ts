@@ -20,6 +20,7 @@ export async function createClient(userId: string, data: CreateClientInput) {
       userId,
       name: data.name,
       email: data.email,
+      defaultRate: data.defaultRate ?? null,
     },
   });
 }
@@ -38,6 +39,7 @@ export async function updateClient(id: string, userId: string, data: UpdateClien
     data: {
       name: data.name ?? client.name,
       email: data.email ?? client.email,
+      defaultRate: data.defaultRate !== undefined ? (data.defaultRate ?? null) : client.defaultRate,
     },
   });
 }

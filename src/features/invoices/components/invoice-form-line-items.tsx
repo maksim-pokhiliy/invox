@@ -23,6 +23,7 @@ interface InvoiceFormLineItemsProps {
   currency: string;
   onAppend: () => void;
   onRemove: (index: number) => void;
+  onDuplicate: (index: number) => void;
 }
 
 export function InvoiceFormLineItems({
@@ -34,6 +35,7 @@ export function InvoiceFormLineItems({
   currency,
   onAppend,
   onRemove,
+  onDuplicate,
 }: InvoiceFormLineItemsProps) {
   return (
     <>
@@ -44,7 +46,7 @@ export function InvoiceFormLineItems({
       <Box
         sx={{
           display: { xs: "none", sm: "grid" },
-          gridTemplateColumns: "24px 2fr 100px 120px 40px",
+          gridTemplateColumns: "24px 2fr 100px 120px 72px",
           gap: 2,
           mb: 1,
           px: 1,
@@ -75,6 +77,7 @@ export function InvoiceFormLineItems({
               register={register}
               errors={errors}
               onRemove={() => onRemove(index)}
+              onDuplicate={() => onDuplicate(index)}
             />
           ))}
         </SortableContext>

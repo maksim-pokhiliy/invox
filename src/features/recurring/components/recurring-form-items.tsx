@@ -14,6 +14,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
 import type { FieldErrors, UseFormRegister, FieldArrayWithId } from "react-hook-form";
 import type { RecurringFormData } from "@app/shared/schemas";
@@ -26,6 +27,7 @@ interface RecurringFormItemsProps {
   subtotal: number;
   onAppend: () => void;
   onRemove: (index: number) => void;
+  onDuplicate: (index: number) => void;
 }
 
 export function RecurringFormItems({
@@ -36,6 +38,7 @@ export function RecurringFormItems({
   subtotal,
   onAppend,
   onRemove,
+  onDuplicate,
 }: RecurringFormItemsProps) {
   const theme = useTheme();
 
@@ -84,17 +87,20 @@ export function RecurringFormItems({
               },
             }}
           />
-          <Tooltip title="Remove item">
-            <span>
-              <IconButton
-                onClick={() => onRemove(index)}
-                disabled={fields.length === 1}
-                sx={{ alignSelf: "center" }}
-              >
-                <DeleteIcon />
+          <Box sx={{ display: "flex", gap: 0.5, alignSelf: "center" }}>
+            <Tooltip title="Duplicate item">
+              <IconButton onClick={() => onDuplicate(index)}>
+                <ContentCopyIcon />
               </IconButton>
-            </span>
-          </Tooltip>
+            </Tooltip>
+            <Tooltip title="Remove item">
+              <span>
+                <IconButton onClick={() => onRemove(index)} disabled={fields.length === 1}>
+                  <DeleteIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
         </Box>
       ))}
 

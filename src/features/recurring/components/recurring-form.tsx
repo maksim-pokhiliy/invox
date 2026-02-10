@@ -35,6 +35,7 @@ export function RecurringForm({
     fields,
     append,
     remove,
+    duplicateItem,
     currency,
     discountType,
     subtotal,
@@ -76,6 +77,7 @@ export function RecurringForm({
           subtotal={subtotal}
           onAppend={handleAppend}
           onRemove={remove}
+          onDuplicate={duplicateItem}
         />
 
         <RecurringFormDiscounts
