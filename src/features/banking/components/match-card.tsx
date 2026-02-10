@@ -22,16 +22,16 @@ interface MatchCardProps {
   transaction: BankTransactionData;
   onConfirm: (transactionId: string, invoiceId: string) => void;
   onIgnore: (transactionId: string) => void;
-  isConfirming: boolean;
-  isIgnoring: boolean;
+  confirmingId: string | null;
+  ignoringId: string | null;
 }
 
 export function MatchCard({
   transaction,
   onConfirm,
   onIgnore,
-  isConfirming,
-  isIgnoring,
+  confirmingId,
+  ignoringId,
 }: MatchCardProps) {
   const theme = useTheme();
   const confidence = transaction.matchConfidence ?? 0;
@@ -99,7 +99,7 @@ export function MatchCard({
               color="inherit"
               startIcon={<CancelOutlinedIcon />}
               onClick={() => onIgnore(transaction.id)}
-              disabled={isIgnoring || isConfirming}
+              disabled={ignoringId === transaction.id || confirmingId === transaction.id}
             >
               Ignore
             </Button>
@@ -109,7 +109,7 @@ export function MatchCard({
                 variant="contained"
                 startIcon={<CheckCircleOutlineIcon />}
                 onClick={() => onConfirm(transaction.id, invoice.id)}
-                disabled={isConfirming || isIgnoring}
+                disabled={confirmingId === transaction.id || ignoringId === transaction.id}
               >
                 Confirm
               </Button>

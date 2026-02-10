@@ -135,9 +135,11 @@ export async function confirmMatch(transactionId: string, invoiceId: string, use
     return null;
   }
 
-  if (transaction.status !== "PENDING") {
+  if (transaction.status !== "PENDING" && transaction.status !== "AUTO_MATCHED") {
     return null;
   }
+
+  const alreadyPaid = transaction.status === "AUTO_MATCHED";
 
   await prisma.bankTransaction.update({
     where: { id: transactionId },
@@ -149,12 +151,14 @@ export async function confirmMatch(transactionId: string, invoiceId: string, use
   });
 
   try {
-    await recordPayment(invoiceId, userId, {
-      amount: transaction.amount,
-      method: "BANK_TRANSFER",
-      note: `Confirmed bank transaction: ${transaction.description}`,
-      paidAt: transaction.madeOn,
-    });
+    if (!alreadyPaid) {
+      await recordPayment(invoiceId, userId, {
+        amount: transaction.amount,
+        method: "BANK_TRANSFER",
+        note: `Confirmed bank transaction: ${transaction.description}`,
+        paidAt: transaction.madeOn,
+      });
+    }
   } catch (error) {
     await prisma.bankTransaction.update({
       where: { id: transactionId },

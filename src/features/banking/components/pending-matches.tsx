@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Box, Typography, Stack } from "@mui/material";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import { EmptyState } from "@app/shared/ui/empty-state";
@@ -11,6 +12,20 @@ export function PendingMatches() {
   const { data, isLoading } = usePendingTransactions();
   const confirmMatch = useConfirmMatch();
   const ignoreTransaction = useIgnoreTransaction();
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const confirmingId = confirmMatch.isPending ? activeId : null;
+  const ignoringId = ignoreTransaction.isPending ? activeId : null;
+
+  const handleConfirm = (transactionId: string, invoiceId: string) => {
+    setActiveId(transactionId);
+    confirmMatch.mutate({ transactionId, invoiceId });
+  };
+
+  const handleIgnore = (transactionId: string) => {
+    setActiveId(transactionId);
+    ignoreTransaction.mutate(transactionId);
+  };
 
   if (isLoading) {
     return (
@@ -39,12 +54,10 @@ export function PendingMatches() {
               <MatchCard
                 key={tx.id}
                 transaction={tx}
-                onConfirm={(transactionId, invoiceId) =>
-                  confirmMatch.mutate({ transactionId, invoiceId })
-                }
-                onIgnore={(transactionId) => ignoreTransaction.mutate(transactionId)}
-                isConfirming={confirmMatch.isPending}
-                isIgnoring={ignoreTransaction.isPending}
+                onConfirm={handleConfirm}
+                onIgnore={handleIgnore}
+                confirmingId={confirmingId}
+                ignoringId={ignoringId}
               />
             ))}
           </Stack>
@@ -64,10 +77,10 @@ export function PendingMatches() {
               <MatchCard
                 key={tx.id}
                 transaction={tx}
-                onConfirm={() => {}}
-                onIgnore={() => {}}
-                isConfirming={false}
-                isIgnoring={true}
+                onConfirm={handleConfirm}
+                onIgnore={handleIgnore}
+                confirmingId={confirmingId}
+                ignoringId={ignoringId}
               />
             ))}
           </Stack>

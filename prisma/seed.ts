@@ -181,7 +181,7 @@ async function main() {
       data: {
         email: DEMO_EMAIL,
         passwordHash,
-        saltEdgeCustomerId: "demo_se_customer_001",
+        saltEdgeCustomerId: null,
       },
     });
     console.log(`Created user: ${user.email}`);
@@ -531,8 +531,13 @@ async function main() {
 
     const paidInvoices = await tx.invoice.findMany({
       where: { userId: user.id, status: "PAID" },
-      take: 5,
       orderBy: { paidAt: "desc" },
+    });
+
+    const matchableInvoices = await tx.invoice.findMany({
+      where: { userId: user.id, status: { in: ["SENT", "VIEWED", "OVERDUE"] } },
+      include: { client: true },
+      orderBy: { createdAt: "desc" },
     });
 
     const transactionData: Array<{
@@ -547,18 +552,58 @@ async function main() {
       matchConfidence?: number;
     }> = [];
 
-    for (let i = 0; i < paidInvoices.length; i++) {
+    for (let i = 0; i < Math.min(3, paidInvoices.length); i++) {
       const inv = paidInvoices[i];
       transactionData.push({
         accountId: checkingAccount.id,
-        saltEdgeId: `demo_txn_matched_${i}`,
+        saltEdgeId: `demo_txn_confirmed_${i}`,
         amount: inv.total,
         currencyCode: "USD",
         description: `Payment from ${CLIENT_DATA[i % CLIENT_DATA.length].name}`,
         madeOn: inv.paidAt ?? daysAgo(30),
-        status: i < 3 ? "CONFIRMED" : "AUTO_MATCHED",
+        status: "CONFIRMED",
         matchedInvoiceId: inv.id,
-        matchConfidence: i < 3 ? 1.0 : 0.92,
+        matchConfidence: 1.0,
+      });
+    }
+
+    const autoMatchSpecs: Array<{
+      invoiceIndex: number;
+      confidence: number;
+      descPrefix: string;
+      daysAgo: number;
+    }> = [
+      { invoiceIndex: 0, confidence: 0.98, descPrefix: "Wire transfer from", daysAgo: 2 },
+      { invoiceIndex: 1, confidence: 0.95, descPrefix: "ACH deposit —", daysAgo: 4 },
+      { invoiceIndex: 2, confidence: 0.93, descPrefix: "Bank transfer from", daysAgo: 6 },
+      { invoiceIndex: 3, confidence: 0.91, descPrefix: "Payment received from", daysAgo: 8 },
+      { invoiceIndex: 4, confidence: 0.96, descPrefix: "Incoming wire —", daysAgo: 3 },
+      { invoiceIndex: 5, confidence: 0.92, descPrefix: "SEPA transfer from", daysAgo: 5 },
+      { invoiceIndex: 6, confidence: 0.94, descPrefix: "Direct deposit —", daysAgo: 7 },
+      { invoiceIndex: 7, confidence: 0.90, descPrefix: "Online payment from", daysAgo: 10 },
+    ];
+
+    const autoMatchSources = [
+      ...matchableInvoices,
+      ...paidInvoices.slice(3),
+    ];
+
+    for (let i = 0; i < autoMatchSpecs.length && i < autoMatchSources.length; i++) {
+      const spec = autoMatchSpecs[i];
+      const inv = autoMatchSources[spec.invoiceIndex % autoMatchSources.length];
+      const clientName = (inv as unknown as { client?: { name: string } }).client?.name
+        ?? CLIENT_DATA[(spec.invoiceIndex + 3) % CLIENT_DATA.length].name;
+
+      transactionData.push({
+        accountId: checkingAccount.id,
+        saltEdgeId: `demo_txn_auto_${i}`,
+        amount: inv.total,
+        currencyCode: "USD",
+        description: `${spec.descPrefix} ${clientName}`,
+        madeOn: daysAgo(spec.daysAgo),
+        status: "AUTO_MATCHED",
+        matchedInvoiceId: inv.id,
+        matchConfidence: spec.confidence,
       });
     }
 
@@ -567,17 +612,19 @@ async function main() {
       "Payment ref: PROJ-2024-Q3",
       "ACH deposit — client retainer",
       "Incoming transfer",
-      "Invoice payment",
+      "Invoice payment — unknown ref",
+      "Bank transfer #TRF-8891",
+      "Payment — project milestone",
     ];
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < unmatchedDescs.length; i++) {
       transactionData.push({
         accountId: checkingAccount.id,
         saltEdgeId: `demo_txn_unmatched_${i}`,
         amount: cents(randomInt(500, 8000)),
         currencyCode: "USD",
         description: unmatchedDescs[i],
-        madeOn: daysAgo(randomInt(5, 60)),
+        madeOn: daysAgo(randomInt(3, 45)),
         status: "PENDING",
       });
     }
