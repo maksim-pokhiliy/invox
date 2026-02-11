@@ -210,7 +210,15 @@ export default function OnboardingPage() {
           </Paper>
 
           <Typography variant="caption" color="text.secondary" sx={{ mt: 4 }}>
-            &copy; {new Date().getFullYear()} Invox
+            &copy; {new Date().getFullYear()}{" "}
+            <a
+              href="https://getpaid.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "inherit" }}
+            >
+              GetPaid
+            </a>
           </Typography>
         </Box>
       </Container>

@@ -1,4 +1,6 @@
-# Invox
+# GetPaid
+
+**[getpaid.dev](https://getpaid.dev)**
 
 Simple, self-hosted invoice management for freelancers. No bloat, no hidden fees, no vendor lock-in.
 
@@ -18,8 +20,8 @@ Simple, self-hosted invoice management for freelancers. No bloat, no hidden fees
 ## Quick Start (Docker)
 
 ```bash
-git clone https://github.com/maksim-pokhiliy/invox.git
-cd invox
+git clone https://github.com/maksim-pokhiliy/getpaid.git
+cd getpaid
 ```
 
 Generate a secret and start:
@@ -45,8 +47,8 @@ Open [http://localhost:3000](http://localhost:3000) and create an account.
 ### Install
 
 ```bash
-git clone https://github.com/maksim-pokhiliy/invox.git
-cd invox
+git clone https://github.com/maksim-pokhiliy/getpaid.git
+cd getpaid
 pnpm install
 ```
 

@@ -22,6 +22,8 @@ export const AUTOSAVE = {
   DELAY_MS: 2000,
 } as const;
 
+export const EDITIONS = ["community", "pro"] as const;
+
 export const AUTH = {
   STATE_MAX_AGE: 10 * TIME.MINUTE,
   BCRYPT_ROUNDS: 12,
@@ -162,11 +164,11 @@ export const SHORTCUTS = {
 } as const;
 
 export const STORAGE_KEYS = {
-  RECENT_ITEMS: "invox-recent-items",
+  RECENT_ITEMS: "getpaid-recent-items",
   INVOICE_DRAFT: "invoice-draft-new",
-  ONBOARDING_DISMISSED: "invox-onboarding-dismissed",
+  ONBOARDING_DISMISSED: "getpaid-onboarding-dismissed",
   THEME_MODE: "theme-mode",
-  SIDEBAR_COLLAPSED: "invox-sidebar-collapsed",
+  SIDEBAR_COLLAPSED: "getpaid-sidebar-collapsed",
 } as const;
 
 export const EMAIL = {

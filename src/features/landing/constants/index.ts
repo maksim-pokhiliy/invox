@@ -1,4 +1,5 @@
-export const GITHUB_URL = "https://github.com/maksim-pokhiliy/invox";
+export const SITE_URL = "https://getpaid.dev";
+export const GITHUB_URL = "https://github.com/maksim-pokhiliy/getpaid";
 
 export const FEATURES = [
   {

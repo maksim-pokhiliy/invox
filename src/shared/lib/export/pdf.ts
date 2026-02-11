@@ -277,7 +277,7 @@ function renderFooter(doc: jsPDF): void {
 
   doc.setFontSize(8);
   doc.setTextColor(...PDF_COLORS.muted);
-  doc.text("Generated with Invox", pageWidth / 2, footerY, { align: "center" });
+  doc.text("Generated with GetPaid — getpaid.dev", pageWidth / 2, footerY, { align: "center" });
 }
 
 export function generateInvoicePdf(invoice: InvoicePdfData): void {

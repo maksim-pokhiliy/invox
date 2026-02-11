@@ -31,7 +31,15 @@ export function Footer() {
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Logo size="small" showText={false} />
             <Typography variant="body2" color="text.secondary">
-              &copy; {currentYear} Invox
+              &copy; {currentYear}{" "}
+              <a
+                href="https://getpaid.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "inherit" }}
+              >
+                GetPaid
+              </a>
             </Typography>
           </Box>
 

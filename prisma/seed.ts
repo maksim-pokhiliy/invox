@@ -8,7 +8,7 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
 const BCRYPT_ROUNDS = 12;
-const DEMO_EMAIL = "demo@invox.dev";
+const DEMO_EMAIL = "demo@getpaid.dev";
 const DEMO_PASSWORD = "demo1234";
 
 function daysAgo(days: number): Date {
@@ -189,9 +189,9 @@ async function main() {
     const senderProfile = await tx.senderProfile.create({
       data: {
         userId: user.id,
-        companyName: "Invox Demo Studio",
-        displayName: "Invox Demo",
-        emailFrom: "invoices@invox.dev",
+        companyName: "GetPaid Demo Studio",
+        displayName: "GetPaid Demo",
+        emailFrom: "invoices@getpaid.dev",
         address: "123 Innovation Blvd\nSan Francisco, CA 94105\nUnited States",
         taxId: "US-12-3456789",
         defaultCurrency: "USD",

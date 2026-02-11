@@ -1,4 +1,4 @@
-# Contributing to Invox
+# Contributing to GetPaid
 
 Thanks for your interest in contributing! Here's how to get started.
 
@@ -6,8 +6,8 @@ Thanks for your interest in contributing! Here's how to get started.
 
 1. **Clone the repo**
    ```bash
-   git clone https://github.com/maksim-pokhiliy/invox.git
-   cd invox
+   git clone https://github.com/maksim-pokhiliy/getpaid.git
+   cd getpaid
    ```
 
 2. **Install dependencies**
@@ -63,4 +63,4 @@ pnpm format:check
 
 ## Reporting Issues
 
-Use [GitHub Issues](https://github.com/maksim-pokhiliy/invox/issues) to report bugs or suggest features. Include steps to reproduce for bugs.
+Use [GitHub Issues](https://github.com/maksim-pokhiliy/getpaid/issues) to report bugs or suggest features. Include steps to reproduce for bugs.

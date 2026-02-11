@@ -10,7 +10,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Invox - Invoice Management",
+  title: "GetPaid - Invoice Management",
   description: "Simple invoice management for freelancers and small businesses",
 };
 

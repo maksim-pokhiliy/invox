@@ -72,7 +72,7 @@ export function RecurringPageContent() {
         title={
           <>
             Recurring Invoices
-            <HelpTooltip title="Recurring invoices automatically generate new invoices on a schedule. Set the frequency, and Invox will create drafts for you to review and send." />
+            <HelpTooltip title="Recurring invoices automatically generate new invoices on a schedule. Set the frequency, and GetPaid will create drafts for you to review and send." />
           </>
         }
         subtitle="Manage automatic invoice generation schedules"
