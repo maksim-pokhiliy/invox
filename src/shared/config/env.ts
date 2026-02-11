@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { EDITIONS } from "./config";
+
 const serverSchema = z.object({
   DATABASE_URL: z.string().min(1),
   NEXTAUTH_SECRET: z.string().min(1),
@@ -13,7 +15,12 @@ const serverSchema = z.object({
   CRON_SECRET: z.string().min(1).optional(),
 });
 
+const editionSchema = z.enum(EDITIONS).default(EDITIONS[0]);
+
+export type Edition = z.infer<typeof editionSchema>;
+
 const clientSchema = z.object({
+  NEXT_PUBLIC_GETPAID_EDITION: editionSchema,
   NEXT_PUBLIC_BANKING_ENABLED: z.boolean(),
 });
 
@@ -37,6 +44,7 @@ function readServerRaw(): Record<string, string | undefined> {
 
 function readClientRaw(): Record<string, unknown> {
   return {
+    NEXT_PUBLIC_GETPAID_EDITION: process.env.NEXT_PUBLIC_GETPAID_EDITION || undefined,
     NEXT_PUBLIC_BANKING_ENABLED: process.env.NEXT_PUBLIC_BANKING_ENABLED === "true",
   };
 }

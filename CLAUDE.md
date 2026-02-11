@@ -1,10 +1,10 @@
-# CLAUDE.md - Development Guidelines for Invox
+# CLAUDE.md - Development Guidelines for GetPaid
 
-This file provides guidance for Claude Code when working on the Invox project.
+This file provides guidance for Claude Code when working on the GetPaid project.
 
 ## Project Overview
 
-Invox is an invoice management MVP built with Next.js, MUI, Prisma, and NextAuth.
+GetPaid is an invoice management MVP built with Next.js, MUI, Prisma, and NextAuth.
 
 ## Architecture Rules (DO NOT BREAK)
 
@@ -143,6 +143,22 @@ features/invoices/constants/status.ts
 7. Add API route in `/src/app/api/{feature}/route.ts`
 8. Add page in `/src/app/{path}/page.tsx`
 
+## Editions & Feature Flags
+
+Controlled by `NEXT_PUBLIC_GETPAID_EDITION` env variable. Editions and their names are defined in `EDITIONS` constant (`shared/config/config.ts`). Feature flags are derived from the edition in `shared/config/features.ts`.
+
+| Feature              | `community` (default) | `pro`  |
+|----------------------|-----------------------|--------|
+| `publicRegistration` | true                  | false  |
+
+- `community` — self-hosted, open registration
+- `pro` — managed hosted instance, invite-only
+
+To add a new feature flag:
+1. Add field to `FeatureFlags` interface in `shared/config/features.ts`
+2. Set values for each edition in `EDITION_FEATURES`
+3. Use `features.yourFlag` in code
+
 ## Invoice Status Flow
 
 ```
@@ -174,6 +190,7 @@ Common error codes:
 - `VALIDATION_ERROR` - Invalid input
 - `UNAUTHORIZED` - Not authenticated
 - `NOT_FOUND` - Resource not found
+- `REGISTRATION_DISABLED` - Sign-up blocked by edition
 - `INTERNAL_ERROR` - Server error
 
 ## Code Quality Checklist

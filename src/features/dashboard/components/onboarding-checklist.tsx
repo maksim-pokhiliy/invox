@@ -136,7 +136,7 @@ export function OnboardingChecklist({ steps, isLoading, onNavigate }: Onboarding
         }}
       >
         <Typography variant="body2" fontWeight={600} sx={{ flexShrink: 0 }}>
-          {expanded ? "Get started with Invox" : "Setup guide"}
+          {expanded ? "Get started with GetPaid" : "Setup guide"}
         </Typography>
         <LinearProgress
           variant="determinate"

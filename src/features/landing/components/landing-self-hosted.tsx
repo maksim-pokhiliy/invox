@@ -39,9 +39,9 @@ export function LandingSelfHosted() {
         }}
       >
         <Typography component="code" sx={{ fontFamily: "inherit", fontSize: "inherit" }}>
-          $ git clone https://github.com/maksim-pokhiliy/invox.git
+          $ git clone https://github.com/maksim-pokhiliy/getpaid.git
           <br />
-          $ cd invox
+          $ cd getpaid
           <br />$ docker compose up
         </Typography>
       </Paper>

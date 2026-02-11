@@ -174,7 +174,16 @@ export default function PublicInvoiceView({ publicId, invoice, branding, justPai
           align="center"
           sx={{ mt: 4, "@media print": { display: "none" } }}
         >
-          Powered by <strong>Invox</strong> - Simple Invoice Management
+          Powered by{" "}
+          <a
+            href="https://getpaid.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "inherit", fontWeight: 600 }}
+          >
+            GetPaid
+          </a>{" "}
+          - Simple Invoice Management
         </Typography>
       </Container>
     </Box>

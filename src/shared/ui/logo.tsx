@@ -12,14 +12,14 @@ interface LogoProps {
 }
 
 const SIZES = {
-  small: { icon: 24, text: "1.125rem", gap: 0.75, innerText: 0.55 },
-  medium: { icon: 28, text: "1.375rem", gap: 1, innerText: 0.55 },
-  large: { icon: 34, text: "1.75rem", gap: 1.25, innerText: 0.5 },
+  small: { icon: 24, text: "1.125rem", gap: 0.75, symbol: 0.6 },
+  medium: { icon: 28, text: "1.375rem", gap: 1, symbol: 0.6 },
+  large: { icon: 34, text: "1.75rem", gap: 1.25, symbol: 0.6 },
 } as const;
 
 export function Logo({ size = "medium", showText = true }: LogoProps) {
   const theme = useTheme();
-  const { icon: iconSize, text: textSize, gap, innerText } = SIZES[size];
+  const { icon: iconSize, text: textSize, gap, symbol } = SIZES[size];
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap }}>
@@ -38,13 +38,12 @@ export function Logo({ size = "medium", showText = true }: LogoProps) {
         <Typography
           sx={{
             color: "white",
-            fontSize: iconSize * innerText,
-            fontWeight: 800,
+            fontSize: iconSize * symbol,
+            fontWeight: 900,
             lineHeight: 1,
-            letterSpacing: "-0.05em",
           }}
         >
-          in
+          $
         </Typography>
       </Box>
 
@@ -57,7 +56,10 @@ export function Logo({ size = "medium", showText = true }: LogoProps) {
             color: "text.primary",
           }}
         >
-          Invox
+          Get
+          <Box component="span" sx={{ color: "primary.main" }}>
+            Paid
+          </Box>
         </Typography>
       )}
     </Box>
