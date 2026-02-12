@@ -106,7 +106,7 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
       items: {
         create: data.items.map((item, index) => ({
           title: item.title,
-          description: item.description,
+          description: item.description ?? null,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           amount: Math.round(item.quantity * item.unitPrice),
@@ -158,7 +158,7 @@ async function getItemsForCalculation(
         data: data.items.map((item, index) => ({
           invoiceId: id,
           title: item.title,
-          description: item.description,
+          description: item.description ?? null,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           amount: Math.round(item.quantity * item.unitPrice),
@@ -177,7 +177,8 @@ async function getItemsForCalculation(
   const existingItems = await prisma.invoiceItem.findMany({ where: { invoiceId: id } });
 
   return existingItems.map((item) => ({
-    description: item.description,
+    title: item.title,
+    description: item.description ?? undefined,
     quantity: item.quantity,
     unitPrice: item.unitPrice,
   }));

@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const invoiceItemSchema = z.object({
-  title: z.string().optional(),
-  description: z.string().min(1, "Description is required"),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
   quantity: z.number().min(0.01, "Quantity is required"),
   unitPrice: z.number().min(0, "Unit price must be non-negative"),
   sortOrder: z.number().int().optional(),
@@ -49,20 +49,30 @@ export const invoiceFormSchema = z
     { message: "At least one item is required", path: ["items"] }
   );
 
-export const createInvoiceSchema = z.object({
-  clientId: z.string().min(1, "Client is required"),
-  currency: z.string().default("USD"),
-  dueDate: z
-    .string()
-    .or(z.date())
-    .transform((val) => new Date(val)),
-  items: z.array(invoiceItemSchema).min(1, "At least one item is required"),
-  itemGroups: z.array(invoiceItemGroupSchema).optional(),
-  notes: z.string().optional(),
-  tags: z.array(tagSchema).optional(),
-  discount: discountSchema,
-  taxRate: z.number().min(0).max(100).optional(),
-});
+export const createInvoiceSchema = z
+  .object({
+    clientId: z.string().min(1, "Client is required"),
+    currency: z.string().default("USD"),
+    dueDate: z
+      .string()
+      .or(z.date())
+      .transform((val) => new Date(val)),
+    items: z.array(invoiceItemSchema),
+    itemGroups: z.array(invoiceItemGroupSchema).optional(),
+    notes: z.string().optional(),
+    tags: z.array(tagSchema).optional(),
+    discount: discountSchema,
+    taxRate: z.number().min(0).max(100).optional(),
+  })
+  .refine(
+    (data) => {
+      const ungroupedCount = data.items.length;
+      const groupedCount = data.itemGroups?.reduce((sum, g) => sum + g.items.length, 0) ?? 0;
+
+      return ungroupedCount + groupedCount > 0;
+    },
+    { message: "At least one item is required", path: ["items"] }
+  );
 
 export const updateInvoiceSchema = z.object({
   clientId: z.string().optional(),

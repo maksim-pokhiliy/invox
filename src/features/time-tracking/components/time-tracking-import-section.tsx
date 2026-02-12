@@ -36,7 +36,7 @@ function mapImportedGroups(groups: ImportedGroup[]): InvoiceItemGroupInput[] {
     title: g.title,
     items: g.items.map((item) => ({
       title: item.title,
-      description: item.description || item.title,
+      description: item.description || undefined,
       quantity: item.quantity,
       unitPrice: item.unitPrice,
     })),

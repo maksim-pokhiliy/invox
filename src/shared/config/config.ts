@@ -22,6 +22,10 @@ export const AUTOSAVE = {
   DELAY_MS: 2000,
 } as const;
 
+export const SORT_ORDER = {
+  GAP: 10,
+} as const;
+
 export const EDITIONS = ["community", "pro"] as const;
 
 export const AUTH = {

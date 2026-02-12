@@ -5,7 +5,16 @@ import { useForm } from "react-hook-form";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
-import { alpha, Box, IconButton, TextField, Tooltip, Typography, useTheme } from "@mui/material";
+import {
+  alpha,
+  Box,
+  IconButton,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
+  useTheme,
+} from "@mui/material";
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -45,16 +54,15 @@ export function SortableItem({
   };
 
   return (
-    <Box
+    <Stack
       ref={setNodeRef}
       style={style}
+      direction="row"
+      alignItems="start"
       sx={{
-        display: "grid",
-        gridTemplateColumns: { xs: "1fr", sm: "24px 2fr 100px 120px 72px" },
-        gap: 2,
         mb: 2,
-        alignItems: "start",
         p: 1,
+        gap: 1.5,
         borderRadius: 2,
         bgcolor: isDragging
           ? alpha(theme.palette.primary.main, 0.08)
@@ -78,27 +86,32 @@ export function SortableItem({
         <DragIndicatorIcon fontSize="small" />
       </Box>
       <TextField
-        {...register(`items.${index}.description`)}
-        placeholder="Item description"
-        label={undefined}
+        {...register(`items.${index}.title`)}
+        placeholder="Title"
         size="small"
-        error={!!errors.items?.[index]?.description}
-        helperText={errors.items?.[index]?.description?.message}
-        sx={{ "& .MuiInputBase-root": { display: { xs: "flex", sm: "flex" } } }}
+        error={!!errors.items?.[index]?.title}
+        helperText={errors.items?.[index]?.title?.message}
+        sx={{ flex: 1, minWidth: 120 }}
+      />
+      <TextField
+        {...register(`items.${index}.description`)}
+        placeholder="Description"
+        size="small"
+        sx={{ flex: 2 }}
       />
       <TextField
         {...register(`items.${index}.quantity`, { valueAsNumber: true })}
         type="number"
-        label="Qty"
+        placeholder="Qty"
         size="small"
-        inputProps={{ min: 1 }}
+        inputProps={{ min: 0.01, step: 0.01 }}
         error={!!errors.items?.[index]?.quantity}
-        sx={{ "& label": { display: { sm: "none" } } }}
+        sx={{ width: 90 }}
       />
       <TextField
         {...register(`items.${index}.unitPrice`, { valueAsNumber: true })}
         type="number"
-        label="Price"
+        placeholder="Rate"
         size="small"
         inputProps={{ min: 0, step: 0.01 }}
         InputProps={{
@@ -109,7 +122,7 @@ export function SortableItem({
           ),
         }}
         error={!!errors.items?.[index]?.unitPrice}
-        sx={{ "& label": { display: { sm: "none" } } }}
+        sx={{ width: 130 }}
       />
       <Box sx={{ display: "flex", gap: 0.5 }}>
         <Tooltip title="Duplicate item">
@@ -125,6 +138,6 @@ export function SortableItem({
           </span>
         </Tooltip>
       </Box>
-    </Box>
+    </Stack>
   );
 }

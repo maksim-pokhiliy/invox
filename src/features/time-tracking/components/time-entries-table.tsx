@@ -11,7 +11,7 @@ import type { TimeEntriesResult, TimeEntryGroup, TimeEntryItem } from "../api";
 function formatHours(seconds: number): string {
   const hours = seconds / TIME_TRACKING.SECONDS_PER_HOUR;
 
-  return hours % 1 === 0 ? `${hours}h` : `${hours.toFixed(1)}h`;
+  return `${hours.toFixed(2)}h`;
 }
 
 function formatAmount(cents: number | null): string {

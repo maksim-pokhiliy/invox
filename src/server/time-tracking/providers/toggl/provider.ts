@@ -117,9 +117,9 @@ function mapGroup(
 
       itemRateCents = rate.hourly_rate_in_cents;
       itemCurrency = rate.currency;
-      itemAmountCents = Math.round(
-        (sub.seconds / TIME_TRACKING.SECONDS_PER_HOUR) * rate.hourly_rate_in_cents
-      );
+      const roundedHours = Math.round((sub.seconds / TIME_TRACKING.SECONDS_PER_HOUR) * 100) / 100;
+
+      itemAmountCents = Math.round(roundedHours * rate.hourly_rate_in_cents);
 
       if (groupAmountCents === null) {
         groupAmountCents = 0;

@@ -26,7 +26,8 @@ const STATUS_COLORS: Record<string, RGB> = {
 };
 
 interface InvoiceItem {
-  description: string;
+  title: string;
+  description?: string | null;
   quantity: number;
   unitPrice: number;
   amount: number;
@@ -168,7 +169,7 @@ function renderDates(doc: jsPDF, invoice: InvoicePdfData): void {
 
 function buildItemRow(item: InvoiceItem, currency: string, indent = false): string[] {
   return [
-    indent ? `    ${item.description}` : item.description,
+    indent ? `    ${item.title}` : item.title,
     item.quantity.toString(),
     formatCurrency(item.unitPrice, currency),
     formatCurrency(item.amount, currency),
@@ -179,7 +180,9 @@ function renderItemsTable(doc: jsPDF, invoice: InvoicePdfData): number {
   const tableData: string[][] = [];
 
   invoice.itemGroups?.forEach((group) => {
-    tableData.push([group.title, "", "", ""]);
+    const groupTotal = group.items.reduce((sum, item) => sum + item.amount, 0);
+
+    tableData.push([group.title, "", "", formatCurrency(groupTotal, invoice.currency)]);
     group.items.forEach((item) => {
       tableData.push(buildItemRow(item, invoice.currency, true));
     });
@@ -191,7 +194,7 @@ function renderItemsTable(doc: jsPDF, invoice: InvoicePdfData): number {
 
   autoTable(doc, {
     startY: 135,
-    head: [["Description", "Qty", "Unit Price", "Amount"]],
+    head: [["Item", "Qty", "Unit Price", "Amount"]],
     body: tableData,
     theme: "plain",
     headStyles: {

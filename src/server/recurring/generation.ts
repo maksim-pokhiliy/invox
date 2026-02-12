@@ -83,7 +83,8 @@ export async function generateInvoiceFromRecurring(recurringInvoice: {
       sentAt: recurringInvoice.autoSend ? new Date() : null,
       items: {
         create: recurringInvoice.items.map((item) => ({
-          description: item.description,
+          title: item.description,
+          description: null,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           amount: Math.round(item.quantity * item.unitPrice),

@@ -182,8 +182,8 @@ model InvoiceItem {
   id          String  @id @default(cuid())
   invoiceId   String
   groupId     String?
-  title       String?
-  description String
+  title       String
+  description String?
   quantity    Float
   unitPrice   Int
   amount      Int

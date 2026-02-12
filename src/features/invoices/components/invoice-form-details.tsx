@@ -53,18 +53,19 @@ export function InvoiceFormDetails({
       >
         <FormControl fullWidth error={!!errors.clientId}>
           <InputLabel id="client-label">Client</InputLabel>
-          <Select
-            {...register("clientId")}
-            labelId="client-label"
-            label="Client"
-            disabled={clientsLoading}
-          >
-            {clients?.map((client) => (
-              <MenuItem key={client.id} value={client.id}>
-                {client.name}
-              </MenuItem>
-            ))}
-          </Select>
+          <Controller
+            name="clientId"
+            control={control}
+            render={({ field }) => (
+              <Select {...field} labelId="client-label" label="Client" disabled={clientsLoading}>
+                {clients?.map((client) => (
+                  <MenuItem key={client.id} value={client.id}>
+                    {client.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+          />
           {errors.clientId && (
             <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
               {errors.clientId.message}
@@ -77,18 +78,19 @@ export function InvoiceFormDetails({
 
         <FormControl fullWidth>
           <InputLabel id="currency-label">Currency</InputLabel>
-          <Select
-            {...register("currency")}
-            labelId="currency-label"
-            label="Currency"
-            defaultValue="USD"
-          >
-            {CURRENCIES.map((c) => (
-              <MenuItem key={c.value} value={c.value}>
-                {c.label}
-              </MenuItem>
-            ))}
-          </Select>
+          <Controller
+            name="currency"
+            control={control}
+            render={({ field }) => (
+              <Select {...field} labelId="currency-label" label="Currency">
+                {CURRENCIES.map((c) => (
+                  <MenuItem key={c.value} value={c.value}>
+                    {c.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+          />
         </FormControl>
 
         <Controller

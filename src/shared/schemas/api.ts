@@ -24,8 +24,8 @@ export type Client = z.infer<typeof clientSchema>;
 
 export const invoiceItemResponseSchema = z.object({
   id: z.string(),
-  title: z.string().nullable().optional(),
-  description: z.string(),
+  title: z.string(),
+  description: z.string().nullable().optional(),
   quantity: z.number(),
   unitPrice: z.number(),
   amount: z.number(),

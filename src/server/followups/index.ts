@@ -86,7 +86,11 @@ export async function getPendingFollowUpJobs() {
       invoice: {
         include: {
           client: true,
-          items: true,
+          items: { where: { groupId: null }, orderBy: { sortOrder: "asc" } },
+          itemGroups: {
+            include: { items: { orderBy: { sortOrder: "asc" } } },
+            orderBy: { sortOrder: "asc" },
+          },
           user: {
             include: {
               senderProfile: true,

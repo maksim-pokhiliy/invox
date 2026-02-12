@@ -18,7 +18,8 @@ import { SenderBillTo } from "./sender-bill-to";
 
 interface InvoiceItem {
   id: string;
-  description: string;
+  title: string;
+  description?: string | null;
   quantity: number;
   unitPrice: number;
   amount: number;

@@ -1,10 +1,11 @@
 "use client";
 
 import type { Control, FieldArrayWithId } from "react-hook-form";
-import { FieldErrors, UseFormRegister } from "react-hook-form";
+import type { FieldErrors, UseFormRegister } from "react-hook-form";
 
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Divider, Typography } from "@mui/material";
+import PlaylistAddIcon from "@mui/icons-material/PlaylistAdd";
+import { Box, Button, Divider, Stack, Typography } from "@mui/material";
 
 import {
   closestCenter,
@@ -33,6 +34,8 @@ interface InvoiceFormLineItemsProps {
   onDuplicate: (index: number) => void;
   groupFields: FieldArrayWithId<InvoiceFormInput, "itemGroups", "id">[];
   onRemoveGroup: (index: number) => void;
+  onAddGroup: () => void;
+  defaultUnitPrice: number;
 }
 
 export function InvoiceFormLineItems({
@@ -48,6 +51,8 @@ export function InvoiceFormLineItems({
   onDuplicate,
   groupFields,
   onRemoveGroup,
+  onAddGroup,
+  defaultUnitPrice,
 }: InvoiceFormLineItemsProps) {
   return (
     <>
@@ -65,32 +70,12 @@ export function InvoiceFormLineItems({
               register={register}
               currency={currency}
               onRemoveGroup={() => onRemoveGroup(gi)}
+              canDeleteGroup={fields.length > 0 || groupFields.length > 1}
+              defaultUnitPrice={defaultUnitPrice}
             />
           ))}
         </Box>
       )}
-
-      <Box
-        sx={{
-          display: { xs: "none", sm: "grid" },
-          gridTemplateColumns: "24px 2fr 100px 120px 72px",
-          gap: 2,
-          mb: 1,
-          px: 1,
-        }}
-      >
-        <Box />
-        <Typography variant="caption" color="text.secondary" fontWeight={600}>
-          Description
-        </Typography>
-        <Typography variant="caption" color="text.secondary" fontWeight={600}>
-          Quantity
-        </Typography>
-        <Typography variant="caption" color="text.secondary" fontWeight={600}>
-          Unit Price
-        </Typography>
-        <Box />
-      </Box>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
@@ -110,9 +95,14 @@ export function InvoiceFormLineItems({
         </SortableContext>
       </DndContext>
 
-      <Button variant="outlined" startIcon={<AddIcon />} onClick={onAppend} sx={{ mb: 4 }}>
-        Add Line Item
-      </Button>
+      <Stack direction="row" spacing={1.5} sx={{ mb: 4 }}>
+        <Button variant="outlined" startIcon={<AddIcon />} onClick={onAppend}>
+          Add Line Item
+        </Button>
+        <Button variant="outlined" startIcon={<PlaylistAddIcon />} onClick={onAddGroup}>
+          Add Group
+        </Button>
+      </Stack>
 
       <Divider sx={{ my: 4 }} />
     </>

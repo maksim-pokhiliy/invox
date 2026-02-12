@@ -8,6 +8,7 @@ import { prisma } from "@app/server/db";
 import { type EmailBranding, sendInvoiceEmail } from "@app/server/email";
 import { getFollowUpRule, scheduleFollowUps } from "@app/server/followups";
 import { logInvoiceEvent, updateInvoiceStatus } from "@app/server/invoices";
+import { ITEM_GROUPS_INCLUDE } from "@app/server/invoices/item-groups";
 
 const generateReference = customAlphabet(
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
@@ -58,7 +59,8 @@ export async function sendInvoice(invoiceId: string, userId: string) {
     where: { id: invoiceId, userId },
     include: {
       client: true,
-      items: true,
+      items: { where: { groupId: null }, orderBy: { sortOrder: "asc" } },
+      itemGroups: ITEM_GROUPS_INCLUDE,
       user: {
         include: {
           senderProfile: true,
@@ -92,10 +94,21 @@ export async function sendInvoice(invoiceId: string, userId: string) {
       branding,
       paymentReference,
       items: invoice.items.map((item) => ({
+        title: item.title,
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
         amount: item.amount,
+      })),
+      itemGroups: invoice.itemGroups.map((group) => ({
+        title: group.title,
+        items: group.items.map((item) => ({
+          title: item.title,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          amount: item.amount,
+        })),
       })),
     });
   } catch (emailError) {
@@ -121,7 +134,8 @@ export async function sendInvoice(invoiceId: string, userId: string) {
     where: { id: invoice.id },
     include: {
       client: true,
-      items: true,
+      items: { where: { groupId: null }, orderBy: { sortOrder: "asc" } },
+      itemGroups: ITEM_GROUPS_INCLUDE,
     },
   });
 }

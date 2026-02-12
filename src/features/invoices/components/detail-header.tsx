@@ -73,7 +73,6 @@ export function DetailActions({
       {!isPaid && !isDraft && (
         <Button
           variant="outlined"
-          color="success"
           startIcon={<AddIcon />}
           onClick={() => detail.setPaymentDialogOpen(true)}
         >

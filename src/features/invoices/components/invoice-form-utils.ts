@@ -3,7 +3,7 @@
 import * as React from "react";
 import type { UseFieldArrayReturn } from "react-hook-form";
 
-import { INVOICE, TIME } from "@app/shared/config/config";
+import { INVOICE, SORT_ORDER, TIME } from "@app/shared/config/config";
 import type {
   CreateClientInput,
   InvoiceFormInput,
@@ -42,7 +42,7 @@ export function getFormDefaults(dueDate: string): InvoiceFormInput {
     clientId: "",
     currency: "USD",
     dueDate,
-    items: [{ description: "", quantity: 1, unitPrice: 0 }],
+    items: [{ title: "", description: "", quantity: 1, unitPrice: 0 }],
     itemGroups: [],
     notes: "",
   };
@@ -74,6 +74,7 @@ export function useItemActions(
 
       if (item) {
         append({
+          title: item.title,
           description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
@@ -88,7 +89,7 @@ export function useItemActions(
       const emptyIndexes: number[] = [];
 
       items.forEach((item, index) => {
-        if (!item.description && item.unitPrice === 0 && item.quantity <= 1) {
+        if (!item.title) {
           emptyIndexes.push(index);
         }
       });
@@ -100,13 +101,26 @@ export function useItemActions(
       groups.forEach((group, gi) =>
         groupArray.append({
           ...group,
-          sortOrder: (groupArray.fields.length + gi) * 10,
-          items: group.items.map((item, ii) => ({ ...item, sortOrder: ii * 10 })),
+          sortOrder: (groupArray.fields.length + gi) * SORT_ORDER.GAP,
+          items: group.items.map((item, ii) => ({ ...item, sortOrder: ii * SORT_ORDER.GAP })),
         })
       );
     },
     [items, remove, groupArray]
   );
 
-  return { duplicateItem, addImportedGroups };
+  const addGroup = React.useCallback(
+    (defaultUnitPrice: number) => {
+      groupArray.append({
+        title: "",
+        sortOrder: groupArray.fields.length * SORT_ORDER.GAP,
+        items: [
+          { title: "", description: "", quantity: 1, unitPrice: defaultUnitPrice, sortOrder: 0 },
+        ],
+      });
+    },
+    [groupArray]
+  );
+
+  return { duplicateItem, addImportedGroups, addGroup };
 }

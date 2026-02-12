@@ -114,12 +114,19 @@ export function InvoiceForm({
             errors={form.errors}
             currency={form.currency}
             onAppend={() =>
-              form.append({ description: "", quantity: 1, unitPrice: form.resolvedRate / 100 })
+              form.append({
+                title: "",
+                description: "",
+                quantity: 1,
+                unitPrice: form.resolvedRate / 100,
+              })
             }
             onRemove={form.remove}
             onDuplicate={form.duplicateItem}
             groupFields={form.groupFields}
             onRemoveGroup={form.removeGroup}
+            onAddGroup={() => form.addGroup(form.resolvedRate / 100)}
+            defaultUnitPrice={form.resolvedRate / 100}
           />
 
           {renderImport?.({

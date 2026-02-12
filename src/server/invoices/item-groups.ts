@@ -19,7 +19,7 @@ export async function createItemGroups(invoiceId: string, groups: InvoiceItemGro
           invoiceId,
           groupId: created.id,
           title: item.title,
-          description: item.description,
+          description: item.description ?? null,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           amount: Math.round(Math.round(item.quantity * item.unitPrice)),

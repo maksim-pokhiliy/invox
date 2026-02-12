@@ -4,7 +4,8 @@ import { InvoiceItemsTable as SharedInvoiceItemsTable } from "@app/shared/ui/inv
 
 interface InvoiceItem {
   id: string;
-  description: string;
+  title: string;
+  description?: string | null;
   quantity: number;
   unitPrice: number;
   amount: number;

@@ -2,10 +2,16 @@ import { EMAIL, FONT_FAMILY_MAP } from "@app/shared/config/config";
 import { formatCurrency } from "@app/shared/lib/format";
 
 export interface EmailLineItem {
-  description: string;
+  title: string;
+  description?: string | null;
   quantity: number;
   unitPrice: number;
   amount: number;
+}
+
+export interface EmailItemGroup {
+  title: string;
+  items: EmailLineItem[];
 }
 
 export function buildEmailButton(url: string, label: string, color: string) {
@@ -28,25 +34,45 @@ export function buildInvoiceDetailsBlock(
     </div>`;
 }
 
-export function buildLineItemsTable(items: EmailLineItem[], currency: string) {
-  const rows = items
-    .map(
-      (item) => `<tr>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${item.description}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(item.unitPrice, currency)}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(item.amount, currency)}</td>
-      </tr>`
-    )
-    .join("");
+function buildItemRow(item: EmailLineItem, currency: string, indent = false) {
+  const paddingLeft = indent ? "24px" : "12px";
+
+  return `<tr>
+    <td style="padding: 8px 12px 8px ${paddingLeft}; border-bottom: 1px solid #eee;">${item.title}</td>
+    <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+    <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right; white-space: nowrap;">${formatCurrency(item.unitPrice, currency)}</td>
+    <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right; white-space: nowrap;">${formatCurrency(item.amount, currency)}</td>
+  </tr>`;
+}
+
+export function buildLineItemsTable(
+  items: EmailLineItem[],
+  currency: string,
+  itemGroups?: EmailItemGroup[]
+) {
+  let rows = "";
+
+  if (itemGroups?.length) {
+    for (const group of itemGroups) {
+      const groupTotal = group.items.reduce((sum, item) => sum + item.amount, 0);
+
+      rows += `<tr style="background: #f5f5f5;">
+        <td colspan="3" style="padding: 8px 12px; font-weight: 600; border-bottom: 1px solid #eee;">${group.title}</td>
+        <td style="padding: 8px 12px; font-weight: 600; border-bottom: 1px solid #eee; text-align: right; white-space: nowrap;">${formatCurrency(groupTotal, currency)}</td>
+      </tr>`;
+      rows += group.items.map((item) => buildItemRow(item, currency, true)).join("");
+    }
+  }
+
+  rows += items.map((item) => buildItemRow(item, currency)).join("");
 
   return `<table style="width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 4px; overflow: hidden;">
     <thead>
       <tr style="background: #f9f9f9;">
-        <th style="padding: 10px 12px; text-align: left; font-weight: 600; font-size: 13px; color: #666; border-bottom: 2px solid #eee;">Description</th>
+        <th style="padding: 10px 12px; text-align: left; font-weight: 600; font-size: 13px; color: #666; border-bottom: 2px solid #eee;">Item</th>
         <th style="padding: 10px 12px; text-align: center; font-weight: 600; font-size: 13px; color: #666; border-bottom: 2px solid #eee;">Qty</th>
-        <th style="padding: 10px 12px; text-align: right; font-weight: 600; font-size: 13px; color: #666; border-bottom: 2px solid #eee;">Unit Price</th>
-        <th style="padding: 10px 12px; text-align: right; font-weight: 600; font-size: 13px; color: #666; border-bottom: 2px solid #eee;">Amount</th>
+        <th style="padding: 10px 12px; text-align: right; font-weight: 600; font-size: 13px; color: #666; border-bottom: 2px solid #eee; white-space: nowrap;">Unit Price</th>
+        <th style="padding: 10px 12px; text-align: right; font-weight: 600; font-size: 13px; color: #666; border-bottom: 2px solid #eee; white-space: nowrap;">Amount</th>
       </tr>
     </thead>
     <tbody>${rows}</tbody>

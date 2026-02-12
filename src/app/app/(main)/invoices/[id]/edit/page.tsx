@@ -74,7 +74,8 @@ export default function EditInvoicePage() {
           currency: invoice.currency,
           dueDate: new Date(invoice.dueDate).toISOString().split("T")[0],
           items: invoice.items.map((item) => ({
-            description: item.description,
+            title: item.title,
+            description: item.description ?? "",
             quantity: item.quantity,
             unitPrice: item.unitPrice / 100,
           })),
@@ -82,8 +83,8 @@ export default function EditInvoicePage() {
             title: group.title,
             sortOrder: group.sortOrder,
             items: group.items.map((item) => ({
-              title: item.title ?? undefined,
-              description: item.description,
+              title: item.title,
+              description: item.description ?? "",
               quantity: item.quantity,
               unitPrice: item.unitPrice / 100,
               sortOrder: item.sortOrder,

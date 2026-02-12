@@ -9,6 +9,7 @@ import {
   Chip,
   CircularProgress,
   FormControl,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
@@ -105,6 +106,13 @@ export function ImportDrawerFilters({
             onProjectsChange([]);
           }}
           disabled={workspacesLoading}
+          endAdornment={
+            workspacesLoading ? (
+              <InputAdornment position="end" sx={{ mr: 2 }}>
+                <CircularProgress size={18} />
+              </InputAdornment>
+            ) : undefined
+          }
         >
           {workspaces?.map((ws) => (
             <MenuItem key={ws.id} value={ws.id}>
@@ -169,12 +177,13 @@ export function ImportDrawerFilters({
 
           return [selectAllOption, ...options];
         }}
-        renderOption={(props, option, { selected }) => {
+        getOptionKey={(option) => option.id}
+        renderOption={({ key, ...props }, option, { selected }) => {
           const isSelectAll = option.id === SELECT_ALL_ID;
           const allSelected = selectedProjects.length === (projects?.length ?? 0);
 
           return (
-            <li {...props} key={option.id}>
+            <li key={key} {...props}>
               <Checkbox
                 size="small"
                 checked={isSelectAll ? allSelected : selected}
@@ -214,6 +223,17 @@ export function ImportDrawerFilters({
             {...params}
             label="Projects"
             placeholder={selectedProjects.length === 0 ? "All projects" : ""}
+            slotProps={{
+              input: {
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {projectsLoading && <CircularProgress size={18} />}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              },
+            }}
           />
         )}
       />

@@ -56,10 +56,21 @@ async function main() {
         branding,
         paymentReference: invoice.paymentReference || null,
         items: invoice.items.map((item) => ({
+          title: item.title,
           description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           amount: item.amount,
+        })),
+        itemGroups: invoice.itemGroups.map((group) => ({
+          title: group.title,
+          items: group.items.map((item) => ({
+            title: item.title,
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            amount: item.amount,
+          })),
         })),
       });
 

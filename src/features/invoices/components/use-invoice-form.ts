@@ -109,7 +109,8 @@ function useTemplateApplication(
         currency: template.currency,
         dueDate: getTemplateDueDate(template.dueDays),
         items: template.items.map((item) => ({
-          description: item.description,
+          title: item.description,
+          description: "",
           quantity: item.quantity,
           unitPrice: item.unitPrice / 100,
         })),
@@ -228,7 +229,12 @@ export function useInvoiceForm({
 
   useInitialRate(mode, !!initialData, !!template, resolvedRate, items, setValue);
 
-  const { duplicateItem, addImportedGroups } = useItemActions(items, append, remove, groupArray);
+  const { duplicateItem, addImportedGroups, addGroup } = useItemActions(
+    items,
+    append,
+    remove,
+    groupArray
+  );
 
   return {
     register,
@@ -263,5 +269,6 @@ export function useInvoiceForm({
     removeGroup: groupArray.remove,
     moveGroup: groupArray.move,
     addImportedGroups,
+    addGroup,
   };
 }

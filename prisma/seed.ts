@@ -45,21 +45,21 @@ const CLIENT_DATA = [
 ];
 
 const LINE_ITEM_CATALOG = [
-  { description: "Web Development", unitPrice: cents(150) },
-  { description: "UI/UX Design", unitPrice: cents(120) },
-  { description: "API Integration", unitPrice: cents(175) },
-  { description: "Database Architecture", unitPrice: cents(200) },
-  { description: "DevOps Consulting", unitPrice: cents(180) },
-  { description: "Code Review & Audit", unitPrice: cents(130) },
-  { description: "Technical Writing", unitPrice: cents(90) },
-  { description: "Project Management", unitPrice: cents(110) },
-  { description: "QA Testing", unitPrice: cents(95) },
-  { description: "Cloud Infrastructure Setup", unitPrice: cents(160) },
-  { description: "Mobile App Development", unitPrice: cents(170) },
-  { description: "SEO Optimization", unitPrice: cents(100) },
-  { description: "Performance Tuning", unitPrice: cents(185) },
-  { description: "Security Assessment", unitPrice: cents(210) },
-  { description: "Data Migration", unitPrice: cents(140) },
+  { title: "Web Development", unitPrice: cents(150) },
+  { title: "UI/UX Design", unitPrice: cents(120) },
+  { title: "API Integration", unitPrice: cents(175) },
+  { title: "Database Architecture", unitPrice: cents(200) },
+  { title: "DevOps Consulting", unitPrice: cents(180) },
+  { title: "Code Review & Audit", unitPrice: cents(130) },
+  { title: "Technical Writing", unitPrice: cents(90) },
+  { title: "Project Management", unitPrice: cents(110) },
+  { title: "QA Testing", unitPrice: cents(95) },
+  { title: "Cloud Infrastructure Setup", unitPrice: cents(160) },
+  { title: "Mobile App Development", unitPrice: cents(170) },
+  { title: "SEO Optimization", unitPrice: cents(100) },
+  { title: "Performance Tuning", unitPrice: cents(185) },
+  { title: "Security Assessment", unitPrice: cents(210) },
+  { title: "Data Migration", unitPrice: cents(140) },
 ];
 
 const TEMPLATE_DATA = [
@@ -156,7 +156,7 @@ function pickItems(count: number, startOffset: number) {
     const catalogItem = LINE_ITEM_CATALOG[(startOffset + i) % LINE_ITEM_CATALOG.length];
     const quantity = randomInt(1, 20);
     items.push({
-      description: catalogItem.description,
+      title: catalogItem.title,
       quantity,
       unitPrice: catalogItem.unitPrice,
       amount: quantity * catalogItem.unitPrice,
