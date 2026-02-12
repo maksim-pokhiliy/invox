@@ -42,7 +42,7 @@ export async function getInvoices(userId: string) {
     where: { userId },
     include: {
       client: true,
-      items: { orderBy: { sortOrder: "asc" } },
+      items: { where: { groupId: null }, orderBy: { sortOrder: "asc" } },
       itemGroups: ITEM_GROUPS_INCLUDE,
     },
     orderBy: { createdAt: "desc" },
@@ -59,7 +59,7 @@ export async function getInvoice(id: string, userId: string) {
     where: { id, userId },
     include: {
       client: true,
-      items: { orderBy: { sortOrder: "asc" } },
+      items: { where: { groupId: null }, orderBy: { sortOrder: "asc" } },
       itemGroups: ITEM_GROUPS_INCLUDE,
       events: {
         orderBy: { createdAt: "desc" },
@@ -85,7 +85,7 @@ export async function getInvoiceByPublicId(publicId: string) {
     where: { publicId },
     include: {
       client: true,
-      items: { orderBy: { sortOrder: "asc" } },
+      items: { where: { groupId: null }, orderBy: { sortOrder: "asc" } },
       itemGroups: ITEM_GROUPS_INCLUDE,
       user: {
         include: {

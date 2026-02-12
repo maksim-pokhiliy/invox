@@ -16,17 +16,20 @@ interface UseInvoiceSubmitOptions {
 }
 
 function transformForSubmit(data: InvoiceFormInput) {
-  const items = data.items.map((item) => ({
+  const items = data.items.map((item, i) => ({
     ...item,
     unitPrice: Math.round(item.unitPrice * 100),
+    sortOrder: i,
   }));
 
   const itemGroups = data.itemGroups?.length
-    ? data.itemGroups.map((group) => ({
+    ? data.itemGroups.map((group, gi) => ({
         ...group,
-        items: group.items.map((item) => ({
+        sortOrder: gi,
+        items: group.items.map((item, ii) => ({
           ...item,
           unitPrice: Math.round(item.unitPrice * 100),
+          sortOrder: ii,
         })),
       }))
     : undefined;

@@ -137,7 +137,7 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
     where: { id: invoice.id },
     include: {
       client: true,
-      items: { orderBy: { sortOrder: "asc" } },
+      items: { where: { groupId: null }, orderBy: { sortOrder: "asc" } },
       itemGroups: ITEM_GROUPS_INCLUDE,
     },
   });
@@ -216,7 +216,7 @@ export async function updateInvoice(id: string, userId: string, data: UpdateInvo
     data: updateData,
     include: {
       client: true,
-      items: { orderBy: { sortOrder: "asc" } },
+      items: { where: { groupId: null }, orderBy: { sortOrder: "asc" } },
       itemGroups: ITEM_GROUPS_INCLUDE,
     },
   });

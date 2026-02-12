@@ -1,23 +1,10 @@
 "use client";
 
-import {
-  alpha,
-  Box,
-  Divider,
-  LinearProgress,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { alpha, Box, Divider, LinearProgress, Paper, Typography, useTheme } from "@mui/material";
 
 import { formatCurrency } from "@app/shared/lib/format";
 import type { Invoice } from "@app/shared/schemas/api";
+import { InvoiceItemsTable } from "@app/shared/ui/invoice-items-table";
 
 export function TotalsSummary({
   invoice,
@@ -113,38 +100,11 @@ export function BillingCard({
 
       <Divider sx={{ my: 3 }} />
 
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 600, border: 0 }}>Description</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, border: 0 }}>
-                Qty
-              </TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, border: 0 }}>
-                Unit Price
-              </TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, border: 0 }}>
-                Amount
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {invoice.items.map((item) => (
-              <TableRow key={item.id} sx={{ "&:last-child td": { border: 0 } }}>
-                <TableCell>{item.description}</TableCell>
-                <TableCell align="right">{item.quantity}</TableCell>
-                <TableCell align="right">
-                  {formatCurrency(item.unitPrice, invoice.currency)}
-                </TableCell>
-                <TableCell align="right" sx={{ fontWeight: 500 }}>
-                  {formatCurrency(item.amount, invoice.currency)}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <InvoiceItemsTable
+        items={invoice.items}
+        itemGroups={invoice.itemGroups}
+        currency={invoice.currency}
+      />
 
       <Divider sx={{ my: 3 }} />
       <TotalsSummary invoice={invoice} remainingBalance={remainingBalance} />

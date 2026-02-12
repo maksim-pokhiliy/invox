@@ -78,6 +78,17 @@ export default function EditInvoicePage() {
             quantity: item.quantity,
             unitPrice: item.unitPrice / 100,
           })),
+          itemGroups: invoice.itemGroups?.map((group) => ({
+            title: group.title,
+            sortOrder: group.sortOrder,
+            items: group.items.map((item) => ({
+              title: item.title ?? undefined,
+              description: item.description,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice / 100,
+              sortOrder: item.sortOrder,
+            })),
+          })),
           notes: invoice.notes || "",
         }}
         clients={clients}

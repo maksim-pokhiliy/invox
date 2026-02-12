@@ -28,6 +28,7 @@ interface InvoiceFormProps {
     currency: string;
     dueDate: string;
     items: { description: string; quantity: number; unitPrice: number }[];
+    itemGroups?: InvoiceItemGroupInput[];
     notes: string;
   };
   templateId?: string;

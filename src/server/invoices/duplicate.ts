@@ -72,7 +72,7 @@ export async function duplicateInvoice(id: string, userId: string) {
     where: { id: newInvoice.id },
     include: {
       client: true,
-      items: { orderBy: { sortOrder: "asc" } },
+      items: { where: { groupId: null }, orderBy: { sortOrder: "asc" } },
       itemGroups: ITEM_GROUPS_INCLUDE,
     },
   });

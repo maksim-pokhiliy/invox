@@ -24,10 +24,19 @@ export type Client = z.infer<typeof clientSchema>;
 
 export const invoiceItemResponseSchema = z.object({
   id: z.string(),
+  title: z.string().nullable().optional(),
   description: z.string(),
   quantity: z.number(),
   unitPrice: z.number(),
   amount: z.number(),
+  sortOrder: z.number().optional(),
+});
+
+export const invoiceItemGroupResponseSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  sortOrder: z.number(),
+  items: z.array(invoiceItemResponseSchema),
 });
 
 export const invoiceEventSchema = z.object({
@@ -87,6 +96,7 @@ export const invoiceSchema = z.object({
     email: z.string(),
   }),
   items: z.array(invoiceItemResponseSchema),
+  itemGroups: z.array(invoiceItemGroupResponseSchema).optional(),
   events: z.array(invoiceEventSchema).optional(),
   payments: z.array(paymentSchema).optional(),
 });
@@ -142,6 +152,7 @@ export const publicInvoiceSchema = z.object({
   dueDate: z.string(),
   paidAt: z.string().nullable(),
   items: z.array(invoiceItemResponseSchema),
+  itemGroups: z.array(invoiceItemGroupResponseSchema).optional(),
   sender: z.object({
     companyName: z.string().nullable(),
     displayName: z.string().nullable(),

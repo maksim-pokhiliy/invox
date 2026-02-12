@@ -56,7 +56,7 @@ function resolveItemRate(
     case RATE_SOURCE.PROVIDER:
       return providerRateCents ?? getpaidRateCents;
     case RATE_SOURCE.GETPAID:
-      return getpaidRateCents;
+      return getpaidRateCents || providerRateCents || 0;
     case RATE_SOURCE.CUSTOM:
       return customRateCents;
   }

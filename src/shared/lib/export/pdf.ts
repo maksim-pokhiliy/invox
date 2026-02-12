@@ -32,6 +32,11 @@ interface InvoiceItem {
   amount: number;
 }
 
+interface InvoiceItemGroup {
+  title: string;
+  items: InvoiceItem[];
+}
+
 interface InvoicePdfData {
   publicId: string;
   status: string;
@@ -55,6 +60,7 @@ interface InvoicePdfData {
     address?: string | null;
   } | null;
   items: InvoiceItem[];
+  itemGroups?: InvoiceItemGroup[];
 }
 
 function renderHeader(doc: jsPDF, invoice: InvoicePdfData): void {
@@ -160,13 +166,28 @@ function renderDates(doc: jsPDF, invoice: InvoicePdfData): void {
   }
 }
 
-function renderItemsTable(doc: jsPDF, invoice: InvoicePdfData): number {
-  const tableData = invoice.items.map((item) => [
-    item.description,
+function buildItemRow(item: InvoiceItem, currency: string, indent = false): string[] {
+  return [
+    indent ? `    ${item.description}` : item.description,
     item.quantity.toString(),
-    formatCurrency(item.unitPrice, invoice.currency),
-    formatCurrency(item.amount, invoice.currency),
-  ]);
+    formatCurrency(item.unitPrice, currency),
+    formatCurrency(item.amount, currency),
+  ];
+}
+
+function renderItemsTable(doc: jsPDF, invoice: InvoicePdfData): number {
+  const tableData: string[][] = [];
+
+  invoice.itemGroups?.forEach((group) => {
+    tableData.push([group.title, "", "", ""]);
+    group.items.forEach((item) => {
+      tableData.push(buildItemRow(item, invoice.currency, true));
+    });
+  });
+
+  invoice.items.forEach((item) => {
+    tableData.push(buildItemRow(item, invoice.currency));
+  });
 
   autoTable(doc, {
     startY: 135,
