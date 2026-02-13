@@ -26,7 +26,6 @@ import {
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { features } from "@app/shared/config/features";
 import { useToast } from "@app/shared/hooks/use-toast";
 import { SignInInput, signInSchema } from "@app/shared/schemas";
 import { LoadingButton } from "@app/shared/ui/loading-button";
@@ -182,24 +181,22 @@ export default function SignInPage() {
               </LoadingButton>
             </Box>
 
-            {features.publicRegistration && (
-              <Box
-                sx={{
-                  mt: 4,
-                  pt: 3,
-                  borderTop: 1,
-                  borderColor: "divider",
-                  textAlign: "center",
-                }}
-              >
-                <Typography variant="body2" color="text.secondary">
-                  Don&apos;t have an account?{" "}
-                  <MuiLink component={Link} href="/auth/sign-up" sx={{ fontWeight: 600 }}>
-                    Sign up for free
-                  </MuiLink>
-                </Typography>
-              </Box>
-            )}
+            <Box
+              sx={{
+                mt: 4,
+                pt: 3,
+                borderTop: 1,
+                borderColor: "divider",
+                textAlign: "center",
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                Don&apos;t have an account?{" "}
+                <MuiLink component={Link} href="/auth/sign-up" sx={{ fontWeight: 600 }}>
+                  Sign up for free
+                </MuiLink>
+              </Typography>
+            </Box>
           </Paper>
 
           <Typography variant="caption" color="text.secondary" sx={{ mt: 4 }}>

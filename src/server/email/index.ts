@@ -2,6 +2,7 @@ import { Resend } from "resend";
 
 import { EMAIL } from "@app/shared/config/config";
 import { env } from "@app/shared/config/env";
+import { SEO } from "@app/shared/config/seo";
 import { formatCurrency, formatDate } from "@app/shared/lib/format";
 
 import {
@@ -116,6 +117,71 @@ export async function sendReminderEmail(data: InvoiceEmailData & { isOverdue: bo
     replyTo: data.senderEmail,
     subject: title,
     html: buildEmailLayout(title, color, bodyHtml, data.branding.fontFamily),
+    text,
+  });
+}
+
+const WAITLIST_COLOR = "#0d9488";
+
+export async function sendWaitlistConfirmationEmail(email: string) {
+  const title = `You're on the ${SEO.SITE_NAME} waitlist!`;
+
+  const bodyHtml = `
+    <p>Hi there,</p>
+    <p>Thanks for your interest in <strong>${SEO.SITE_NAME}</strong>! We've added you to our waitlist.</p>
+    <p>We'll notify you as soon as your account is ready.</p>
+    <p>${buildEmailButton(SEO.SITE_URL, `Visit ${SEO.SITE_NAME}`, WAITLIST_COLOR)}</p>`;
+
+  const text = `${title}\n\nThanks for your interest in ${SEO.SITE_NAME}! We've added you to our waitlist.\n\nWe'll notify you as soon as your account is ready.\n\nVisit ${SEO.SITE_NAME}: ${SEO.SITE_URL}`;
+
+  return getResend().emails.send({
+    from: env.EMAIL_FROM,
+    to: email,
+    subject: title,
+    html: buildEmailLayout(title, WAITLIST_COLOR, bodyHtml),
+    text,
+  });
+}
+
+export async function sendWaitlistNotificationEmail(email: string) {
+  const title = "New waitlist signup";
+
+  const bodyHtml = `
+    <p>A new user has joined the waitlist:</p>
+    <p><strong>${email}</strong></p>`;
+
+  const text = `New waitlist signup: ${email}`;
+
+  if (!env.ADMIN_EMAIL) {
+    return;
+  }
+
+  return getResend().emails.send({
+    from: env.EMAIL_FROM,
+    to: env.ADMIN_EMAIL,
+    subject: `[${SEO.SITE_NAME}] ${title}: ${email}`,
+    html: buildEmailLayout(title, WAITLIST_COLOR, bodyHtml),
+    text,
+  });
+}
+
+export async function sendWaitlistApprovalEmail(email: string) {
+  const title = `You've been approved for ${SEO.SITE_NAME}!`;
+  const signUpUrl = `${env.APP_URL}/auth/sign-up`;
+
+  const bodyHtml = `
+    <p>Hi there,</p>
+    <p>Great news — your access to <strong>${SEO.SITE_NAME}</strong> has been approved!</p>
+    <p>Click the button below to create your account:</p>
+    <p>${buildEmailButton(signUpUrl, "Create Your Account", WAITLIST_COLOR)}</p>`;
+
+  const text = `${title}\n\nGreat news — your access to ${SEO.SITE_NAME} has been approved!\n\nCreate your account: ${signUpUrl}`;
+
+  return getResend().emails.send({
+    from: env.EMAIL_FROM,
+    to: email,
+    subject: title,
+    html: buildEmailLayout(title, WAITLIST_COLOR, bodyHtml),
     text,
   });
 }

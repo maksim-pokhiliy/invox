@@ -36,6 +36,7 @@ import { LoadingButton } from "@app/shared/ui/loading-button";
 import { Logo } from "@app/shared/ui/logo";
 
 import { authApi } from "@app/features/auth";
+import { WaitlistForm } from "@app/features/waitlist/components/waitlist-form";
 
 const SIGN_UP_FEATURES = [
   "Create professional invoices in minutes",
@@ -239,19 +240,7 @@ export default function SignUpPage() {
                 </Box>
               </>
             ) : (
-              <Box sx={{ textAlign: "center" }}>
-                <Typography variant="h5" fontWeight={700} gutterBottom>
-                  Registration is closed
-                </Typography>
-
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  New accounts can only be created by an administrator.
-                </Typography>
-
-                <MuiLink component={Link} href="/auth/sign-in" sx={{ fontWeight: 600 }}>
-                  Back to sign in
-                </MuiLink>
-              </Box>
+              <WaitlistForm />
             )}
           </Paper>
 

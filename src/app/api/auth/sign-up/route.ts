@@ -4,16 +4,10 @@ import { features } from "@app/shared/config/features";
 import { signUpSchema } from "@app/shared/schemas";
 
 import { createUser, EmailExistsError } from "@app/server/auth/signup";
+import { isEmailApproved } from "@app/server/waitlist";
 
 export async function POST(request: Request) {
   try {
-    if (!features.publicRegistration) {
-      return NextResponse.json(
-        { error: { code: "REGISTRATION_DISABLED", message: "Registration is not available" } },
-        { status: 403 }
-      );
-    }
-
     const body = await request.json();
     const parsed = signUpSchema.safeParse(body);
 
@@ -30,6 +24,17 @@ export async function POST(request: Request) {
     }
 
     const { email, password } = parsed.data;
+
+    if (!features.publicRegistration) {
+      const approved = await isEmailApproved(email);
+
+      if (!approved) {
+        return NextResponse.json(
+          { error: { code: "REGISTRATION_DISABLED", message: "Registration is not available" } },
+          { status: 403 }
+        );
+      }
+    }
 
     await createUser(email, password);
 

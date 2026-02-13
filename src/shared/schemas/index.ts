@@ -8,3 +8,4 @@ export * from "./recurring";
 export * from "./reminder";
 export * from "./sender-profile";
 export * from "./template";
+export * from "./waitlist";

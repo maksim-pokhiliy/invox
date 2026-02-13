@@ -472,3 +472,16 @@ model TimeTrackingConnection {
   @@unique([userId, provider])
   @@index([userId])
 }
+
+enum WaitlistStatus {
+  PENDING
+  APPROVED
+}
+
+model WaitlistEntry {
+  id        String         @id @default(cuid())
+  email     String         @unique
+  status    WaitlistStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
