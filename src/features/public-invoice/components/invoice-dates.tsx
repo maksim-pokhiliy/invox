@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 
 import { formatDate } from "@app/shared/lib/format";
 
@@ -13,7 +13,7 @@ interface InvoiceDatesProps {
 
 export function InvoiceDates({ createdAt, dueDate, paidAt, isOverdue }: InvoiceDatesProps) {
   return (
-    <Box sx={{ display: "flex", gap: 4, mb: 4, flexWrap: "wrap" }}>
+    <Stack direction="row" spacing={4} sx={{ mb: 4, flexWrap: "wrap" }}>
       <Box>
         <Typography variant="caption" color="text.secondary" fontWeight={600}>
           INVOICE DATE
@@ -45,6 +45,6 @@ export function InvoiceDates({ createdAt, dueDate, paidAt, isOverdue }: InvoiceD
           </Typography>
         </Box>
       )}
-    </Box>
+    </Stack>
   );
 }

@@ -14,7 +14,7 @@ interface EmptyInvoicesProps {
 export function EmptyInvoicesState({ onCreateInvoice }: EmptyInvoicesProps) {
   return (
     <EmptyState
-      icon={<ReceiptLongIcon sx={{ fontSize: 40, color: "primary.main" }} />}
+      icon={<ReceiptLongIcon />}
       illustration={<EmptyInvoicesIllustration />}
       title="No invoices yet"
       description="Create your first invoice and start getting paid faster. Track payments, send reminders, and manage your cash flow all in one place."

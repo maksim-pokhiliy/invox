@@ -7,6 +7,7 @@ import {
   FormControl,
   FormControlLabel,
   FormHelperText,
+  Grid,
   InputLabel,
   MenuItem,
   Paper,
@@ -44,117 +45,126 @@ export function RecurringFormSchedule({
         Schedule Details
       </Typography>
 
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-          gap: 3,
-          mb: 3,
-        }}
-      >
-        <TextField
-          {...register("name")}
-          label="Schedule Name"
-          placeholder="e.g., Monthly Retainer - Acme Corp"
-          fullWidth
-          error={!!errors.name}
-          helperText={errors.name?.message}
-        />
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <TextField
+            {...register("name")}
+            label="Schedule Name"
+            placeholder="e.g., Monthly Retainer - Acme Corp"
+            fullWidth
+            error={!!errors.name}
+            helperText={errors.name?.message}
+          />
+        </Grid>
 
-        <FormControl fullWidth error={!!errors.clientId}>
-          <InputLabel>Client</InputLabel>
-          <Select {...register("clientId")} label="Client" defaultValue="">
-            {clients?.map((client) => (
-              <MenuItem key={client.id} value={client.id}>
-                {client.name}
-              </MenuItem>
-            ))}
-          </Select>
-          {errors.clientId && <FormHelperText>{errors.clientId.message}</FormHelperText>}
-        </FormControl>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <FormControl fullWidth error={!!errors.clientId}>
+            <InputLabel>Client</InputLabel>
+            <Select {...register("clientId")} label="Client" defaultValue="">
+              {clients?.map((client) => (
+                <MenuItem key={client.id} value={client.id}>
+                  {client.name}
+                </MenuItem>
+              ))}
+            </Select>
+            {errors.clientId && <FormHelperText>{errors.clientId.message}</FormHelperText>}
+          </FormControl>
+        </Grid>
 
-        <FormControl fullWidth>
-          <InputLabel>Frequency</InputLabel>
-          <Select {...register("frequency")} label="Frequency" defaultValue="MONTHLY">
-            {FREQUENCIES.map((f) => (
-              <MenuItem key={f.value} value={f.value}>
-                {f.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <FormControl fullWidth>
+            <InputLabel>Frequency</InputLabel>
+            <Select {...register("frequency")} label="Frequency" defaultValue="MONTHLY">
+              {FREQUENCIES.map((f) => (
+                <MenuItem key={f.value} value={f.value}>
+                  {f.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
 
-        <FormControl fullWidth>
-          <InputLabel>Currency</InputLabel>
-          <Select {...register("currency")} label="Currency" defaultValue="USD">
-            {CURRENCIES.map((c) => (
-              <MenuItem key={c.value} value={c.value}>
-                {c.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <FormControl fullWidth>
+            <InputLabel>Currency</InputLabel>
+            <Select {...register("currency")} label="Currency">
+              {CURRENCIES.map((c) => (
+                <MenuItem key={c.value} value={c.value}>
+                  {c.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
 
-        <Controller
-          name="startDate"
-          control={control}
-          render={({ field }) => (
-            <DatePicker
-              label="Start Date"
-              value={field.value ? dayjs(field.value) : null}
-              onChange={(date) => field.onChange(date?.format("YYYY-MM-DD") || "")}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  error: !!errors.startDate,
-                  helperText: errors.startDate?.message,
-                },
-              }}
-            />
-          )}
-        />
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Controller
+            name="startDate"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                label="Start Date"
+                value={field.value ? dayjs(field.value) : null}
+                onChange={(date) => field.onChange(date?.format("YYYY-MM-DD") || "")}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: !!errors.startDate,
+                    helperText: errors.startDate?.message,
+                  },
+                }}
+              />
+            )}
+          />
+        </Grid>
 
-        <Controller
-          name="endDate"
-          control={control}
-          render={({ field }) => (
-            <DatePicker
-              label="End Date (Optional)"
-              value={field.value ? dayjs(field.value) : null}
-              onChange={(date) => field.onChange(date?.format("YYYY-MM-DD") || "")}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  helperText: "Leave empty for indefinite",
-                },
-              }}
-            />
-          )}
-        />
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Controller
+            name="endDate"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                label="End Date (Optional)"
+                value={field.value ? dayjs(field.value) : null}
+                onChange={(date) => field.onChange(date?.format("YYYY-MM-DD") || "")}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    helperText: "Leave empty for indefinite",
+                  },
+                }}
+              />
+            )}
+          />
+        </Grid>
 
-        <TextField
-          {...register("dueDays", { valueAsNumber: true })}
-          label="Days Until Due"
-          type="number"
-          fullWidth
-          error={!!errors.dueDays}
-          helperText={errors.dueDays?.message || "Number of days from invoice date"}
-          slotProps={{ htmlInput: { min: 1, max: VALIDATION.MAX_DUE_DAYS } }}
-        />
+        <Grid size={{ xs: 12, md: 6 }}>
+          <TextField
+            {...register("dueDays", { valueAsNumber: true })}
+            label="Days Until Due"
+            type="number"
+            fullWidth
+            error={!!errors.dueDays}
+            helperText={errors.dueDays?.message || "Number of days from invoice date"}
+            slotProps={{ htmlInput: { min: 1, max: VALIDATION.MAX_DUE_DAYS } }}
+          />
+        </Grid>
 
-        <FormControlLabel
-          control={<Switch {...register("autoSend")} />}
-          label={
-            <Box>
-              <Typography variant="body2">Auto-send invoices</Typography>
-              <Typography variant="caption" color="text.secondary">
-                Automatically send invoices when generated
-              </Typography>
-            </Box>
-          }
-          sx={{ alignItems: "flex-start", ml: 0 }}
-        />
-      </Box>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <FormControlLabel
+            control={<Switch {...register("autoSend")} />}
+            label={
+              <Box>
+                <Typography variant="body2">Auto-send invoices</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Automatically send invoices when generated
+                </Typography>
+              </Box>
+            }
+            sx={{ alignItems: "flex-start", ml: 0 }}
+          />
+        </Grid>
+      </Grid>
     </Paper>
   );
 }

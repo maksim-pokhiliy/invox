@@ -2,11 +2,12 @@
 
 import * as React from "react";
 
-import { Box, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 
 import { ApiError } from "@app/shared/api";
+import type { ReminderModeValue } from "@app/shared/config/config";
+import { useToast } from "@app/shared/hooks/use-toast";
 import { LoadingButton } from "@app/shared/ui/loading-button";
-import { useToast } from "@app/shared/ui/toast";
 
 import { type ReminderSettings, useUpdateReminderSettings } from "@app/features/settings";
 
@@ -22,7 +23,7 @@ export function RemindersTab({ settings }: RemindersTabProps) {
   const updateReminderMutation = useUpdateReminderSettings();
 
   const [enabled, setEnabled] = React.useState(false);
-  const [mode, setMode] = React.useState<"AFTER_SENT" | "AFTER_DUE">("AFTER_DUE");
+  const [mode, setMode] = React.useState<ReminderModeValue>("AFTER_DUE");
   const [days, setDays] = React.useState<number[]>([1, 3, 7]);
   const [isDirty, setIsDirty] = React.useState(false);
 
@@ -40,7 +41,7 @@ export function RemindersTab({ settings }: RemindersTabProps) {
     setIsDirty(true);
   };
 
-  const handleModeChange = (value: "AFTER_SENT" | "AFTER_DUE") => {
+  const handleModeChange = (value: ReminderModeValue) => {
     setMode(value);
     setIsDirty(true);
   };
@@ -82,7 +83,7 @@ export function RemindersTab({ settings }: RemindersTabProps) {
         />
       )}
 
-      <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
+      <Stack direction="row" sx={{ mt: 4, justifyContent: "flex-end" }}>
         <LoadingButton
           variant="contained"
           onClick={handleSave}
@@ -91,7 +92,7 @@ export function RemindersTab({ settings }: RemindersTabProps) {
         >
           Save Changes
         </LoadingButton>
-      </Box>
+      </Stack>
     </>
   );
 }

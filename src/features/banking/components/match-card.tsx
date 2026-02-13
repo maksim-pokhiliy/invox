@@ -44,7 +44,7 @@ export function MatchCard({
   return (
     <Card variant="outlined" sx={{ borderRadius: 2 }}>
       <CardContent sx={{ p: 2.5, "&:last-child": { pb: 2.5 } }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+        <Stack direction="row" spacing={2} sx={{ alignItems: "center", mb: 2 }}>
           <Box sx={{ flex: 1 }}>
             <Typography variant="subtitle2" fontWeight={600}>
               {formatCurrency(transaction.amount, transaction.currencyCode)}
@@ -80,7 +80,7 @@ export function MatchCard({
               </Typography>
             )}
           </Box>
-        </Box>
+        </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
           <Chip

@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
 
@@ -31,7 +31,7 @@ export function BrandingPreview({
           bgcolor: "background.paper",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+        <Stack direction="row" spacing={2} sx={{ alignItems: "center", mb: 2 }}>
           {logoUrl ? (
             <Box
               component="img"
@@ -51,11 +51,11 @@ export function BrandingPreview({
               {companyName || "Your Company"}
             </Typography>
           )}
-        </Box>
+        </Stack>
         <Typography variant="h5" fontWeight={700} sx={{ color: primaryColor, mb: 1 }}>
           Invoice #INV-001
         </Typography>
-        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
           <Button
             size="small"
             variant="contained"
@@ -74,7 +74,7 @@ export function BrandingPreview({
           >
             Download
           </Button>
-        </Box>
+        </Stack>
       </Box>
     </Box>
   );

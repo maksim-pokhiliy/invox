@@ -1,6 +1,6 @@
 "use client";
 
-import { alpha, Box, Typography } from "@mui/material";
+import { alpha, Grid, Typography } from "@mui/material";
 
 interface SenderBillToProps {
   sender: {
@@ -17,18 +17,17 @@ interface SenderBillToProps {
 
 export function SenderBillTo({ sender, client, primaryColor }: SenderBillToProps) {
   return (
-    <Box
+    <Grid
+      container
+      spacing={4}
       sx={{
-        display: "grid",
-        gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-        gap: 4,
         mb: 4,
         p: 3,
         borderRadius: 2,
         bgcolor: alpha(primaryColor, 0.04),
       }}
     >
-      <Box>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Typography variant="overline" color="text.secondary" fontWeight={600}>
           From
         </Typography>
@@ -49,9 +48,9 @@ export function SenderBillTo({ sender, client, primaryColor }: SenderBillToProps
             Tax ID: {sender.taxId}
           </Typography>
         )}
-      </Box>
+      </Grid>
 
-      <Box>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Typography variant="overline" color="text.secondary" fontWeight={600}>
           Bill To
         </Typography>
@@ -61,7 +60,7 @@ export function SenderBillTo({ sender, client, primaryColor }: SenderBillToProps
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
           {client.email}
         </Typography>
-      </Box>
-    </Box>
+      </Grid>
+    </Grid>
   );
 }

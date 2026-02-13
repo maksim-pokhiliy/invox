@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 
 import { LoadingButton } from "./loading-button";
 
@@ -20,13 +20,13 @@ export function FormActions({
   disabled = false,
 }: FormActionsProps) {
   return (
-    <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+    <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
       <Button variant="outlined" onClick={onCancel} disabled={loading}>
         {cancelLabel}
       </Button>
       <LoadingButton type="submit" variant="contained" loading={loading} disabled={disabled}>
         {submitLabel}
       </LoadingButton>
-    </Box>
+    </Stack>
   );
 }

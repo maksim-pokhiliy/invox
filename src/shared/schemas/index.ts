@@ -2,6 +2,7 @@ export * from "./api";
 export * from "./auth";
 export * from "./client";
 export * from "./invoice";
+export * from "./line-item";
 export * from "./payment";
 export * from "./recurring";
 export * from "./reminder";

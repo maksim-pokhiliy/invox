@@ -1,3 +1,5 @@
+export { recurringApi } from "./api";
+export * from "./hooks";
 export type {
   CreateRecurringInput,
   RecurringFrequency,
@@ -5,6 +7,4 @@ export type {
   RecurringInvoiceItem,
   RecurringStatus,
   UpdateRecurringInput,
-} from "./api";
-export { recurringApi } from "./api";
-export * from "./hooks";
+} from "@app/shared/schemas";

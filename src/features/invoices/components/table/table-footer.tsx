@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, TablePagination, Typography } from "@mui/material";
+import { Button, Stack, TablePagination, Typography } from "@mui/material";
 
 import { PAGINATION } from "@app/shared/config/config";
 
@@ -27,9 +27,9 @@ export function InvoicesTableFooter({
 }: TableFooterProps) {
   if (showAll) {
     return (
-      <Box
+      <Stack
+        direction="row"
         sx={{
-          display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           px: 2,
@@ -44,14 +44,14 @@ export function InvoicesTableFooter({
         <Button size="small" onClick={() => setShowAll(false)}>
           Use Pagination
         </Button>
-      </Box>
+      </Stack>
     );
   }
 
   return (
-    <Box
+    <Stack
+      direction="row"
       sx={{
-        display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         borderTop: 1,
@@ -73,6 +73,6 @@ export function InvoicesTableFooter({
           Show All
         </Button>
       )}
-    </Box>
+    </Stack>
   );
 }

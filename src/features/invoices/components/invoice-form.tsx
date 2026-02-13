@@ -5,15 +5,21 @@ import * as React from "react";
 import { Alert, Box, Paper } from "@mui/material";
 
 import type { InvoiceItemGroupInput } from "@app/shared/schemas";
+import type { Client } from "@app/shared/schemas/api";
 import { PageHeader } from "@app/shared/ui/page-header";
 
+import { useInvoiceForm } from "../hooks/use-invoice-form";
+import type {
+  CreateClientMutation,
+  InvoiceFormMode,
+  InvoiceInitialData,
+  TemplateData,
+} from "../types";
 import { InlineClientDialog } from "./inline-client-dialog";
 import { InvoiceFormDetails } from "./invoice-form-details";
 import { InvoiceFormDraftBanner } from "./invoice-form-draft-banner";
 import { InvoiceFormLineItems } from "./invoice-form-line-items";
 import { InvoiceFormTotals } from "./invoice-form-totals";
-import type { CreateClientMutation, TemplateData } from "./use-invoice-form";
-import { useInvoiceForm } from "./use-invoice-form";
 
 interface ImportRenderProps {
   addGroups: (groups: InvoiceItemGroupInput[]) => void;
@@ -21,23 +27,17 @@ interface ImportRenderProps {
 }
 
 interface InvoiceFormProps {
-  mode: "create" | "edit";
+  mode: InvoiceFormMode;
   invoiceId?: string;
-  initialData?: {
-    clientId: string;
-    currency: string;
-    dueDate: string;
-    items: { description: string; quantity: number; unitPrice: number }[];
-    itemGroups?: InvoiceItemGroupInput[];
-    notes: string;
-  };
+  initialData?: InvoiceInitialData;
   templateId?: string;
-  clients?: import("@app/shared/schemas/api").Client[];
+  clients?: Client[];
   clientsLoading: boolean;
   template?: TemplateData;
   templateLoading: boolean;
   createClientMutation: CreateClientMutation;
   defaultRate?: number;
+  defaultCurrency?: string;
   renderImport?: (props: ImportRenderProps) => React.ReactNode;
 }
 
@@ -52,6 +52,7 @@ export function InvoiceForm({
   templateLoading,
   createClientMutation,
   defaultRate,
+  defaultCurrency,
   renderImport,
 }: InvoiceFormProps) {
   const form = useInvoiceForm({
@@ -65,6 +66,7 @@ export function InvoiceForm({
     templateLoading,
     createClientMutation,
     defaultRate,
+    defaultCurrency,
   });
 
   return (

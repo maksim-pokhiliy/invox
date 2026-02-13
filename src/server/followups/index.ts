@@ -1,8 +1,17 @@
 import { FollowUpMode } from "@prisma/client";
 
+import { REMINDER, REMINDER_MODE } from "@app/shared/config/config";
 import { FOLLOWUP_STATUS } from "@app/shared/config/invoice-status";
 
 import { prisma } from "@app/server/db";
+
+export function parseDelaysDays(value: unknown): number[] {
+  if (Array.isArray(value) && value.every((v): v is number => typeof v === "number")) {
+    return value;
+  }
+
+  return [...REMINDER.DEFAULT_DAYS];
+}
 
 export async function getFollowUpRule(userId: string) {
   return prisma.followUpRule.findFirst({
@@ -52,8 +61,8 @@ export async function scheduleFollowUps(
     delaysDays: number[];
   }
 ) {
-  const baseDate = rule.mode === "AFTER_SENT" ? sentAt : dueDate;
-  const delays = rule.delaysDays as number[];
+  const baseDate = rule.mode === REMINDER_MODE.AFTER_SENT ? sentAt : dueDate;
+  const delays = rule.delaysDays;
 
   const jobs = delays.map((days) => {
     const scheduledFor = new Date(baseDate);
@@ -106,7 +115,7 @@ export async function markFollowUpJobSent(jobId: string) {
   return prisma.followUpJob.update({
     where: { id: jobId },
     data: {
-      status: "SENT",
+      status: FOLLOWUP_STATUS.SENT,
       sentAt: new Date(),
     },
   });

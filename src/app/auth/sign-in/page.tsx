@@ -18,6 +18,7 @@ import {
   InputAdornment,
   Link as MuiLink,
   Paper,
+  Stack,
   TextField,
   Typography,
   useTheme,
@@ -26,10 +27,10 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { features } from "@app/shared/config/features";
+import { useToast } from "@app/shared/hooks/use-toast";
 import { SignInInput, signInSchema } from "@app/shared/schemas";
 import { LoadingButton } from "@app/shared/ui/loading-button";
 import { Logo } from "@app/shared/ui/logo";
-import { useToast } from "@app/shared/ui/toast";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -75,11 +76,11 @@ export default function SignInPage() {
   };
 
   return (
-    <Box
+    <Stack
+      direction="row"
       sx={{
         minHeight: "100vh",
         bgcolor: "background.default",
-        display: "flex",
         alignItems: "center",
         justifyContent: "center",
         py: 4,
@@ -101,7 +102,7 @@ export default function SignInPage() {
       />
 
       <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <Stack direction="column" sx={{ alignItems: "center" }}>
           <Box sx={{ mb: 4 }}>
             <Logo size="large" />
           </Box>
@@ -127,12 +128,14 @@ export default function SignInPage() {
                 error={!!errors.email}
                 helperText={errors.email?.message}
                 autoComplete="email"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EmailIcon sx={{ color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon sx={{ color: "text.secondary" }} />
+                      </InputAdornment>
+                    ),
+                  },
                 }}
               />
 
@@ -145,23 +148,25 @@ export default function SignInPage() {
                 error={!!errors.password}
                 helperText={errors.password?.message}
                 autoComplete="current-password"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LockIcon sx={{ color: "text.secondary" }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        size="small"
-                      >
-                        {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LockIcon sx={{ color: "text.secondary" }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          size="small"
+                        >
+                          {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
                 }}
               />
 
@@ -208,8 +213,8 @@ export default function SignInPage() {
               GetPaid
             </a>
           </Typography>
-        </Box>
+        </Stack>
       </Container>
-    </Box>
+    </Stack>
   );
 }

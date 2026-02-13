@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { nanoid } from "nanoid";
 
 import { NANOID } from "@app/shared/config/config";
-import { INVOICE_EVENT, INVOICE_STATUS } from "@app/shared/config/invoice-status";
+import { INVOICE_EVENT, INVOICE_STATUS, isDiscountType } from "@app/shared/config/invoice-status";
 import { calculateTotals, type DiscountInput } from "@app/shared/lib/calculations";
 import { CreateInvoiceInput, InvoiceItemInput, UpdateInvoiceInput } from "@app/shared/schemas";
 
@@ -67,9 +67,9 @@ function resolveDiscount(
     return data.discount;
   }
 
-  if (invoice.discountType && invoice.discountValue !== null) {
+  if (isDiscountType(invoice.discountType) && invoice.discountValue !== null) {
     return {
-      type: invoice.discountType as "PERCENTAGE" | "FIXED",
+      type: invoice.discountType,
       value: invoice.discountValue,
     };
   }

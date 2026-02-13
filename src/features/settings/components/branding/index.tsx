@@ -2,13 +2,13 @@
 
 import * as React from "react";
 
-import { Box, Divider, MenuItem, TextField, Typography } from "@mui/material";
+import { Divider, MenuItem, Stack, TextField, Typography } from "@mui/material";
 
 import { ApiError } from "@app/shared/api";
-import { BRANDING, FONT_FAMILY_MAP } from "@app/shared/config/config";
+import { BRANDING, FONT_FAMILY_MAP, VALIDATION } from "@app/shared/config/config";
+import { useToast } from "@app/shared/hooks/use-toast";
 import type { SenderProfile } from "@app/shared/schemas/api";
 import { LoadingButton } from "@app/shared/ui/loading-button";
-import { useToast } from "@app/shared/ui/toast";
 
 import { useUpdateSenderProfile } from "@app/features/settings";
 
@@ -84,7 +84,7 @@ export function BrandingTab({ profile }: BrandingTabProps) {
         Customize how your invoices look to clients.
       </Typography>
 
-      <Box sx={{ display: "grid", gap: 4, maxWidth: 500 }}>
+      <Stack direction="column" spacing={4} sx={{ maxWidth: 500 }}>
         <TextField
           label="Logo URL"
           value={logoUrl}
@@ -147,7 +147,7 @@ export function BrandingTab({ profile }: BrandingTabProps) {
           fullWidth
           placeholder="INV"
           helperText="Prefix for payment references (e.g., MYCO → MYCO-ABC123)"
-          slotProps={{ htmlInput: { maxLength: 10 } }}
+          slotProps={{ htmlInput: { maxLength: VALIDATION.MAX_PREFIX_LENGTH } }}
         />
         <TextField
           label="Footer Text"
@@ -158,11 +158,11 @@ export function BrandingTab({ profile }: BrandingTabProps) {
           }}
           fullWidth
           multiline
-          minRows={2}
-          maxRows={4}
+          minRows={VALIDATION.FOOTER_MIN_ROWS}
+          maxRows={VALIDATION.FOOTER_MAX_ROWS}
           placeholder="Payment instructions, thank-you note, etc."
           helperText="Shown on invoices and emails (max 500 characters)"
-          slotProps={{ htmlInput: { maxLength: 500 } }}
+          slotProps={{ htmlInput: { maxLength: VALIDATION.MAX_FOOTER_TEXT_LENGTH } }}
         />
         <Divider />
         <BrandingPreview
@@ -171,9 +171,9 @@ export function BrandingTab({ profile }: BrandingTabProps) {
           primaryColor={primaryColor}
           accentColor={accentColor}
         />
-      </Box>
+      </Stack>
 
-      <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
+      <Stack direction="row" sx={{ mt: 4, justifyContent: "flex-end" }}>
         <LoadingButton
           variant="contained"
           onClick={handleSave}
@@ -182,7 +182,7 @@ export function BrandingTab({ profile }: BrandingTabProps) {
         >
           Save Changes
         </LoadingButton>
-      </Box>
+      </Stack>
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 
 interface PageHeaderProps {
   title: React.ReactNode;
@@ -10,13 +10,12 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   return (
-    <Box
+    <Stack
+      direction={{ xs: "column", sm: "row" }}
+      spacing={2}
       sx={{
-        display: "flex",
         justifyContent: "space-between",
         alignItems: { xs: "flex-start", sm: "center" },
-        flexDirection: { xs: "column", sm: "row" },
-        gap: 2,
         mb: 3,
       }}
     >
@@ -31,10 +30,10 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
         )}
       </Box>
       {actions && (
-        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
+        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", alignItems: "center" }}>
           {actions}
-        </Box>
+        </Stack>
       )}
-    </Box>
+    </Stack>
   );
 }

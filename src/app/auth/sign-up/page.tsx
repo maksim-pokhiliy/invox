@@ -19,6 +19,7 @@ import {
   InputAdornment,
   Link as MuiLink,
   Paper,
+  Stack,
   TextField,
   Typography,
   useTheme,
@@ -29,10 +30,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiError } from "@app/shared/api/base";
 import { UI } from "@app/shared/config/config";
 import { features } from "@app/shared/config/features";
+import { useToast } from "@app/shared/hooks/use-toast";
 import { SignUpInput, signUpSchema } from "@app/shared/schemas";
 import { LoadingButton } from "@app/shared/ui/loading-button";
 import { Logo } from "@app/shared/ui/logo";
-import { useToast } from "@app/shared/ui/toast";
 
 import { authApi } from "@app/features/auth";
 
@@ -88,11 +89,11 @@ export default function SignUpPage() {
   };
 
   return (
-    <Box
+    <Stack
+      direction="row"
       sx={{
         minHeight: "100vh",
         bgcolor: "background.default",
-        display: "flex",
         alignItems: "center",
         justifyContent: "center",
         py: 4,
@@ -114,7 +115,7 @@ export default function SignUpPage() {
       />
 
       <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <Stack direction="column" sx={{ alignItems: "center" }}>
           <Box sx={{ mb: 4 }}>
             <Logo size="large" />
           </Box>
@@ -141,16 +142,18 @@ export default function SignUpPage() {
                   }}
                 >
                   {SIGN_UP_FEATURES.map((feature) => (
-                    <Box
+                    <Stack
                       key={feature}
-                      sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 0.75 }}
+                      direction="row"
+                      spacing={1.5}
+                      sx={{ alignItems: "center", py: 0.75 }}
                     >
-                      <CheckCircleIcon sx={{ fontSize: 18, color: "primary.main" }} />
+                      <CheckCircleIcon sx={{ fontSize: UI.ICON_SIZE_SM, color: "primary.main" }} />
 
                       <Typography variant="body2" color="text.secondary">
                         {feature}
                       </Typography>
-                    </Box>
+                    </Stack>
                   ))}
                 </Box>
 
@@ -164,12 +167,14 @@ export default function SignUpPage() {
                     error={!!errors.email}
                     helperText={errors.email?.message}
                     autoComplete="email"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <EmailIcon sx={{ color: "text.secondary" }} />
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <EmailIcon sx={{ color: "text.secondary" }} />
+                          </InputAdornment>
+                        ),
+                      },
                     }}
                   />
 
@@ -182,23 +187,25 @@ export default function SignUpPage() {
                     error={!!errors.password}
                     helperText={errors.password?.message || "At least 8 characters"}
                     autoComplete="new-password"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LockIcon sx={{ color: "text.secondary" }} />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                            size="small"
-                          >
-                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LockIcon sx={{ color: "text.secondary" }} />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowPassword(!showPassword)}
+                              edge="end"
+                              size="small"
+                            >
+                              {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
                     }}
                   />
 
@@ -259,8 +266,8 @@ export default function SignUpPage() {
               GetPaid
             </a>
           </Typography>
-        </Box>
+        </Stack>
       </Container>
-    </Box>
+    </Stack>
   );
 }

@@ -1,6 +1,8 @@
 export { useAutosave } from "./use-autosave";
+export { useConfirmDialog } from "./use-confirm-dialog";
 export { useCountUp } from "./use-count-up";
 export { useDebouncedValue } from "./use-debounced-value";
+export { useDragReorder } from "./use-drag-reorder";
 export { useItemMenu } from "./use-item-menu";
 export { useKeyboardShortcuts } from "./use-keyboard-shortcuts";
 export { useOptimisticDelete } from "./use-optimistic-delete";
@@ -8,5 +10,6 @@ export type { RecentItem } from "./use-recent-items";
 export { useRecentItems } from "./use-recent-items";
 export { useSort } from "./use-sort";
 export { useTableKeyboardNav } from "./use-table-keyboard-nav";
+export { useToast } from "./use-toast";
 export { useUnsavedChanges } from "./use-unsaved-changes";
 export { useVirtualList } from "./use-virtual-list";

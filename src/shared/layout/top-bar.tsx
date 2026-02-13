@@ -9,12 +9,12 @@ import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { IconButton, Stack, Tooltip } from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
 import { useCommandPalette } from "@app/shared/hooks/use-command-palette";
 
-import { useThemeMode } from "@app/providers/theme-registry";
+import { useThemeMode } from "@app/providers/theme/registry";
 
 import { AccountMenu } from "./components/account-menu";
 
@@ -47,11 +47,11 @@ export function TopBar({ onMobileMenuOpen }: TopBarProps) {
   };
 
   return (
-    <Box
+    <Stack
       component="header"
+      direction="row"
       sx={{
         height: UI.TOP_BAR_HEIGHT,
-        display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         px: 3,
@@ -60,7 +60,7 @@ export function TopBar({ onMobileMenuOpen }: TopBarProps) {
         bgcolor: "transparent",
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
         <IconButton
           onClick={onMobileMenuOpen}
           sx={{ display: { xs: "flex", md: "none" }, color: "text.secondary" }}
@@ -79,9 +79,9 @@ export function TopBar({ onMobileMenuOpen }: TopBarProps) {
             <SearchIcon fontSize="small" />
           </IconButton>
         </Tooltip>
-      </Box>
+      </Stack>
 
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+      <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
         <Tooltip title={mode === "dark" ? "Light mode" : "Dark mode"}>
           <IconButton
             size="small"
@@ -112,7 +112,7 @@ export function TopBar({ onMobileMenuOpen }: TopBarProps) {
           onSettings={handleSettings}
           onSignOut={handleSignOut}
         />
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
 }

@@ -3,40 +3,54 @@
 import { useCallback } from "react";
 
 import SaveIcon from "@mui/icons-material/Save";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
 
+import type { FormMode } from "@app/shared/config/config";
 import type { TemplateFormData } from "@app/shared/schemas";
 import { LoadingButton } from "@app/shared/ui/loading-button";
 import { PageHeader } from "@app/shared/ui/page-header";
 
+import { useTemplateForm } from "../hooks/use-template-form";
 import { TemplateFormDetails } from "./template-form-details";
 import { TemplateFormItems } from "./template-form-items";
-import { useTemplateForm } from "./use-template-form";
 
 interface TemplateFormProps {
-  mode?: "create" | "edit";
+  mode?: FormMode;
   templateId?: string;
   initialData?: TemplateFormData;
+  defaultCurrency?: string;
 }
 
-export function TemplateForm({ mode = "create", templateId, initialData }: TemplateFormProps) {
+export function TemplateForm({
+  mode = "create",
+  templateId,
+  initialData,
+  defaultCurrency,
+}: TemplateFormProps) {
   const {
     register,
     handleSubmit,
+    control,
     errors,
     fields,
     append,
     remove,
+    sensors,
+    handleDragEnd,
     currency,
     discountType,
+    duplicateItem,
+    groupFields,
+    removeGroup,
+    addGroup,
     isPending,
     isEdit,
     onSubmit,
     router,
-  } = useTemplateForm({ mode, templateId, initialData });
+  } = useTemplateForm({ mode, templateId, initialData, defaultCurrency });
 
   const handleAppend = useCallback(
-    () => append({ description: "", quantity: 1, unitPrice: 0 }),
+    () => append({ title: "", description: "", quantity: 1, unitPrice: 0 }),
     [append]
   );
 
@@ -59,14 +73,21 @@ export function TemplateForm({ mode = "create", templateId, initialData }: Templ
 
         <TemplateFormItems
           fields={fields}
+          sensors={sensors}
+          handleDragEnd={handleDragEnd}
           register={register}
+          control={control}
           errors={errors}
           currency={currency}
           onAppend={handleAppend}
           onRemove={remove}
+          onDuplicate={duplicateItem}
+          groupFields={groupFields}
+          onRemoveGroup={removeGroup}
+          onAddGroup={addGroup}
         />
 
-        <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+        <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
           <Button variant="outlined" onClick={() => router.push("/app/templates")}>
             Cancel
           </Button>
@@ -78,7 +99,7 @@ export function TemplateForm({ mode = "create", templateId, initialData }: Templ
           >
             {isEdit ? "Save Changes" : "Create Template"}
           </LoadingButton>
-        </Box>
+        </Stack>
       </Box>
     </>
   );

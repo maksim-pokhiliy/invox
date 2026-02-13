@@ -1,0 +1,42 @@
+export const CONNECTION_STATUS = {
+  ACTIVE: "active",
+  ERROR: "error",
+} as const;
+
+export type ConnectionStatusValue = (typeof CONNECTION_STATUS)[keyof typeof CONNECTION_STATUS];
+
+export const CALLBACK_STAGE = {
+  FINISH: "finish",
+  ERROR: "error",
+} as const;
+
+export type CallbackStageValue = (typeof CALLBACK_STAGE)[keyof typeof CALLBACK_STAGE];
+
+export const TRANSACTION_STATUS = {
+  PENDING: "PENDING",
+  AUTO_MATCHED: "AUTO_MATCHED",
+  CONFIRMED: "CONFIRMED",
+  IGNORED: "IGNORED",
+} as const;
+
+export type TransactionStatusValue = (typeof TRANSACTION_STATUS)[keyof typeof TRANSACTION_STATUS];
+
+export const BANKING = {
+  SALT_EDGE_BASE_URL: "https://www.saltedge.com/api/v6",
+  SYNC_INTERVAL_MINUTES: 30,
+  MATCH_AUTO_THRESHOLD: 0.9,
+  MATCH_SUGGEST_THRESHOLD: 0.5,
+  MATCH_SCORE_CURRENCY: 0.1,
+  MATCH_SCORE_REFERENCE: 0.5,
+  MATCH_SCORE_AMOUNT: 0.3,
+  MATCH_SCORE_DATE: 0.05,
+  MATCH_AMOUNT_TOLERANCE: 0.01,
+  PAYMENT_REFERENCE_LENGTH: 6,
+  PAYMENT_REFERENCE_PREFIX: "INV",
+  TRANSACTIONS_PER_PAGE: 1000,
+  TRANSACTION_HISTORY_DAYS: 90,
+  POPUP_WIDTH: 600,
+  POPUP_HEIGHT: 700,
+  CONNECT_SUCCESS_DELAY: 1500,
+  CONNECT_ERROR_DELAY: 3000,
+} as const;

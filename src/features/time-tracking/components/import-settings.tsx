@@ -13,7 +13,7 @@ import {
   TextField,
 } from "@mui/material";
 
-import { CURRENCY } from "@app/shared/config/config";
+import { CURRENCY, UI } from "@app/shared/config/config";
 
 import type { ProviderInfo } from "../api";
 import { BREAKDOWN_LABELS, RATE_SOURCE, type RateSource, ROUNDING_LABELS } from "../constants";
@@ -148,8 +148,8 @@ export function ImportSettings({
             onChange={(e) =>
               onCustomRateChange(Math.round(Number(e.target.value) * CURRENCY.CENTS_MULTIPLIER))
             }
-            inputProps={{ min: 0, step: 0.01 }}
-            sx={{ width: 120 }}
+            slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
+            sx={{ width: UI.FIELD_WIDTH_RATE }}
           />
         )}
       </Stack>

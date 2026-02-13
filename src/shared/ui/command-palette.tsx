@@ -14,6 +14,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Stack,
   TextField,
   Typography,
   useTheme,
@@ -42,7 +43,7 @@ function ShortcutBadge({ keys }: { keys: readonly string[] }) {
   const theme = useTheme();
 
   return (
-    <Box sx={{ display: "flex", gap: 0.5, ml: 2 }}>
+    <Stack direction="row" spacing={0.5} sx={{ ml: 2 }}>
       {keys.map((key) => (
         <Box
           key={key}
@@ -55,7 +56,7 @@ function ShortcutBadge({ keys }: { keys: readonly string[] }) {
             borderColor: alpha(theme.palette.text.primary, UI.ALPHA_ACTIVE),
             borderRadius: 1,
             fontFamily: "monospace",
-            fontSize: "0.7rem",
+            fontSize: "caption.fontSize",
             fontWeight: 600,
             lineHeight: 1.5,
           }}
@@ -63,7 +64,7 @@ function ShortcutBadge({ keys }: { keys: readonly string[] }) {
           {key}
         </Box>
       ))}
-    </Box>
+    </Stack>
   );
 }
 
@@ -226,13 +227,15 @@ export function CommandPalette() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={handleKeyDown}
-        inputProps={{ "aria-label": "Search commands" }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon color="action" />
-            </InputAdornment>
-          ),
+        slotProps={{
+          htmlInput: { "aria-label": "Search commands" },
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon color="action" />
+              </InputAdornment>
+            ),
+          },
         }}
         sx={{
           "& .MuiOutlinedInput-root": { borderRadius: 0, "& fieldset": { border: "none" } },

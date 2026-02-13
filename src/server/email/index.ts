@@ -5,25 +5,16 @@ import { env } from "@app/shared/config/env";
 import { formatCurrency, formatDate } from "@app/shared/lib/format";
 
 import {
+  buildBrandingHeader,
   buildEmailButton,
   buildEmailFooter,
   buildEmailLayout,
   buildInvoiceDetailsBlock,
   buildLineItemsTable,
-  buildLogoBlock,
+  buildPlainTextItems,
   type EmailItemGroup,
   type EmailLineItem,
 } from "./template";
-
-let resend: Resend | undefined;
-
-function getResend(): Resend {
-  if (!resend) {
-    resend = new Resend(env.RESEND_API_KEY);
-  }
-
-  return resend;
-}
 
 export interface EmailBranding {
   primaryColor: string;
@@ -48,31 +39,14 @@ interface InvoiceEmailData {
   itemGroups?: EmailItemGroup[];
 }
 
-function buildBrandingHeader(branding: EmailBranding): string {
-  return branding.logoUrl ? buildLogoBlock(branding.logoUrl) : "";
-}
+let resend: Resend | undefined;
 
-function formatItemLine(item: EmailLineItem, currency: string): string {
-  return `  ${item.title} — ${item.quantity} × ${formatCurrency(item.unitPrice, currency)} = ${formatCurrency(item.amount, currency)}`;
-}
-
-function buildPlainTextItems(
-  items: EmailLineItem[],
-  itemGroups: EmailItemGroup[] | undefined,
-  currency: string
-): string {
-  const lines: string[] = [];
-
-  if (itemGroups?.length) {
-    for (const group of itemGroups) {
-      lines.push(`\n  [${group.title}]`);
-      lines.push(...group.items.map((item) => formatItemLine(item, currency)));
-    }
+function getResend(): Resend {
+  if (!resend) {
+    resend = new Resend(env.RESEND_API_KEY);
   }
 
-  lines.push(...items.map((item) => formatItemLine(item, currency)));
-
-  return lines.join("\n");
+  return resend;
 }
 
 export async function sendInvoiceEmail(data: InvoiceEmailData) {
@@ -83,7 +57,7 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
   const color = data.branding.primaryColor;
 
   const bodyHtml = `
-    ${buildBrandingHeader(data.branding)}
+    ${buildBrandingHeader(data.branding.logoUrl)}
     <p>Hi ${data.clientName},</p>
     <p>You have received a new invoice for <strong>${formattedTotal}</strong>.</p>
     ${buildInvoiceDetailsBlock(formattedTotal, formattedDueDate, data.paymentReference)}
@@ -119,7 +93,7 @@ export async function sendReminderEmail(data: InvoiceEmailData & { isOverdue: bo
     : `Invoice Reminder from ${data.senderName}`;
 
   const bodyHtml = `
-    ${buildBrandingHeader(data.branding)}
+    ${buildBrandingHeader(data.branding.logoUrl)}
     <p>Hi ${data.clientName},</p>
     <p>This is a friendly reminder about an outstanding invoice for <strong>${formattedTotal}</strong>.</p>
     ${data.isOverdue ? `<p style="color: ${EMAIL.OVERDUE_COLOR};"><strong>This invoice is now overdue.</strong></p>` : ""}

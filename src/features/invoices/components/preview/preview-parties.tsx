@@ -1,6 +1,6 @@
 "use client";
 
-import { alpha, Box, Typography, useTheme } from "@mui/material";
+import { alpha, Grid, Typography, useTheme } from "@mui/material";
 
 interface PreviewPartiesProps {
   client: {
@@ -13,26 +13,25 @@ export function PreviewParties({ client }: PreviewPartiesProps) {
   const theme = useTheme();
 
   return (
-    <Box
+    <Grid
+      container
+      spacing={4}
       sx={{
-        display: "grid",
-        gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-        gap: 4,
         mb: 4,
         p: 3,
         borderRadius: 2,
         bgcolor: alpha(theme.palette.primary.main, 0.02),
       }}
     >
-      <Box>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Typography variant="overline" color="text.secondary" fontWeight={600}>
           From
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           Your business info will appear here
         </Typography>
-      </Box>
-      <Box>
+      </Grid>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Typography variant="overline" color="text.secondary" fontWeight={600}>
           Bill To
         </Typography>
@@ -42,7 +41,7 @@ export function PreviewParties({ client }: PreviewPartiesProps) {
         <Typography variant="body2" color="text.secondary">
           {client.email}
         </Typography>
-      </Box>
-    </Box>
+      </Grid>
+    </Grid>
   );
 }

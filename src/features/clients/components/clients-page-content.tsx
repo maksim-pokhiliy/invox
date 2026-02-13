@@ -3,14 +3,15 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Alert, Button } from "@mui/material";
 
+import { RESPONSIVE_SX } from "@app/shared/config/config";
 import { MobileFab } from "@app/shared/ui/mobile-fab";
 import { PageHeader } from "@app/shared/ui/page-header";
 
+import { useClientsPage } from "../hooks/use-clients-page";
 import { ClientDialog } from "./client-dialog";
 import { ClientsContent } from "./clients-content";
 import { ClientsOverflowMenu } from "./clients-overflow-menu";
 import { ClientsSearchField } from "./clients-search-field";
-import { useClientsPage } from "./use-clients-page";
 
 export function ClientsPageContent() {
   const state = useClientsPage();
@@ -25,7 +26,7 @@ export function ClientsPageContent() {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => state.setCreateDialogOpen(true)}
-            sx={{ display: { xs: "none", sm: "flex" } }}
+            sx={RESPONSIVE_SX.DESKTOP_ONLY}
           >
             Add Client
           </Button>

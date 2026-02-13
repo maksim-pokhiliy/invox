@@ -13,6 +13,7 @@ import {
   DialogTitle,
   IconButton,
   InputAdornment,
+  Stack,
   TextField,
   Typography,
   useTheme,
@@ -30,44 +31,6 @@ const shortcutEntries = Object.values(SHORTCUTS).map((s) => ({
   description: s.description,
   group: s.group,
 }));
-
-function KeyCombo({ keys }: { keys: string[] }) {
-  const theme = useTheme();
-
-  return (
-    <Box sx={{ display: "flex", gap: 0.5 }}>
-      {keys.map((key, index) => (
-        <React.Fragment key={key}>
-          <Box
-            component="kbd"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              px: 1,
-              py: 0.5,
-              minWidth: 28,
-              bgcolor: alpha(theme.palette.text.primary, UI.ALPHA_HOVER),
-              border: 1,
-              borderColor: alpha(theme.palette.text.primary, UI.ALPHA_ACTIVE),
-              borderRadius: 1,
-              fontFamily: "monospace",
-              fontSize: "0.75rem",
-              fontWeight: 600,
-            }}
-          >
-            {key}
-          </Box>
-          {index < keys.length - 1 && (
-            <Typography variant="body2" color="text.secondary" sx={{ mx: 0.25 }}>
-              +
-            </Typography>
-          )}
-        </React.Fragment>
-      ))}
-    </Box>
-  );
-}
 
 const GROUP_ORDER = ["General", "Navigation", "Actions"];
 
@@ -103,6 +66,44 @@ function useFilteredShortcuts(filter: string) {
   return { filtered, groups };
 }
 
+function KeyCombo({ keys }: { keys: string[] }) {
+  const theme = useTheme();
+
+  return (
+    <Stack direction="row" spacing={0.5}>
+      {keys.map((key, index) => (
+        <React.Fragment key={key}>
+          <Stack
+            component="kbd"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              px: 1,
+              py: 0.5,
+              minWidth: 28,
+              bgcolor: alpha(theme.palette.text.primary, UI.ALPHA_HOVER),
+              border: 1,
+              borderColor: alpha(theme.palette.text.primary, UI.ALPHA_ACTIVE),
+              borderRadius: 1,
+              fontFamily: "monospace",
+              fontSize: "caption.fontSize",
+              fontWeight: 600,
+            }}
+          >
+            {key}
+          </Stack>
+          {index < keys.length - 1 && (
+            <Typography variant="body2" color="text.secondary" sx={{ mx: 0.25 }}>
+              +
+            </Typography>
+          )}
+        </React.Fragment>
+      ))}
+    </Stack>
+  );
+}
+
 function ShortcutGroup({
   groupName,
   entries,
@@ -123,10 +124,10 @@ function ShortcutGroup({
         {groupName}
       </Typography>
       {entries.map((shortcut) => (
-        <Box
+        <Stack
           key={shortcut.description}
+          direction="row"
           sx={{
-            display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             p: 1.5,
@@ -137,7 +138,7 @@ function ShortcutGroup({
         >
           <Typography variant="body2">{shortcut.description}</Typography>
           <KeyCombo keys={shortcut.keys} />
-        </Box>
+        </Stack>
       ))}
     </Box>
   );
@@ -156,14 +157,16 @@ export function KeyboardShortcutsDialog({ open, onClose }: KeyboardShortcutsDial
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle
-        sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pb: 1 }}
+        component={Stack}
+        direction="row"
+        sx={{ alignItems: "center", justifyContent: "space-between", pb: 1 }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <KeyboardIcon fontSize="small" color="primary" />
           <Typography variant="h6" fontWeight={600}>
             Keyboard Shortcuts
           </Typography>
-        </Box>
+        </Stack>
         <IconButton size="small" onClick={onClose} aria-label="Close dialog">
           <CloseIcon fontSize="small" />
         </IconButton>
@@ -176,16 +179,18 @@ export function KeyboardShortcutsDialog({ open, onClose }: KeyboardShortcutsDial
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           sx={{ mb: 2 }}
-          inputProps={{ "aria-label": "Search shortcuts" }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon fontSize="small" color="action" />
-              </InputAdornment>
-            ),
+          slotProps={{
+            htmlInput: { "aria-label": "Search shortcuts" },
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" color="action" />
+                </InputAdornment>
+              ),
+            },
           }}
         />
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <Stack direction="column" spacing={1}>
           {GROUP_ORDER.map((groupName) => {
             const entries = groups[groupName];
 
@@ -200,7 +205,7 @@ export function KeyboardShortcutsDialog({ open, onClose }: KeyboardShortcutsDial
               No shortcuts match your search
             </Typography>
           )}
-        </Box>
+        </Stack>
       </DialogContent>
     </Dialog>
   );

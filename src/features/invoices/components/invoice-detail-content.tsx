@@ -9,9 +9,8 @@ import { STATUS_CONFIG } from "@app/shared/config/invoice-status";
 import { AppLayout } from "@app/shared/layout/app-layout";
 import type { Invoice } from "@app/shared/schemas/api";
 import { ConfirmDialog } from "@app/shared/ui/confirm-dialog";
-import { CardSkeleton } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/skeletons";
 
-import { useInvoice } from "@app/features/invoices";
 import {
   ActivityHistory,
   InvoicePreviewDialog,
@@ -20,11 +19,11 @@ import {
   PaymentHistory,
   RecordPaymentDialog,
   SendDialog,
-} from "@app/features/invoices/components";
-
+} from "../components";
+import { useInvoice } from "../hooks";
+import { useInvoiceDetail } from "../hooks/use-invoice-detail";
 import { BillingCard } from "./billing-card";
 import { DetailHeader } from "./detail-header";
-import { useInvoiceDetail } from "./use-invoice-detail";
 
 type InvoiceDetailReturn = ReturnType<typeof useInvoiceDetail>;
 

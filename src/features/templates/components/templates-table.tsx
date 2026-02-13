@@ -2,24 +2,12 @@
 
 import { Box, Chip, TableCell, Typography } from "@mui/material";
 
-import { buildDiscountInput, calculateTotals } from "@app/shared/lib/calculations";
 import { formatCurrency, formatDateCompact } from "@app/shared/lib/format";
-import {
-  DataTable,
-  DataTableActions,
-  type DataTableColumn,
-  DataTableRow,
-} from "@app/shared/ui/data-table";
+import { DataTable, DataTableActions, DataTableRow } from "@app/shared/ui/data-table";
 
 import type { Template } from "@app/features/templates";
 
-const COLUMNS: DataTableColumn[] = [
-  { id: "name", label: "Name" },
-  { id: "items", label: "Items", hideOnMobile: true },
-  { id: "total", label: "Est. Total" },
-  { id: "dueDays", label: "Due Days", sortable: false, hideOnMobile: true },
-  { id: "updatedAt", label: "Updated", hideOnMobile: true },
-];
+import { TEMPLATE_COLUMNS } from "../constants";
 
 interface TemplatesTableProps {
   templates: Template[];
@@ -42,7 +30,7 @@ export function TemplatesTable({
 }: TemplatesTableProps) {
   return (
     <DataTable
-      columns={COLUMNS}
+      columns={TEMPLATE_COLUMNS}
       sortColumn={sortColumn}
       sortDirection={sortDirection}
       onSort={onSort}
@@ -86,14 +74,4 @@ export function TemplatesTable({
       ))}
     </DataTable>
   );
-}
-
-export function calculateEstimatedTotal(template: Template) {
-  const { total } = calculateTotals(
-    template.items,
-    buildDiscountInput(template.discountType, template.discountValue),
-    template.taxRate
-  );
-
-  return total;
 }

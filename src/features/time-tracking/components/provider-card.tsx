@@ -47,16 +47,17 @@ export function ProviderCard({ providerId, providerName, connection }: ProviderC
     <>
       <Card variant="outlined" sx={{ borderRadius: 2 }}>
         <CardContent
+          component={Stack}
+          direction="row"
           sx={{
             p: 2,
             "&:last-child": { pb: 2 },
-            display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
           }}
         >
           <Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.5 }}>
               <Typography variant="subtitle2" fontWeight={600}>
                 {providerName}
               </Typography>
@@ -65,10 +66,10 @@ export function ProviderCard({ providerId, providerName, connection }: ProviderC
                   label="Connected"
                   color="success"
                   size="small"
-                  sx={{ height: 20, fontSize: "0.7rem" }}
+                  sx={{ height: 20, fontSize: "caption.fontSize" }}
                 />
               )}
-            </Box>
+            </Stack>
             <Typography variant="caption" color="text.secondary">
               {isConnected
                 ? connection.label

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { parseBody, withAuth } from "@app/shared/api/route-helpers";
-import { REMINDER } from "@app/shared/config/config";
+import { REMINDER, REMINDER_MODE } from "@app/shared/config/config";
 import { updateReminderSettingsSchema } from "@app/shared/schemas";
 
 import { createOrUpdateFollowUpRule, getFollowUpRule } from "@app/server/followups";
@@ -12,7 +12,7 @@ export const GET = withAuth(async (user) => {
   if (!rule) {
     return NextResponse.json({
       enabled: false,
-      mode: "AFTER_DUE",
+      mode: REMINDER_MODE.AFTER_DUE,
       delaysDays: [...REMINDER.DEFAULT_DAYS],
     });
   }

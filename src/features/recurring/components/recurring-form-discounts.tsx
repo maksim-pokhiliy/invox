@@ -3,8 +3,8 @@
 import type { UseFormRegister } from "react-hook-form";
 
 import {
-  Box,
   FormControl,
+  Grid,
   InputAdornment,
   InputLabel,
   MenuItem,
@@ -14,6 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 
+import { DISCOUNT_NONE, DISCOUNT_TYPE } from "@app/shared/config/invoice-status";
 import type { RecurringFormData } from "@app/shared/schemas";
 
 interface RecurringFormDiscountsProps {
@@ -34,51 +35,55 @@ export function RecurringFormDiscounts({
           Discounts & Taxes
         </Typography>
 
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
-            gap: 3,
-          }}
-        >
-          <FormControl fullWidth>
-            <InputLabel>Discount Type</InputLabel>
-            <Select {...register("discountType")} label="Discount Type" defaultValue="NONE">
-              <MenuItem value="NONE">No Discount</MenuItem>
-              <MenuItem value="PERCENTAGE">Percentage</MenuItem>
-              <MenuItem value="FIXED">Fixed Amount</MenuItem>
-            </Select>
-          </FormControl>
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <FormControl fullWidth>
+              <InputLabel>Discount Type</InputLabel>
+              <Select
+                {...register("discountType")}
+                label="Discount Type"
+                defaultValue={DISCOUNT_NONE}
+              >
+                <MenuItem value={DISCOUNT_NONE}>No Discount</MenuItem>
+                <MenuItem value={DISCOUNT_TYPE.PERCENTAGE}>Percentage</MenuItem>
+                <MenuItem value={DISCOUNT_TYPE.FIXED}>Fixed Amount</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
 
-          {discountType !== "NONE" && (
-            <TextField
-              {...register("discountValue", { valueAsNumber: true })}
-              label={discountType === "PERCENTAGE" ? "Discount %" : "Discount Amount"}
-              type="number"
-              slotProps={{
-                htmlInput: { min: 0, step: discountType === "PERCENTAGE" ? 1 : 0.01 },
-                input: {
-                  endAdornment:
-                    discountType === "PERCENTAGE" ? (
-                      <InputAdornment position="end">%</InputAdornment>
-                    ) : (
-                      <InputAdornment position="start">{currency}</InputAdornment>
-                    ),
-                },
-              }}
-            />
+          {discountType !== DISCOUNT_NONE && (
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField
+                {...register("discountValue", { valueAsNumber: true })}
+                label={discountType === DISCOUNT_TYPE.PERCENTAGE ? "Discount %" : "Discount Amount"}
+                type="number"
+                slotProps={{
+                  htmlInput: { min: 0, step: discountType === DISCOUNT_TYPE.PERCENTAGE ? 1 : 0.01 },
+                  input: {
+                    endAdornment:
+                      discountType === DISCOUNT_TYPE.PERCENTAGE ? (
+                        <InputAdornment position="end">%</InputAdornment>
+                      ) : (
+                        <InputAdornment position="start">{currency}</InputAdornment>
+                      ),
+                  },
+                }}
+              />
+            </Grid>
           )}
 
-          <TextField
-            {...register("taxRate", { valueAsNumber: true })}
-            label="Tax Rate"
-            type="number"
-            slotProps={{
-              htmlInput: { min: 0, max: 100, step: 0.1 },
-              input: { endAdornment: <InputAdornment position="end">%</InputAdornment> },
-            }}
-          />
-        </Box>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <TextField
+              {...register("taxRate", { valueAsNumber: true })}
+              label="Tax Rate"
+              type="number"
+              slotProps={{
+                htmlInput: { min: 0, max: 100, step: 0.1 },
+                input: { endAdornment: <InputAdornment position="end">%</InputAdornment> },
+              }}
+            />
+          </Grid>
+        </Grid>
       </Paper>
 
       <Paper sx={{ p: 4, borderRadius: 3, mb: 3 }}>

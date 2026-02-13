@@ -2,37 +2,11 @@
 
 import Link from "next/link";
 
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import DescriptionIcon from "@mui/icons-material/Description";
-import PeopleIcon from "@mui/icons-material/People";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import RepeatIcon from "@mui/icons-material/Repeat";
 import { alpha, Box, Button, useTheme } from "@mui/material";
 
-import { UI } from "@app/shared/config/config";
+import { RESPONSIVE_SX, UI } from "@app/shared/config/config";
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ReactNode;
-  exact?: boolean;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/app", icon: <DashboardIcon fontSize="small" />, exact: true },
-  { label: "Invoices", href: "/app/invoices", icon: <ReceiptLongIcon fontSize="small" /> },
-  { label: "Recurring", href: "/app/recurring", icon: <RepeatIcon fontSize="small" /> },
-  { label: "Clients", href: "/app/clients", icon: <PeopleIcon fontSize="small" /> },
-  { label: "Templates", href: "/app/templates", icon: <DescriptionIcon fontSize="small" /> },
-];
-
-function isNavActive(pathname: string, item: NavItem) {
-  if (item.exact) {
-    return pathname === item.href;
-  }
-
-  return pathname.startsWith(item.href);
-}
+import { isNavActive, NAV_ITEMS } from "./nav-config";
 
 interface DesktopNavProps {
   pathname: string;
@@ -42,7 +16,7 @@ export function DesktopNav({ pathname }: DesktopNavProps) {
   const theme = useTheme();
 
   return (
-    <Box sx={{ display: { xs: "none", md: "flex" }, gap: 0.5, flex: 1 }}>
+    <Box sx={{ ...RESPONSIVE_SX.DESKTOP_MD_ONLY, gap: 0.5, flex: 1 }}>
       {NAV_ITEMS.map((item) => {
         const isActive = isNavActive(pathname, item);
 
@@ -75,6 +49,3 @@ export function DesktopNav({ pathname }: DesktopNavProps) {
     </Box>
   );
 }
-
-export { isNavActive, NAV_ITEMS };
-export type { NavItem };

@@ -4,8 +4,9 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PaymentIcon from "@mui/icons-material/Payment";
 import SendIcon from "@mui/icons-material/Send";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { alpha, Box, Grid, Paper, Typography, useTheme } from "@mui/material";
+import { alpha, Grid, Paper, Stack, Typography, useTheme } from "@mui/material";
 
+import { UI } from "@app/shared/config/config";
 import { formatDate, formatDateTime } from "@app/shared/lib/format";
 
 interface InvoiceTimelineProps {
@@ -38,12 +39,12 @@ export function InvoiceTimeline({
     >
       <Grid container spacing={3}>
         <Grid size={{ xs: 6, sm: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-            <AccessTimeIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.5 }}>
+            <AccessTimeIcon sx={{ fontSize: UI.ICON_SIZE_SM, color: "text.secondary" }} />
             <Typography variant="caption" color="text.secondary" fontWeight={600}>
               DUE DATE
             </Typography>
-          </Box>
+          </Stack>
           <Typography
             variant="body1"
             fontWeight={600}
@@ -53,12 +54,14 @@ export function InvoiceTimeline({
           </Typography>
         </Grid>
         <Grid size={{ xs: 6, sm: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-            <SendIcon sx={{ fontSize: 18, color: sentAt ? "success.main" : "text.disabled" }} />
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.5 }}>
+            <SendIcon
+              sx={{ fontSize: UI.ICON_SIZE_SM, color: sentAt ? "success.main" : "text.disabled" }}
+            />
             <Typography variant="caption" color="text.secondary" fontWeight={600}>
               SENT
             </Typography>
-          </Box>
+          </Stack>
           <Typography
             variant="body1"
             fontWeight={500}
@@ -68,14 +71,14 @@ export function InvoiceTimeline({
           </Typography>
         </Grid>
         <Grid size={{ xs: 6, sm: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.5 }}>
             <VisibilityIcon
-              sx={{ fontSize: 18, color: viewedAt ? "info.main" : "text.disabled" }}
+              sx={{ fontSize: UI.ICON_SIZE_SM, color: viewedAt ? "info.main" : "text.disabled" }}
             />
             <Typography variant="caption" color="text.secondary" fontWeight={600}>
               VIEWED
             </Typography>
-          </Box>
+          </Stack>
           <Typography
             variant="body1"
             fontWeight={500}
@@ -85,12 +88,14 @@ export function InvoiceTimeline({
           </Typography>
         </Grid>
         <Grid size={{ xs: 6, sm: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-            <PaymentIcon sx={{ fontSize: 18, color: paidAt ? "success.main" : "text.disabled" }} />
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.5 }}>
+            <PaymentIcon
+              sx={{ fontSize: UI.ICON_SIZE_SM, color: paidAt ? "success.main" : "text.disabled" }}
+            />
             <Typography variant="caption" color="text.secondary" fontWeight={600}>
               PAID
             </Typography>
-          </Box>
+          </Stack>
           <Typography
             variant="body1"
             fontWeight={500}

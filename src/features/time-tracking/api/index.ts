@@ -9,20 +9,22 @@ export interface TimeTrackingConnection {
   lastUsedAt: string | null;
 }
 
+export interface ProviderCapabilities {
+  breakdownOptions: string[];
+  allowedCombinations: Record<string, string[]>;
+  roundingOptions: number[];
+  roundingDirections: string[];
+  hasClients: boolean;
+  hasTasks: boolean;
+  hasBillableRates: boolean;
+  hasCurrency: boolean;
+  hasProjects: boolean;
+}
+
 export interface ProviderInfo {
   id: string;
   name: string;
-  capabilities: {
-    breakdownOptions: string[];
-    allowedCombinations: Record<string, string[]>;
-    roundingOptions: number[];
-    roundingDirections: string[];
-    hasClients: boolean;
-    hasTasks: boolean;
-    hasBillableRates: boolean;
-    hasCurrency: boolean;
-    hasProjects: boolean;
-  };
+  capabilities: ProviderCapabilities;
 }
 
 export interface Workspace {
@@ -80,6 +82,22 @@ export interface TimeEntriesSearchInput {
   subGrouping: string;
   roundingMinutes?: number;
   billableOnly?: boolean;
+}
+
+export interface Selection {
+  [groupId: string]: Set<string>;
+}
+
+export interface ImportedItem {
+  title: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface ImportedGroup {
+  title: string;
+  items: ImportedItem[];
 }
 
 export const timeTrackingApi = {

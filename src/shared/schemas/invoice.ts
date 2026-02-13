@@ -1,23 +1,16 @@
 import { z } from "zod";
 
-export const invoiceItemSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
-  quantity: z.number().min(0.01, "Quantity is required"),
-  unitPrice: z.number().min(0, "Unit price must be non-negative"),
-  sortOrder: z.number().int().optional(),
-});
+import { BRANDING, INVOICE } from "@app/shared/config/config";
+import { DISCOUNT_TYPE } from "@app/shared/config/invoice-status";
 
-export const invoiceItemGroupSchema = z.object({
-  title: z.string().min(1, "Group title is required"),
-  sortOrder: z.number().int().optional(),
-  items: z.array(invoiceItemSchema),
-});
+import { lineItemGroupSchema, lineItemSchema } from "./line-item";
+
+export const invoiceItemSchema = lineItemSchema;
+export const invoiceItemGroupSchema = lineItemGroupSchema;
 
 const tagSchema = z.string().min(1).max(30);
 
-export const discountTypeSchema = z.enum(["PERCENTAGE", "FIXED"]);
-export type DiscountType = z.infer<typeof discountTypeSchema>;
+export const discountTypeSchema = z.nativeEnum(DISCOUNT_TYPE);
 
 export const discountSchema = z
   .object({
@@ -37,7 +30,7 @@ export const invoiceFormSchema = z
     notes: z.string().optional(),
     tags: z.array(tagSchema).optional(),
     discount: discountSchema,
-    taxRate: z.number().min(0).max(100).optional(),
+    taxRate: z.number().min(0).max(INVOICE.MAX_TAX_RATE).optional(),
   })
   .refine(
     (data) => {
@@ -52,7 +45,7 @@ export const invoiceFormSchema = z
 export const createInvoiceSchema = z
   .object({
     clientId: z.string().min(1, "Client is required"),
-    currency: z.string().default("USD"),
+    currency: z.string().default(BRANDING.DEFAULT_CURRENCY),
     dueDate: z
       .string()
       .or(z.date())
@@ -62,7 +55,7 @@ export const createInvoiceSchema = z
     notes: z.string().optional(),
     tags: z.array(tagSchema).optional(),
     discount: discountSchema,
-    taxRate: z.number().min(0).max(100).optional(),
+    taxRate: z.number().min(0).max(INVOICE.MAX_TAX_RATE).optional(),
   })
   .refine(
     (data) => {
@@ -87,9 +80,10 @@ export const updateInvoiceSchema = z.object({
   notes: z.string().optional().nullable(),
   tags: z.array(tagSchema).optional(),
   discount: discountSchema,
-  taxRate: z.number().min(0).max(100).optional(),
+  taxRate: z.number().min(0).max(INVOICE.MAX_TAX_RATE).optional(),
 });
 
+export type DiscountType = z.infer<typeof discountTypeSchema>;
 export type InvoiceItemInput = z.infer<typeof invoiceItemSchema>;
 export type InvoiceItemGroupInput = z.infer<typeof invoiceItemGroupSchema>;
 export type InvoiceFormInput = z.infer<typeof invoiceFormSchema>;

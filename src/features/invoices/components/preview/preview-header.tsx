@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Chip, Typography } from "@mui/material";
+import { Box, Chip, Stack, Typography } from "@mui/material";
 
 interface PreviewHeaderProps {
   publicId: string;
@@ -8,7 +8,7 @@ interface PreviewHeaderProps {
 
 export function PreviewHeader({ publicId }: PreviewHeaderProps) {
   return (
-    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 4 }}>
+    <Stack direction="row" sx={{ justifyContent: "space-between", mb: 4 }}>
       <Box>
         <Typography variant="h4" fontWeight={700}>
           Invoice
@@ -18,6 +18,6 @@ export function PreviewHeader({ publicId }: PreviewHeaderProps) {
         </Typography>
       </Box>
       <Chip label="Draft" color="default" />
-    </Box>
+    </Stack>
   );
 }

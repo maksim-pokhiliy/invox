@@ -2,11 +2,12 @@
 
 import AddIcon from "@mui/icons-material/Add";
 import DescriptionIcon from "@mui/icons-material/Description";
-import { Button, Paper } from "@mui/material";
+import { Button } from "@mui/material";
 
-import { EmptyState, NoResults } from "@app/shared/ui/empty-state";
+import { EmptyState } from "@app/shared/ui/empty-state";
 import { EmptyTemplatesIllustration } from "@app/shared/ui/illustrations/empty-templates";
-import { TableSkeleton } from "@app/shared/ui/loading";
+import { NoResults } from "@app/shared/ui/no-results";
+import { TableSkeleton } from "@app/shared/ui/skeletons";
 
 import type { Template } from "@app/features/templates";
 
@@ -42,11 +43,7 @@ export function TemplatesContent({
   onSort,
 }: TemplatesContentProps) {
   if (isLoading) {
-    return (
-      <Paper sx={{ p: 3, borderRadius: 3 }}>
-        <TableSkeleton rows={3} columns={5} />
-      </Paper>
-    );
+    return <TableSkeleton rows={3} columns={5} />;
   }
 
   if (allTemplatesCount > 0 && templates && templates.length === 0 && searchQuery) {
@@ -69,7 +66,7 @@ export function TemplatesContent({
 
   return (
     <EmptyState
-      icon={<DescriptionIcon sx={{ fontSize: 40, color: "primary.main" }} />}
+      icon={<DescriptionIcon />}
       illustration={<EmptyTemplatesIllustration />}
       title="No templates yet"
       description="Create a template to quickly generate invoices with predefined items"

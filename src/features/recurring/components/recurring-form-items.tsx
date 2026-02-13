@@ -1,46 +1,57 @@
 "use client";
 
-import type { FieldArrayWithId, FieldErrors, UseFormRegister } from "react-hook-form";
+import type { Control, FieldArrayWithId, FieldErrors, UseFormRegister } from "react-hook-form";
 
 import AddIcon from "@mui/icons-material/Add";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DeleteIcon from "@mui/icons-material/Delete";
+import PlaylistAddIcon from "@mui/icons-material/PlaylistAdd";
+import { alpha, Button, Divider, Paper, Stack, Typography, useTheme } from "@mui/material";
+
 import {
-  alpha,
-  Box,
-  Button,
-  Divider,
-  IconButton,
-  InputAdornment,
-  Paper,
-  TextField,
-  Tooltip,
-  Typography,
-  useTheme,
-} from "@mui/material";
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  type SensorDescriptor,
+  type SensorOptions,
+} from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
 import type { RecurringFormData } from "@app/shared/schemas";
+import { FormItemGroup } from "@app/shared/ui/form-item-group";
+import { LineItemRow } from "@app/shared/ui/line-item-row";
+import { SortableLineItem } from "@app/shared/ui/sortable-line-item";
 
 interface RecurringFormItemsProps {
   fields: FieldArrayWithId<RecurringFormData, "items", "id">[];
+  sensors: SensorDescriptor<SensorOptions>[];
+  handleDragEnd: (event: DragEndEvent) => void;
   register: UseFormRegister<RecurringFormData>;
+  control: Control<RecurringFormData>;
   errors: FieldErrors<RecurringFormData>;
   currency: string;
   subtotal: number;
   onAppend: () => void;
   onRemove: (index: number) => void;
   onDuplicate: (index: number) => void;
+  groupFields: FieldArrayWithId<RecurringFormData, "itemGroups", "id">[];
+  onRemoveGroup: (index: number) => void;
+  onAddGroup: () => void;
 }
 
 export function RecurringFormItems({
   fields,
+  sensors,
+  handleDragEnd,
   register,
+  control,
   errors,
   currency,
   subtotal,
   onAppend,
   onRemove,
   onDuplicate,
+  groupFields,
+  onRemoveGroup,
+  onAddGroup,
 }: RecurringFormItemsProps) {
   const theme = useTheme();
 
@@ -50,69 +61,68 @@ export function RecurringFormItems({
         Line Items
       </Typography>
 
-      {fields.map((field, index) => (
-        <Box
-          key={field.id}
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "2fr 1fr 1fr auto" },
-            gap: 2,
-            mb: 2,
-            p: 2,
-            borderRadius: 2,
-            bgcolor: alpha(theme.palette.background.default, 0.5),
-          }}
-        >
-          <TextField
-            {...register(`items.${index}.description`)}
-            label="Description"
-            size="small"
-            error={!!errors.items?.[index]?.description}
-            helperText={errors.items?.[index]?.description?.message}
-          />
-          <TextField
-            {...register(`items.${index}.quantity`, { valueAsNumber: true })}
-            label="Quantity"
-            type="number"
-            size="small"
-            slotProps={{ htmlInput: { min: 1 } }}
-          />
-          <TextField
-            {...register(`items.${index}.unitPrice`, { valueAsNumber: true })}
-            label="Unit Price"
-            type="number"
-            size="small"
-            slotProps={{
-              htmlInput: { min: 0, step: 0.01 },
-              input: {
-                startAdornment: <InputAdornment position="start">{currency}</InputAdornment>,
-              },
-            }}
-          />
-          <Box sx={{ display: "flex", gap: 0.5, alignSelf: "center" }}>
-            <Tooltip title="Duplicate item">
-              <IconButton onClick={() => onDuplicate(index)}>
-                <ContentCopyIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Remove item">
-              <span>
-                <IconButton onClick={() => onRemove(index)} disabled={fields.length === 1}>
-                  <DeleteIcon />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Box>
-        </Box>
-      ))}
+      {groupFields.length > 0 && (
+        <Stack sx={{ mb: 3 }} spacing={0}>
+          {groupFields.map((group, gi) => (
+            <FormItemGroup
+              key={group.id}
+              groupIndex={gi}
+              control={control}
+              register={register}
+              currency={currency}
+              onRemoveGroup={() => onRemoveGroup(gi)}
+              canDeleteGroup={fields.length > 0 || groupFields.length > 1}
+            />
+          ))}
+        </Stack>
+      )}
 
-      <Button variant="outlined" startIcon={<AddIcon />} onClick={onAppend}>
-        Add Item
-      </Button>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
+          {fields.map((field, index) => (
+            <SortableLineItem key={field.id} id={field.id}>
+              {({ isDragging, dragHandle }) => (
+                <LineItemRow
+                  titleField={register(`items.${index}.title`)}
+                  titleError={errors.items?.[index]?.title}
+                  descriptionField={register(`items.${index}.description`)}
+                  quantityField={register(`items.${index}.quantity`, { valueAsNumber: true })}
+                  quantityError={errors.items?.[index]?.quantity}
+                  unitPriceField={register(`items.${index}.unitPrice`, { valueAsNumber: true })}
+                  unitPriceError={errors.items?.[index]?.unitPrice}
+                  currency={currency}
+                  onRemove={() => onRemove(index)}
+                  canRemove={fields.length > 1 || groupFields.length > 0}
+                  onDuplicate={() => onDuplicate(index)}
+                  dragHandle={dragHandle}
+                  sx={{
+                    mb: 2,
+                    p: 1,
+                    borderRadius: 2,
+                    bgcolor: isDragging
+                      ? alpha(theme.palette.primary.main, 0.08)
+                      : alpha(theme.palette.primary.main, 0.02),
+                    cursor: isDragging ? "grabbing" : "default",
+                  }}
+                />
+              )}
+            </SortableLineItem>
+          ))}
+        </SortableContext>
+      </DndContext>
+
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ mt: 1 }}>
+        <Button variant="outlined" startIcon={<AddIcon />} onClick={onAppend}>
+          Add Line Item
+        </Button>
+        <Button variant="outlined" startIcon={<PlaylistAddIcon />} onClick={onAddGroup}>
+          Add Group
+        </Button>
+      </Stack>
 
       <Divider sx={{ my: 3 }} />
 
-      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+      <Stack direction="row" sx={{ justifyContent: "flex-end" }}>
         <Typography variant="body1">
           Subtotal:{" "}
           <strong>
@@ -122,7 +132,7 @@ export function RecurringFormItems({
             }).format(subtotal)}
           </strong>
         </Typography>
-      </Box>
+      </Stack>
     </Paper>
   );
 }

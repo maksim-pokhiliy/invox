@@ -1,7 +1,9 @@
 "use client";
 
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import { Box, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
+
+import { UI } from "@app/shared/config/config";
 
 interface InvoiceHeaderProps {
   logoUrl: string | null;
@@ -17,12 +19,12 @@ export function InvoiceHeader({
   accentColor,
 }: InvoiceHeaderProps) {
   return (
-    <Box
+    <Stack
+      direction="row"
+      spacing={1}
       sx={{
-        display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 1,
         mb: 4,
         "@media print": { display: "none" },
       }}
@@ -43,7 +45,7 @@ export function InvoiceHeader({
         />
       ) : (
         <>
-          <ReceiptLongIcon sx={{ color: primaryColor, fontSize: 28 }} />
+          <ReceiptLongIcon sx={{ color: primaryColor, fontSize: UI.ICON_SIZE_MD }} />
           <Typography
             variant="h5"
             fontWeight={700}
@@ -58,6 +60,6 @@ export function InvoiceHeader({
           </Typography>
         </>
       )}
-    </Box>
+    </Stack>
   );
 }

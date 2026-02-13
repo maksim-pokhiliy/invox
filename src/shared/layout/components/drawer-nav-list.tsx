@@ -10,7 +10,9 @@ import {
   useTheme,
 } from "@mui/material";
 
-import { isNavActive, NAV_ITEMS } from "./desktop-nav";
+import { UI } from "@app/shared/config/config";
+
+import { isNavActive, NAV_ITEMS } from "./nav-config";
 
 interface DrawerNavListProps {
   pathname: string;
@@ -32,7 +34,9 @@ export function DrawerNavList({ pathname, onNavigate }: DrawerNavListProps) {
               sx={{
                 borderRadius: 2,
                 mb: 0.5,
-                bgcolor: isActive ? alpha(theme.palette.primary.main, 0.08) : "transparent",
+                bgcolor: isActive
+                  ? alpha(theme.palette.primary.main, UI.ALPHA_MEDIUM)
+                  : "transparent",
               }}
             >
               <ListItemIcon sx={{ color: isActive ? "primary.main" : "text.secondary" }}>
@@ -40,9 +44,11 @@ export function DrawerNavList({ pathname, onNavigate }: DrawerNavListProps) {
               </ListItemIcon>
               <ListItemText
                 primary={item.label}
-                primaryTypographyProps={{
-                  fontWeight: isActive ? 600 : 500,
-                  color: isActive ? "primary.main" : "text.primary",
+                slotProps={{
+                  primary: {
+                    fontWeight: isActive ? 600 : 500,
+                    color: isActive ? "primary.main" : "text.primary",
+                  },
                 }}
               />
             </ListItemButton>

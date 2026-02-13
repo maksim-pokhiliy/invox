@@ -2,32 +2,22 @@
 
 import AddIcon from "@mui/icons-material/Add";
 import RepeatIcon from "@mui/icons-material/Repeat";
-import { alpha, Box, Button, Chip, Paper, TableCell, Typography, useTheme } from "@mui/material";
+import { alpha, Box, Button, Chip, Stack, TableCell, Typography, useTheme } from "@mui/material";
 
-import { UI } from "@app/shared/config/config";
+import { RESPONSIVE_SX, UI } from "@app/shared/config/config";
 import { formatCurrency, formatDateCompact } from "@app/shared/lib/format";
-import {
-  DataTable,
-  DataTableActions,
-  type DataTableColumn,
-  DataTableRow,
-} from "@app/shared/ui/data-table";
-import { EmptyState, NoResults } from "@app/shared/ui/empty-state";
+import { DataTable, DataTableActions, DataTableRow } from "@app/shared/ui/data-table";
+import { EmptyState } from "@app/shared/ui/empty-state";
 import { EmptyRecurringIllustration } from "@app/shared/ui/illustrations/empty-recurring";
-import { TableSkeleton } from "@app/shared/ui/loading";
+import { NoResults } from "@app/shared/ui/no-results";
+import { TableSkeleton } from "@app/shared/ui/skeletons";
 
-import type { RecurringInvoice } from "@app/features/recurring";
-
-import { RECURRING_FREQUENCY_LABELS, RECURRING_STATUS_CONFIG } from "../constants";
-
-const COLUMNS: DataTableColumn[] = [
-  { id: "name", label: "Name" },
-  { id: "client", label: "Client", hideOnMobile: true },
-  { id: "frequency", label: "Frequency", hideOnMobile: true },
-  { id: "total", label: "Amount" },
-  { id: "nextRunAt", label: "Next Run", hideOnMobile: true },
-  { id: "status", label: "Status" },
-];
+import type { RecurringInvoice } from "..";
+import {
+  RECURRING_COLUMNS,
+  RECURRING_FREQUENCY_LABELS,
+  RECURRING_STATUS_CONFIG,
+} from "../constants";
 
 interface RecurringContentProps {
   isLoading: boolean;
@@ -63,11 +53,7 @@ export function RecurringContent({
   const theme = useTheme();
 
   if (isLoading) {
-    return (
-      <Paper sx={{ p: 3, borderRadius: 3 }}>
-        <TableSkeleton rows={5} columns={7} />
-      </Paper>
-    );
+    return <TableSkeleton rows={5} columns={7} />;
   }
 
   if (recurring && recurring.length > 0 && filteredRecurring.length === 0 && searchQuery) {
@@ -82,7 +68,7 @@ export function RecurringContent({
 
     return (
       <DataTable
-        columns={COLUMNS}
+        columns={RECURRING_COLUMNS}
         pagination={{
           page,
           rowsPerPage,
@@ -94,19 +80,19 @@ export function RecurringContent({
         {paginatedRecurring.map((item) => (
           <DataTableRow key={item.id} onClick={() => onRowClick(item.id)}>
             <TableCell>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                 <Box
                   sx={{
-                    width: 36,
-                    height: 36,
+                    ...RESPONSIVE_SX.DESKTOP_ONLY,
+                    width: UI.ICON_BADGE_SIZE,
+                    height: UI.ICON_BADGE_SIZE,
                     borderRadius: 1.5,
                     bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_MUTED),
-                    display: { xs: "none", sm: "flex" },
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <RepeatIcon sx={{ fontSize: 18, color: "primary.main" }} />
+                  <RepeatIcon sx={{ fontSize: UI.ICON_SIZE_SM, color: "primary.main" }} />
                 </Box>
                 <Box>
                   <Typography fontWeight={500}>{item.name}</Typography>
@@ -118,7 +104,7 @@ export function RecurringContent({
                     {item.client.name}
                   </Typography>
                 </Box>
-              </Box>
+              </Stack>
             </TableCell>
             <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
               <Typography variant="body2">{item.client.name}</Typography>
@@ -158,7 +144,7 @@ export function RecurringContent({
 
   return (
     <EmptyState
-      icon={<RepeatIcon sx={{ fontSize: 40, color: "primary.main" }} />}
+      icon={<RepeatIcon />}
       illustration={<EmptyRecurringIllustration />}
       title="No recurring invoices yet"
       description="Set up automatic invoice generation for regular clients"

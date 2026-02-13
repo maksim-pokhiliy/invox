@@ -1,9 +1,17 @@
-import { CURRENCY } from "@app/shared/config/config";
+import { CALLBACK_STAGE, CONNECTION_STATUS, CURRENCY } from "@app/shared/config/config";
 
 import { prisma } from "@app/server/db";
 
 import * as saltEdge from "./salt-edge-client";
 import { syncTransactions } from "./sync";
+
+interface CallbackBody {
+  data: {
+    connection_id: string;
+    customer_id: string;
+    stage: string;
+  };
+}
 
 export async function ensureCustomer(userId: string): Promise<string> {
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
@@ -48,7 +56,7 @@ export async function handleConnectionSuccess(saltEdgeConnectionId: string, user
       provider: connection.provider_code,
       providerName: connection.provider_name,
       country: connection.country_code,
-      status: "active",
+      status: CONNECTION_STATUS.ACTIVE,
       accounts: {
         create: accounts.map((account) => ({
           saltEdgeAccountId: account.id,
@@ -141,14 +149,6 @@ export async function refreshConnectionById(connectionId: string, userId: string
   return { success: true };
 }
 
-interface CallbackBody {
-  data: {
-    connection_id: string;
-    customer_id: string;
-    stage: string;
-  };
-}
-
 export async function handleCallback(body: CallbackBody) {
   const data = body.data;
 
@@ -166,13 +166,13 @@ export async function handleCallback(body: CallbackBody) {
     return;
   }
 
-  if (data.stage === "finish") {
+  if (data.stage === CALLBACK_STAGE.FINISH) {
     const connection = await handleConnectionSuccess(data.connection_id, user.id);
 
     await syncTransactions(connection.id);
   }
 
-  if (data.stage === "error") {
+  if (data.stage === CALLBACK_STAGE.ERROR) {
     const existing = await prisma.bankConnection.findUnique({
       where: { saltEdgeConnectionId: data.connection_id },
     });
@@ -180,7 +180,7 @@ export async function handleCallback(body: CallbackBody) {
     if (existing) {
       await prisma.bankConnection.update({
         where: { id: existing.id },
-        data: { status: "error" },
+        data: { status: CONNECTION_STATUS.ERROR },
       });
     }
   }

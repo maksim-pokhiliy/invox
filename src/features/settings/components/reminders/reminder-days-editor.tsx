@@ -6,18 +6,16 @@ import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import {
   alpha,
-  Box,
   Chip,
   IconButton,
+  Stack,
   TextField,
   Tooltip,
   Typography,
   useTheme,
 } from "@mui/material";
 
-const MAX_REMINDER_DAYS = 5;
-const MIN_DAY = 1;
-const MAX_DAY = 90;
+import { REMINDER, UI } from "@app/shared/config/config";
 
 interface ReminderDaysEditorProps {
   days: number[];
@@ -36,7 +34,12 @@ export function ReminderDaysEditor({
   const handleAddDay = () => {
     const day = parseInt(newDayInput, 10);
 
-    if (!isNaN(day) && day >= MIN_DAY && day <= MAX_DAY && !days.includes(day)) {
+    if (
+      !isNaN(day) &&
+      day >= REMINDER.MIN_DAYS &&
+      day <= REMINDER.MAX_DAYS &&
+      !days.includes(day)
+    ) {
       onDaysChange([...days, day].sort((a, b) => a - b));
       setNewDayInput("");
     }
@@ -57,7 +60,7 @@ export function ReminderDaysEditor({
         Reminders will be sent on these days {daysDescription}
       </Typography>
 
-      <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+      <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", mb: 2 }}>
         {days.map((day) => (
           <Chip
             key={day}
@@ -73,9 +76,9 @@ export function ReminderDaysEditor({
             }}
           />
         ))}
-      </Box>
+      </Stack>
 
-      <Box sx={{ display: "flex", gap: 1, alignItems: "center", maxWidth: 200 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center", maxWidth: 200 }}>
         <TextField
           size="small"
           type="number"
@@ -88,22 +91,23 @@ export function ReminderDaysEditor({
               handleAddDay();
             }
           }}
-          slotProps={{ htmlInput: { min: MIN_DAY, max: MAX_DAY } }}
-          sx={{ width: 100 }}
+          slotProps={{ htmlInput: { min: REMINDER.MIN_DAYS, max: REMINDER.MAX_DAYS } }}
+          sx={{ width: UI.FIELD_WIDTH_REMINDER }}
         />
         <Tooltip title="Add reminder day">
           <IconButton
             onClick={handleAddDay}
             color="primary"
             size="small"
-            disabled={days.length >= MAX_REMINDER_DAYS}
+            disabled={days.length >= REMINDER.MAX_REMINDER_COUNT}
           >
             <AddIcon />
           </IconButton>
         </Tooltip>
-      </Box>
+      </Stack>
       <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-        Maximum {MAX_REMINDER_DAYS} reminder days ({MIN_DAY}-{MAX_DAY} days)
+        Maximum {REMINDER.MAX_REMINDER_COUNT} reminder days ({REMINDER.MIN_DAYS}-{REMINDER.MAX_DAYS}{" "}
+        days)
       </Typography>
     </>
   );

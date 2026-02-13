@@ -12,10 +12,43 @@ export const CACHE = {
   GC_TIME: 5 * TIME.MINUTE,
 } as const;
 
+export const CURRENCY = {
+  CENTS_MULTIPLIER: 100,
+} as const;
+
+export const NANOID = {
+  PUBLIC_ID_LENGTH: 10,
+} as const;
+
 export const INVOICE = {
   DEFAULT_DUE_DAYS: 30,
   MAX_TAX_RATE: 100,
   MIN_TAX_RATE: 0,
+} as const;
+
+export const AUTH = {
+  STATE_MAX_AGE: 10 * TIME.MINUTE,
+  BCRYPT_ROUNDS: 12,
+} as const;
+
+export const EDITIONS = ["community", "pro"] as const;
+
+export const PAGINATION = {
+  DEFAULT_PAGE_SIZE: 10,
+  PAGE_SIZE_OPTIONS: [10, 25, 50, 100] as const,
+} as const;
+
+export const SEARCH = {
+  DEBOUNCE_MS: 300,
+} as const;
+
+export const VALIDATION = {
+  MAX_DUE_DAYS: 365,
+  STATE_LENGTH: 16,
+  MAX_PREFIX_LENGTH: 10,
+  MAX_FOOTER_TEXT_LENGTH: 500,
+  FOOTER_MIN_ROWS: 2,
+  FOOTER_MAX_ROWS: 4,
 } as const;
 
 export const AUTOSAVE = {
@@ -26,21 +59,12 @@ export const SORT_ORDER = {
   GAP: 10,
 } as const;
 
-export const EDITIONS = ["community", "pro"] as const;
-
-export const AUTH = {
-  STATE_MAX_AGE: 10 * TIME.MINUTE,
-  BCRYPT_ROUNDS: 12,
+export const REMINDER_MODE = {
+  AFTER_SENT: "AFTER_SENT",
+  AFTER_DUE: "AFTER_DUE",
 } as const;
 
-export const PAGINATION = {
-  DEFAULT_PAGE_SIZE: 10,
-  PAGE_SIZE_OPTIONS: [10, 25, 50, 100] as const,
-} as const;
-
-export const VIRTUALIZATION = {
-  ROW_HEIGHT: 65,
-} as const;
+export type ReminderModeValue = (typeof REMINDER_MODE)[keyof typeof REMINDER_MODE];
 
 export const REMINDER = {
   DEFAULT_DAYS: [1, 3, 7] as const,
@@ -49,226 +73,19 @@ export const REMINDER = {
   MAX_REMINDER_COUNT: 5,
 } as const;
 
-export const VALIDATION = {
-  MAX_DUE_DAYS: 365,
-  STATE_LENGTH: 16,
-} as const;
+export type FormMode = "create" | "edit";
 
-export const NANOID = {
-  PUBLIC_ID_LENGTH: 10,
-} as const;
-
-export const CURRENCY = {
-  CENTS_MULTIPLIER: 100,
-} as const;
-
-export const BANKING = {
-  SALT_EDGE_BASE_URL: "https://www.saltedge.com/api/v6",
-  SYNC_INTERVAL_MINUTES: 30,
-  MATCH_AUTO_THRESHOLD: 0.9,
-  MATCH_SUGGEST_THRESHOLD: 0.5,
-  MATCH_SCORE_CURRENCY: 0.1,
-  MATCH_SCORE_REFERENCE: 0.5,
-  MATCH_SCORE_AMOUNT: 0.3,
-  MATCH_SCORE_DATE: 0.05,
-  MATCH_AMOUNT_TOLERANCE: 0.01,
-  PAYMENT_REFERENCE_LENGTH: 6,
-  PAYMENT_REFERENCE_PREFIX: "INV",
-  TRANSACTIONS_PER_PAGE: 1000,
-  TRANSACTION_HISTORY_DAYS: 90,
-  POPUP_WIDTH: 600,
-  POPUP_HEIGHT: 700,
-  CONNECT_SUCCESS_DELAY: 1500,
-  CONNECT_ERROR_DELAY: 3000,
-} as const;
-
-export const TIME_TRACKING = {
-  TOGGL_API_BASE_URL: "https://api.track.toggl.com/api/v9",
-  TOGGL_REPORTS_BASE_URL: "https://api.track.toggl.com/reports/api/v3",
-  ROUNDING_OPTIONS: [0, 1, 5, 6, 10, 12, 15, 30, 60] as readonly number[],
-  SECONDS_PER_HOUR: 3600,
-  IMPORT_DRAWER_WIDTH: 1000,
-  DEFAULT_DATE_RANGE_DAYS: 30,
-} as const;
-
-export const SEARCH = {
-  DEBOUNCE_MS: 300,
-} as const;
-
-export const ANIMATION = {
-  FAST: 150,
-  NORMAL: 300,
-  SLOW: 500,
-  STAGGER: 50,
-  MICRO: 120,
-  BUTTON_PRESS_SCALE: 0.98,
-} as const;
-
-export const SHORTCUTS = {
-  COMMAND_PALETTE: {
-    key: "k",
-    ctrl: true,
-    keys: ["Ctrl", "K"],
-    description: "Open command palette",
-    group: "General",
-  },
-  SHORTCUTS_DIALOG: {
-    key: "?",
-    keys: ["?"],
-    description: "Show keyboard shortcuts",
-    group: "General",
-  },
-  NEW_INVOICE: {
-    key: "n",
-    ctrl: true,
-    keys: ["Ctrl", "N"],
-    description: "Create new invoice",
-    group: "Actions",
-  },
-  GO_DASHBOARD: {
-    key: "d",
-    ctrl: true,
-    shift: true,
-    keys: ["Ctrl", "Shift", "D"],
-    description: "Go to dashboard",
-    group: "Navigation",
-  },
-  GO_INVOICES: {
-    key: "g",
-    ctrl: true,
-    shift: true,
-    keys: ["Ctrl", "Shift", "G"],
-    description: "Go to invoices",
-    group: "Navigation",
-  },
-  GO_CLIENTS: {
-    key: "c",
-    ctrl: true,
-    shift: true,
-    keys: ["Ctrl", "Shift", "C"],
-    description: "Go to clients",
-    group: "Navigation",
-  },
-  GO_TEMPLATES: {
-    key: "t",
-    ctrl: true,
-    shift: true,
-    keys: ["Ctrl", "Shift", "T"],
-    description: "Go to templates",
-    group: "Navigation",
-  },
-  GO_RECURRING: {
-    key: "r",
-    ctrl: true,
-    shift: true,
-    keys: ["Ctrl", "Shift", "R"],
-    description: "Go to recurring",
-    group: "Navigation",
-  },
-  GO_SETTINGS: {
-    key: "s",
-    ctrl: true,
-    shift: true,
-    keys: ["Ctrl", "Shift", "S"],
-    description: "Go to settings",
-    group: "Navigation",
-  },
-  CLOSE: { key: "Escape", keys: ["Esc"], description: "Close dialog", group: "General" },
-} as const;
-
-export const STORAGE_KEYS = {
-  RECENT_ITEMS: "getpaid-recent-items",
-  INVOICE_DRAFT: "invoice-draft-new",
-  ONBOARDING_DISMISSED: "getpaid-onboarding-dismissed",
-  THEME_MODE: "theme-mode",
-  SIDEBAR_COLLAPSED: "getpaid-sidebar-collapsed",
-} as const;
-
-export const EMAIL = {
-  PRIMARY_COLOR: "#1976d2",
-  OVERDUE_COLOR: "#d32f2f",
-  MAX_WIDTH: 600,
-  BUTTON_PADDING: "12px 24px",
-  BUTTON_BORDER_RADIUS: "4px",
-} as const;
-
-export const BRANDING: {
-  readonly DEFAULT_PRIMARY_COLOR: string;
-  readonly DEFAULT_ACCENT_COLOR: string;
-  readonly DEFAULT_CURRENCY: string;
-  readonly DEFAULT_INVOICE_PREFIX: string;
-} = {
-  DEFAULT_PRIMARY_COLOR: "#1976d2",
-  DEFAULT_ACCENT_COLOR: "#9c27b0",
-  DEFAULT_CURRENCY: "USD",
-  DEFAULT_INVOICE_PREFIX: "INV",
-};
-
-export const FONT_FAMILY_MAP: Record<string, string> = {
-  system: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  serif: "Georgia, 'Times New Roman', Times, serif",
-  mono: "'Courier New', Courier, monospace",
-};
-
-export const CHART = {
-  HEIGHT: 320,
-  BAR_RADIUS: [4, 4, 0, 0] as [number, number, number, number],
-  TOOLTIP_BORDER_RADIUS: 8,
-  GRID_DASH: "3 3",
-  TOOLTIP_SHADOW: "0 4px 12px rgba(0,0,0,0.1)",
-} as const;
-
-export const UI = {
-  ALPHA_HOVER: 0.04,
-  ALPHA_LIGHT: 0.02,
-  ALPHA_MEDIUM: 0.08,
-  ALPHA_MUTED: 0.1,
-  ALPHA_ACTIVE: 0.12,
-  ALPHA_FOCUS_RING: 0.2,
-  ALPHA_BORDER: 0.2,
-  ALPHA_BORDER_DARK: 0.16,
-  ALPHA_OVERLAY: 0.5,
-  SIDEBAR_WIDTH: 260,
-  SIDEBAR_COLLAPSED_WIDTH: 72,
-  TOP_BAR_HEIGHT: 56,
-  DRAWER_WIDTH: 280,
-  MENU_MIN_WIDTH: 180,
-  HEADER_HEIGHT: 80,
-  HEADER_TOTAL_HEIGHT: 112,
-  TOAST_MIN_WIDTH: 300,
-  TOAST_DURATION_DEFAULT: 5000,
-  TOAST_DURATION_LONG: 8000,
-  TOAST_OFFSET: 80,
-  MAX_VISIBLE_TOASTS: 5,
-  PAGE_TRANSITION_DURATION: 400,
-  PAGE_TRANSITION_OFFSET: 16,
-  PROGRESS_BAR_HEIGHT: 6,
-  TOTALS_MIN_WIDTH: 280,
-  EMPTY_STATE_ICON_SIZE: 64,
-  EMPTY_STATE_SEARCH_ICON_SIZE: 40,
-  METRIC_ICON_SIZE: 44,
-  NAV_PILL_HEIGHT: 36,
-  SIDEBAR_ICON_SIZE: 20,
-  AVATAR_SIZE: 32,
-  STATUS_DOT_SIZE: 8,
-  TIMELINE_DOT_SIZE: 32,
-  TIMELINE_LINE_WIDTH: 2,
-  TIMELINE_LINE_LEFT: 15,
-  TIMELINE_LINE_TOP: 32,
-  HEADER_BACKDROP_BLUR: 12,
-  HEADER_BG_ALPHA: 0.85,
-  LOGO_SHADOW_ALPHA: 0.3,
-  BRANDING_LOGO_MAX_WIDTH: 200,
-  BRANDING_LOGO_MAX_HEIGHT: 60,
-  BRANDING_PREVIEW_MAX_WIDTH: 120,
-  BRANDING_PREVIEW_MAX_HEIGHT: 40,
-  COMMAND_PALETTE_MAX_HEIGHT: 400,
-  FILTER_DRAWER_MAX_HEIGHT: "80vh",
-  FILTER_DRAWER_HANDLE_WIDTH: 40,
-  FILTER_DRAWER_HANDLE_HEIGHT: 4,
-  FOCUS_RING_WIDTH: 3,
-  BORDER_RADIUS_SM: 8,
-  BORDER_RADIUS_MD: 12,
-  BORDER_RADIUS_LG: 16,
-  BORDER_RADIUS_XL: 20,
-} as const;
+export {
+  BANKING,
+  CALLBACK_STAGE,
+  type CallbackStageValue,
+  CONNECTION_STATUS,
+  type ConnectionStatusValue,
+  TRANSACTION_STATUS,
+  type TransactionStatusValue,
+} from "./banking";
+export { BRANDING, EMAIL, FONT_FAMILY_MAP } from "./email";
+export { PAYMENT_METHOD, PAYMENT_METHOD_LABELS, type PaymentMethodValue } from "./payment-method";
+export { SHORTCUTS, STORAGE_KEYS } from "./shortcuts";
+export { TIME_TRACKING } from "./time-tracking";
+export { ANIMATION, CHART, RESPONSIVE_SX, UI, VIRTUALIZATION } from "./ui";

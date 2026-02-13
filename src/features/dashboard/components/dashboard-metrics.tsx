@@ -7,8 +7,8 @@ import WarningIcon from "@mui/icons-material/Warning";
 import { Grid, useTheme } from "@mui/material";
 
 import { formatCurrencyCompact } from "@app/shared/lib/format";
-import { StatSkeleton } from "@app/shared/ui/loading";
 import { MetricCard } from "@app/shared/ui/metric-card";
+import { StatSkeleton } from "@app/shared/ui/skeletons";
 import { StaggerList } from "@app/shared/ui/stagger-list";
 
 interface DashboardMetricsProps {

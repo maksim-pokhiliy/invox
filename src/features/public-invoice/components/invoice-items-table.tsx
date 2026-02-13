@@ -1,25 +1,11 @@
 "use client";
 
+import type { InvoiceItemGroupResponse, InvoiceItemResponse } from "@app/shared/schemas/api";
 import { InvoiceItemsTable as SharedInvoiceItemsTable } from "@app/shared/ui/invoice-items-table";
 
-interface InvoiceItem {
-  id: string;
-  title: string;
-  description?: string | null;
-  quantity: number;
-  unitPrice: number;
-  amount: number;
-}
-
-interface InvoiceItemGroup {
-  id: string;
-  title: string;
-  items: InvoiceItem[];
-}
-
 interface InvoiceItemsTableProps {
-  items: InvoiceItem[];
-  itemGroups?: InvoiceItemGroup[];
+  items: InvoiceItemResponse[];
+  itemGroups?: InvoiceItemGroupResponse[];
   currency: string;
 }
 

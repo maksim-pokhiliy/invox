@@ -1,47 +1,45 @@
-import { DiscountType } from "@prisma/client";
+import { BRANDING, INVOICE } from "@app/shared/config/config";
+import type { DiscountInput } from "@app/shared/lib/calculations";
+import type { LineItemGroupInput, LineItemInput } from "@app/shared/schemas";
 
 import { prisma } from "@app/server/db";
-
-export interface TemplateItemInput {
-  description: string;
-  quantity: number;
-  unitPrice: number;
-}
 
 export interface CreateTemplateInput {
   name: string;
   description?: string;
   currency?: string;
-  discount?: {
-    type: "PERCENTAGE" | "FIXED";
-    value: number;
-  };
+  discount?: DiscountInput;
   taxRate?: number;
   notes?: string;
   dueDays?: number;
-  items: TemplateItemInput[];
+  items: LineItemInput[];
+  itemGroups?: LineItemGroupInput[];
 }
 
 export interface UpdateTemplateInput {
   name?: string;
   description?: string;
   currency?: string;
-  discount?: {
-    type: "PERCENTAGE" | "FIXED";
-    value: number;
-  } | null;
+  discount?: DiscountInput | null;
   taxRate?: number;
   notes?: string;
   dueDays?: number;
-  items?: TemplateItemInput[];
+  items?: LineItemInput[];
+  itemGroups?: LineItemGroupInput[];
 }
+
+const ITEMS_INCLUDE = {
+  items: { orderBy: { sortOrder: "asc" as const } },
+  itemGroups: {
+    include: { items: { orderBy: { sortOrder: "asc" as const } } },
+    orderBy: { sortOrder: "asc" as const },
+  },
+};
 
 export async function getTemplates(userId: string) {
   return prisma.invoiceTemplate.findMany({
     where: { userId },
-    include: {
-      items: true,
-    },
+    include: ITEMS_INCLUDE,
     orderBy: { updatedAt: "desc" },
   });
 }
@@ -49,36 +47,106 @@ export async function getTemplates(userId: string) {
 export async function getTemplate(id: string, userId: string) {
   return prisma.invoiceTemplate.findFirst({
     where: { id, userId },
-    include: {
-      items: true,
-    },
+    include: ITEMS_INCLUDE,
   });
 }
 
+async function createTemplateItemGroups(templateId: string, groups: LineItemGroupInput[]) {
+  for (let gi = 0; gi < groups.length; gi++) {
+    const group = groups[gi];
+    const created = await prisma.invoiceTemplateItemGroup.create({
+      data: {
+        templateId,
+        title: group.title,
+        sortOrder: gi,
+      },
+    });
+
+    if (group.items.length > 0) {
+      await prisma.invoiceTemplateItem.createMany({
+        data: group.items.map((item, ii) => ({
+          templateId,
+          groupId: created.id,
+          title: item.title,
+          description: item.description ?? null,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          sortOrder: ii,
+        })),
+      });
+    }
+  }
+}
+
+async function deleteTemplateItems(templateId: string) {
+  await prisma.invoiceTemplateItem.deleteMany({ where: { templateId } });
+  await prisma.invoiceTemplateItemGroup.deleteMany({ where: { templateId } });
+}
+
 export async function createTemplate(userId: string, data: CreateTemplateInput) {
-  return prisma.invoiceTemplate.create({
+  const template = await prisma.invoiceTemplate.create({
     data: {
       userId,
       name: data.name,
       description: data.description,
-      currency: data.currency || "USD",
-      discountType: data.discount?.type as DiscountType | undefined,
+      currency: data.currency || BRANDING.DEFAULT_CURRENCY,
+      discountType: data.discount?.type,
       discountValue: data.discount?.value || 0,
       taxRate: data.taxRate || 0,
       notes: data.notes,
-      dueDays: data.dueDays || 30,
+      dueDays: data.dueDays || INVOICE.DEFAULT_DUE_DAYS,
       items: {
-        create: data.items.map((item) => ({
-          description: item.description,
+        create: data.items.map((item, i) => ({
+          title: item.title,
+          description: item.description ?? null,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
+          sortOrder: item.sortOrder ?? i,
         })),
       },
     },
-    include: {
-      items: true,
-    },
+    include: ITEMS_INCLUDE,
   });
+
+  if (data.itemGroups?.length) {
+    await createTemplateItemGroups(template.id, data.itemGroups);
+
+    return prisma.invoiceTemplate.findUniqueOrThrow({
+      where: { id: template.id },
+      include: ITEMS_INCLUDE,
+    });
+  }
+
+  return template;
+}
+
+function buildTemplateUpdateData(data: UpdateTemplateInput) {
+  return {
+    ...(data.name !== undefined && { name: data.name }),
+    ...(data.description !== undefined && { description: data.description }),
+    ...(data.currency !== undefined && { currency: data.currency }),
+    ...(data.taxRate !== undefined && { taxRate: data.taxRate }),
+    ...(data.notes !== undefined && { notes: data.notes }),
+    ...(data.dueDays !== undefined && { dueDays: data.dueDays }),
+    ...(data.discount !== undefined &&
+      (data.discount
+        ? { discountType: data.discount.type, discountValue: data.discount.value }
+        : { discountType: null, discountValue: 0 })),
+  };
+}
+
+function buildItemsCreate(items: NonNullable<UpdateTemplateInput["items"]>) {
+  return {
+    items: {
+      create: items.map((item, i) => ({
+        title: item.title,
+        description: item.description ?? null,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        sortOrder: item.sortOrder ?? i,
+      })),
+    },
+  };
 }
 
 export async function updateTemplate(id: string, userId: string, data: UpdateTemplateInput) {
@@ -90,64 +158,31 @@ export async function updateTemplate(id: string, userId: string, data: UpdateTem
     return null;
   }
 
-  const updateData: Record<string, unknown> = {};
+  const hasItemChanges = data.items !== undefined || data.itemGroups !== undefined;
 
-  if (data.name !== undefined) {
-    updateData.name = data.name;
+  if (hasItemChanges) {
+    await deleteTemplateItems(id);
   }
 
-  if (data.description !== undefined) {
-    updateData.description = data.description;
-  }
-
-  if (data.currency !== undefined) {
-    updateData.currency = data.currency;
-  }
-
-  if (data.taxRate !== undefined) {
-    updateData.taxRate = data.taxRate;
-  }
-
-  if (data.notes !== undefined) {
-    updateData.notes = data.notes;
-  }
-
-  if (data.dueDays !== undefined) {
-    updateData.dueDays = data.dueDays;
-  }
-
-  if (data.discount !== undefined) {
-    if (data.discount) {
-      updateData.discountType = data.discount.type;
-      updateData.discountValue = data.discount.value;
-    } else {
-      updateData.discountType = null;
-      updateData.discountValue = 0;
-    }
-  }
-
-  if (data.items !== undefined) {
-    await prisma.invoiceTemplateItem.deleteMany({
-      where: { templateId: id },
-    });
-
-    await prisma.invoiceTemplateItem.createMany({
-      data: data.items.map((item) => ({
-        templateId: id,
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-      })),
-    });
-  }
-
-  return prisma.invoiceTemplate.update({
+  const updated = await prisma.invoiceTemplate.update({
     where: { id },
-    data: updateData,
-    include: {
-      items: true,
+    data: {
+      ...buildTemplateUpdateData(data),
+      ...(hasItemChanges && data.items && buildItemsCreate(data.items)),
     },
+    include: ITEMS_INCLUDE,
   });
+
+  if (hasItemChanges && data.itemGroups?.length) {
+    await createTemplateItemGroups(id, data.itemGroups);
+
+    return prisma.invoiceTemplate.findUniqueOrThrow({
+      where: { id },
+      include: ITEMS_INCLUDE,
+    });
+  }
+
+  return updated;
 }
 
 export async function deleteTemplate(id: string, userId: string) {
@@ -158,10 +193,6 @@ export async function deleteTemplate(id: string, userId: string) {
   if (!template) {
     return null;
   }
-
-  await prisma.invoiceTemplateItem.deleteMany({
-    where: { templateId: id },
-  });
 
   await prisma.invoiceTemplate.delete({
     where: { id },

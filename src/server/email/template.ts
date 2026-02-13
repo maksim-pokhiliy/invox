@@ -14,6 +14,33 @@ export interface EmailItemGroup {
   items: EmailLineItem[];
 }
 
+export function buildBrandingHeader(logoUrl: string | null): string {
+  return logoUrl ? buildLogoBlock(logoUrl) : "";
+}
+
+function formatItemLine(item: EmailLineItem, currency: string): string {
+  return `  ${item.title} — ${item.quantity} × ${formatCurrency(item.unitPrice, currency)} = ${formatCurrency(item.amount, currency)}`;
+}
+
+export function buildPlainTextItems(
+  items: EmailLineItem[],
+  itemGroups: EmailItemGroup[] | undefined,
+  currency: string
+): string {
+  const lines: string[] = [];
+
+  if (itemGroups?.length) {
+    for (const group of itemGroups) {
+      lines.push(`\n  [${group.title}]`);
+      lines.push(...group.items.map((item) => formatItemLine(item, currency)));
+    }
+  }
+
+  lines.push(...items.map((item) => formatItemLine(item, currency)));
+
+  return lines.join("\n");
+}
+
 export function buildEmailButton(url: string, label: string, color: string) {
   return `<a href="${url}" style="display: inline-block; background: ${color}; color: white; padding: ${EMAIL.BUTTON_PADDING}; text-decoration: none; border-radius: ${EMAIL.BUTTON_BORDER_RADIUS}; font-weight: 500;">${label}</a>`;
 }
@@ -105,7 +132,7 @@ export function buildEmailFooter(
   </div>`;
 }
 
-export function buildLogoBlock(logoUrl: string) {
+function buildLogoBlock(logoUrl: string) {
   return `<img src="${logoUrl}" alt="Company logo" style="max-width: 200px; max-height: 60px; margin-bottom: 16px; display: block;" />`;
 }
 

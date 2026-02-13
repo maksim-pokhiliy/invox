@@ -246,22 +246,40 @@ model InvoiceTemplate {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  user  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items InvoiceTemplateItem[]
+  user       User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items      InvoiceTemplateItem[]
+  itemGroups InvoiceTemplateItemGroup[]
 
   @@index([userId])
 }
 
-model InvoiceTemplateItem {
-  id          String @id @default(cuid())
-  templateId  String
-  description String
-  quantity    Int
-  unitPrice   Int
+model InvoiceTemplateItemGroup {
+  id         String @id @default(cuid())
+  templateId String
+  title      String
+  sortOrder  Int    @default(0)
 
-  template InvoiceTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  template InvoiceTemplate       @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  items    InvoiceTemplateItem[]
 
   @@index([templateId])
+}
+
+model InvoiceTemplateItem {
+  id          String  @id @default(cuid())
+  templateId  String
+  groupId     String?
+  title       String
+  description String?
+  quantity    Int
+  unitPrice   Int
+  sortOrder   Int     @default(0)
+
+  template InvoiceTemplate          @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  group    InvoiceTemplateItemGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([templateId])
+  @@index([groupId])
 }
 
 enum FollowUpMode {
@@ -338,25 +356,43 @@ model RecurringInvoice {
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
-  user   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client Client                 @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  items  RecurringInvoiceItem[]
+  user       User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client     Client                        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items      RecurringInvoiceItem[]
+  itemGroups RecurringInvoiceItemGroup[]
 
   @@index([userId])
   @@index([clientId])
   @@index([status, nextRunAt])
 }
 
-model RecurringInvoiceItem {
+model RecurringInvoiceItemGroup {
   id                 String @id @default(cuid())
   recurringInvoiceId String
-  description        String
-  quantity           Int
-  unitPrice          Int
+  title              String
+  sortOrder          Int    @default(0)
 
-  recurringInvoice RecurringInvoice @relation(fields: [recurringInvoiceId], references: [id], onDelete: Cascade)
+  recurringInvoice RecurringInvoice       @relation(fields: [recurringInvoiceId], references: [id], onDelete: Cascade)
+  items            RecurringInvoiceItem[]
 
   @@index([recurringInvoiceId])
+}
+
+model RecurringInvoiceItem {
+  id                 String  @id @default(cuid())
+  recurringInvoiceId String
+  groupId            String?
+  title              String
+  description        String?
+  quantity           Int
+  unitPrice          Int
+  sortOrder          Int     @default(0)
+
+  recurringInvoice RecurringInvoice          @relation(fields: [recurringInvoiceId], references: [id], onDelete: Cascade)
+  group            RecurringInvoiceItemGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([recurringInvoiceId])
+  @@index([groupId])
 }
 
 enum BankTransactionStatus {

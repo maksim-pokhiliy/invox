@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Box, Button, Typography } from "@mui/material";
+import { Alert, Button, Stack, Typography } from "@mui/material";
 
 interface DraftBannerProps {
   showBanner: boolean;
@@ -24,14 +24,14 @@ export function InvoiceFormDraftBanner({
           severity="info"
           sx={{ mb: 3 }}
           action={
-            <Box sx={{ display: "flex", gap: 1 }}>
+            <Stack direction="row" spacing={1}>
               <Button size="small" color="inherit" onClick={onDiscard}>
                 Discard
               </Button>
               <Button size="small" variant="contained" onClick={onRestore}>
                 Restore
               </Button>
-            </Box>
+            </Stack>
           }
         >
           You have an unsaved draft. Would you like to restore it?

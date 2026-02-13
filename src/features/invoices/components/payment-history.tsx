@@ -6,12 +6,12 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PaymentIcon from "@mui/icons-material/Payment";
 import {
   alpha,
-  Box,
   Chip,
   Collapse,
   Divider,
   IconButton,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -24,22 +24,9 @@ import {
 } from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
+import { PAYMENT_METHOD_LABELS } from "@app/shared/config/payment-method";
 import { formatCurrency, formatDateTime } from "@app/shared/lib/format";
-
-interface Payment {
-  id: string;
-  amount: number;
-  method: "MANUAL" | "BANK_TRANSFER" | "CASH" | "OTHER";
-  note: string | null;
-  paidAt: string;
-}
-
-const METHOD_LABELS: Record<Payment["method"], string> = {
-  MANUAL: "Manual",
-  BANK_TRANSFER: "Bank Transfer",
-  CASH: "Cash",
-  OTHER: "Other",
-};
+import type { Payment } from "@app/shared/schemas/api";
 
 interface PaymentHistoryProps {
   payments: Payment[];
@@ -66,9 +53,9 @@ export function PaymentHistory({
 
   return (
     <Paper sx={{ borderRadius: 3, overflow: "hidden", mb: 3 }}>
-      <Box
+      <Stack
+        direction="row"
         sx={{
-          display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           p: 2,
@@ -77,15 +64,15 @@ export function PaymentHistory({
         }}
         onClick={onToggle}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
           <PaymentIcon color="success" />
           <Typography variant="subtitle1" fontWeight={600}>
             Payment History
           </Typography>
           <Chip label={payments.length} size="small" color="success" />
-        </Box>
+        </Stack>
         {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-      </Box>
+      </Stack>
       <Collapse in={expanded}>
         <Divider />
         <TableContainer>
@@ -108,7 +95,11 @@ export function PaymentHistory({
                 <TableRow key={payment.id}>
                   <TableCell>{formatDateTime(payment.paidAt)}</TableCell>
                   <TableCell>
-                    <Chip label={METHOD_LABELS[payment.method]} size="small" color="default" />
+                    <Chip
+                      label={PAYMENT_METHOD_LABELS[payment.method]}
+                      size="small"
+                      color="default"
+                    />
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" color="text.secondary">

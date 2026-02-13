@@ -14,6 +14,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  Stack,
   Step,
   StepLabel,
   Stepper,
@@ -24,10 +25,10 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { ApiError } from "@app/shared/api/base";
+import { useToast } from "@app/shared/hooks/use-toast";
 import { SenderProfileFormInput, senderProfileFormSchema } from "@app/shared/schemas";
 import { LoadingButton } from "@app/shared/ui/loading-button";
 import { Logo } from "@app/shared/ui/logo";
-import { useToast } from "@app/shared/ui/toast";
 
 import { senderProfileApi } from "@app/features/settings";
 
@@ -80,18 +81,18 @@ export default function OnboardingPage() {
   const currency = watch("defaultCurrency");
 
   return (
-    <Box
+    <Stack
+      direction="row"
       sx={{
         minHeight: "100vh",
         bgcolor: "background.default",
-        display: "flex",
         alignItems: "center",
         justifyContent: "center",
         py: 4,
       }}
     >
       <Container maxWidth="sm">
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <Stack direction="column" sx={{ alignItems: "center" }}>
           <Box sx={{ mb: 4 }}>
             <Logo size="large" />
           </Box>
@@ -220,8 +221,8 @@ export default function OnboardingPage() {
               GetPaid
             </a>
           </Typography>
-        </Box>
+        </Stack>
       </Container>
-    </Box>
+    </Stack>
   );
 }

@@ -6,7 +6,7 @@ import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import { Box, Stack, Typography } from "@mui/material";
 
 import { EmptyState } from "@app/shared/ui/empty-state";
-import { CardSkeleton } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/skeletons";
 
 import { useConfirmMatch, useIgnoreTransaction, usePendingTransactions } from "../hooks";
 import { MatchCard } from "./match-card";
@@ -92,7 +92,7 @@ export function PendingMatches() {
 
       {pending.length === 0 && autoMatched.length === 0 && (
         <EmptyState
-          icon={<SyncAltIcon sx={{ fontSize: 40, color: "primary.main" }} />}
+          icon={<SyncAltIcon />}
           title="No transaction matches"
           description="Matches will appear here automatically after your bank syncs new transactions."
         />

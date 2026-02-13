@@ -2,6 +2,8 @@
 
 import { Box, Button, type ButtonProps, CircularProgress } from "@mui/material";
 
+import { UI } from "@app/shared/config/config";
+
 interface LoadingButtonProps extends ButtonProps {
   loading?: boolean;
 }
@@ -20,7 +22,7 @@ export function LoadingButton({
       disabled={disabled || loading}
       startIcon={
         loading && hasStartIcon ? (
-          <CircularProgress size={16} thickness={4} color="inherit" />
+          <CircularProgress size={UI.LOADER_SIZE_SM} thickness={4} color="inherit" />
         ) : (
           startIcon
         )
@@ -31,7 +33,12 @@ export function LoadingButton({
         {children}
       </Box>
       {loading && !hasStartIcon && (
-        <CircularProgress size={20} thickness={4} color="inherit" sx={{ position: "absolute" }} />
+        <CircularProgress
+          size={UI.LOADER_SIZE_MD}
+          thickness={4}
+          color="inherit"
+          sx={{ position: "absolute" }}
+        />
       )}
     </Button>
   );

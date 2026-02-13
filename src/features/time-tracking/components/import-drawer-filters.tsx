@@ -201,7 +201,7 @@ export function ImportDrawerFilters({
             </li>
           );
         }}
-        renderTags={(value, getTagProps) =>
+        renderValue={(value, getTagProps) =>
           value.map((option, index) => {
             const { key, ...rest } = getTagProps({ index });
 

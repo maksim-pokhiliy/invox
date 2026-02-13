@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import { AppLayout } from "@app/shared/layout/app-layout";
-import { CardSkeleton } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/skeletons";
 
 export default function RecurringDetailPage() {
   const params = useParams();

@@ -4,9 +4,9 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 
-import { Box, Container, Link } from "@mui/material";
+import { Box, Container, type ContainerProps, Stack } from "@mui/material";
 
-import { ANIMATION, SHORTCUTS, STORAGE_KEYS, UI } from "@app/shared/config/config";
+import { STORAGE_KEYS, UI } from "@app/shared/config/config";
 import { useKeyboardShortcuts } from "@app/shared/hooks";
 import { useCommandPalette } from "@app/shared/hooks/use-command-palette";
 import { storage } from "@app/shared/lib/storage";
@@ -14,109 +14,18 @@ import { ErrorBoundary } from "@app/shared/ui/error-boundary";
 import { KeyboardShortcutsDialog } from "@app/shared/ui/keyboard-shortcuts-dialog";
 import { PageTransition } from "@app/shared/ui/page-transition";
 
-import { useThemeMode } from "@app/providers/theme-registry";
+import { useThemeMode } from "@app/providers/theme/registry";
 
+import { buildShortcuts } from "./components/keyboard-shortcuts";
 import { MobileDrawer } from "./components/mobile-drawer";
+import { SkipLink } from "./components/skip-link";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
 
 interface AppLayoutProps {
   children: React.ReactNode;
-  maxWidth?: "xs" | "sm" | "md" | "lg" | "xl" | false;
+  maxWidth?: ContainerProps["maxWidth"];
   disablePadding?: boolean;
-}
-
-function buildShortcuts(
-  router: ReturnType<typeof useRouter>,
-  openCommandPalette: () => void,
-  openShortcutsDialog: () => void
-) {
-  return [
-    {
-      key: SHORTCUTS.NEW_INVOICE.key,
-      ctrl: true,
-      handler: () => router.push("/app/invoices/new"),
-      description: SHORTCUTS.NEW_INVOICE.description,
-    },
-    {
-      key: SHORTCUTS.COMMAND_PALETTE.key,
-      ctrl: true,
-      handler: openCommandPalette,
-      description: SHORTCUTS.COMMAND_PALETTE.description,
-    },
-    {
-      key: SHORTCUTS.SHORTCUTS_DIALOG.key,
-      handler: openShortcutsDialog,
-      description: SHORTCUTS.SHORTCUTS_DIALOG.description,
-    },
-    {
-      key: SHORTCUTS.GO_DASHBOARD.key,
-      ctrl: true,
-      shift: true,
-      handler: () => router.push("/app"),
-      description: SHORTCUTS.GO_DASHBOARD.description,
-    },
-    {
-      key: SHORTCUTS.GO_INVOICES.key,
-      ctrl: true,
-      shift: true,
-      handler: () => router.push("/app/invoices"),
-      description: SHORTCUTS.GO_INVOICES.description,
-    },
-    {
-      key: SHORTCUTS.GO_CLIENTS.key,
-      ctrl: true,
-      shift: true,
-      handler: () => router.push("/app/clients"),
-      description: SHORTCUTS.GO_CLIENTS.description,
-    },
-    {
-      key: SHORTCUTS.GO_TEMPLATES.key,
-      ctrl: true,
-      shift: true,
-      handler: () => router.push("/app/templates"),
-      description: SHORTCUTS.GO_TEMPLATES.description,
-    },
-    {
-      key: SHORTCUTS.GO_RECURRING.key,
-      ctrl: true,
-      shift: true,
-      handler: () => router.push("/app/recurring"),
-      description: SHORTCUTS.GO_RECURRING.description,
-    },
-    {
-      key: SHORTCUTS.GO_SETTINGS.key,
-      ctrl: true,
-      shift: true,
-      handler: () => router.push("/app/settings"),
-      description: SHORTCUTS.GO_SETTINGS.description,
-    },
-  ];
-}
-
-function SkipLink() {
-  return (
-    <Link
-      href="#main-content"
-      sx={{
-        position: "absolute",
-        left: "-9999px",
-        zIndex: 9999,
-        padding: 2,
-        bgcolor: "primary.main",
-        color: "primary.contrastText",
-        textDecoration: "none",
-        fontWeight: 600,
-        borderRadius: 1,
-        "&:focus": {
-          left: 16,
-          top: 16,
-        },
-      }}
-    >
-      Skip to main content
-    </Link>
-  );
 }
 
 export function AppLayout({ children, maxWidth = "lg", disablePadding = false }: AppLayoutProps) {
@@ -165,9 +74,9 @@ export function AppLayout({ children, maxWidth = "lg", disablePadding = false }:
   const sidebarWidth = sidebarCollapsed ? UI.SIDEBAR_COLLAPSED_WIDTH : UI.SIDEBAR_WIDTH;
 
   return (
-    <Box
+    <Stack
+      direction="row"
       sx={{
-        display: "flex",
         minHeight: "100vh",
         bgcolor: "background.default",
       }}
@@ -175,14 +84,14 @@ export function AppLayout({ children, maxWidth = "lg", disablePadding = false }:
       <SkipLink />
       <Sidebar collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
 
-      <Box
+      <Stack
+        direction="column"
         sx={{
           flex: 1,
-          display: "flex",
-          flexDirection: "column",
+          minWidth: 0,
           ml: { xs: 0, md: `${sidebarWidth}px` },
           minHeight: "100vh",
-          transition: `margin-left ${ANIMATION.NORMAL}ms ease`,
+          transition: (t) => t.transitions.create("margin-left"),
         }}
       >
         <TopBar onMobileMenuOpen={() => setMobileMenuOpen(true)} />
@@ -191,7 +100,7 @@ export function AppLayout({ children, maxWidth = "lg", disablePadding = false }:
           component="main"
           id="main-content"
           tabIndex={-1}
-          sx={{ flex: 1, py: disablePadding ? 0 : 4, px: 3, outline: "none" }}
+          sx={{ flex: 1, py: disablePadding ? 0 : 4, px: 3, outline: "none", overflowX: "hidden" }}
         >
           <ErrorBoundary>
             <PageTransition>
@@ -205,7 +114,7 @@ export function AppLayout({ children, maxWidth = "lg", disablePadding = false }:
             </PageTransition>
           </ErrorBoundary>
         </Box>
-      </Box>
+      </Stack>
 
       <MobileDrawer
         open={mobileMenuOpen}
@@ -222,6 +131,6 @@ export function AppLayout({ children, maxWidth = "lg", disablePadding = false }:
         open={shortcutsDialogOpen}
         onClose={() => setShortcutsDialogOpen(false)}
       />
-    </Box>
+    </Stack>
   );
 }

@@ -5,7 +5,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import SendIcon from "@mui/icons-material/Send";
-import { alpha, Box, Button, Typography, useTheme } from "@mui/material";
+import { alpha, Box, Button, Stack, Typography, useTheme } from "@mui/material";
 
 import { Spinner } from "@app/shared/ui/loading";
 
@@ -31,11 +31,11 @@ export function SelectionToolbar({
   const theme = useTheme();
 
   return (
-    <Box
+    <Stack
+      direction="row"
+      spacing={1.5}
       sx={{
-        display: "flex",
         alignItems: "center",
-        gap: 1.5,
         px: 2,
         py: 1,
         mb: 2,
@@ -74,6 +74,6 @@ export function SelectionToolbar({
       >
         Clear
       </Button>
-    </Box>
+    </Stack>
   );
 }

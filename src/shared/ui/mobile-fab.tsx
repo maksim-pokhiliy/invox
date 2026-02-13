@@ -2,6 +2,8 @@
 
 import { Fab, SpeedDial, SpeedDialAction, SpeedDialIcon } from "@mui/material";
 
+import { RESPONSIVE_SX } from "@app/shared/config/config";
+
 interface SpeedDialActionItem {
   icon: React.ReactNode;
   name: string;
@@ -22,10 +24,10 @@ export function MobileFab({ icon, onClick, label, actions }: MobileFabProps) {
         ariaLabel={label}
         icon={<SpeedDialIcon />}
         sx={{
+          ...RESPONSIVE_SX.MOBILE_ONLY,
           position: "fixed",
           bottom: 24,
           right: 24,
-          display: { xs: "flex", sm: "none" },
           zIndex: 1050,
         }}
       >
@@ -47,10 +49,10 @@ export function MobileFab({ icon, onClick, label, actions }: MobileFabProps) {
       aria-label={label}
       onClick={onClick}
       sx={{
+        ...RESPONSIVE_SX.MOBILE_ONLY,
         position: "fixed",
         bottom: 24,
         right: 24,
-        display: { xs: "flex", sm: "none" },
         zIndex: 1050,
       }}
     >

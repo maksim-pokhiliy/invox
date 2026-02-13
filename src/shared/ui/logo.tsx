@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { alpha, Box, Typography, useTheme } from "@mui/material";
+import { alpha, Box, Stack, Typography, useTheme } from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
 
@@ -22,14 +22,14 @@ export function Logo({ size = "medium", showText = true }: LogoProps) {
   const { icon: iconSize, text: textSize, gap, symbol } = SIZES[size];
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap }}>
-      <Box
+    <Stack direction="row" spacing={gap} sx={{ alignItems: "center" }}>
+      <Stack
+        direction="row"
         sx={{
           width: iconSize,
           height: iconSize,
           borderRadius: 2,
           background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          display: "flex",
           alignItems: "center",
           justifyContent: "center",
           boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, UI.LOGO_SHADOW_ALPHA)}`,
@@ -37,7 +37,7 @@ export function Logo({ size = "medium", showText = true }: LogoProps) {
       >
         <Typography
           sx={{
-            color: "white",
+            color: "common.white",
             fontSize: iconSize * symbol,
             fontWeight: 900,
             lineHeight: 1,
@@ -45,7 +45,7 @@ export function Logo({ size = "medium", showText = true }: LogoProps) {
         >
           $
         </Typography>
-      </Box>
+      </Stack>
 
       {showText && (
         <Typography
@@ -62,6 +62,6 @@ export function Logo({ size = "medium", showText = true }: LogoProps) {
           </Box>
         </Typography>
       )}
-    </Box>
+    </Stack>
   );
 }

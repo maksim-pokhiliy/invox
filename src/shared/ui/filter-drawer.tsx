@@ -1,7 +1,7 @@
 "use client";
 
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, Drawer, IconButton, Typography } from "@mui/material";
+import { Box, Drawer, IconButton, Stack, Typography } from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
 
@@ -39,16 +39,21 @@ export function FilterDrawer({ open, onClose, title = "Filters", children }: Fil
             mb: 2,
           }}
         />
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+        <Stack
+          direction="row"
+          sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}
+        >
           <Typography variant="h6" fontWeight={600}>
             {title}
           </Typography>
           <IconButton size="small" onClick={onClose} aria-label="Close filters">
             <CloseIcon fontSize="small" />
           </IconButton>
-        </Box>
+        </Stack>
       </Box>
-      <Box sx={{ px: 3, pb: 3, display: "flex", flexDirection: "column", gap: 2 }}>{children}</Box>
+      <Stack direction="column" spacing={2} sx={{ px: 3, pb: 3 }}>
+        {children}
+      </Stack>
     </Drawer>
   );
 }

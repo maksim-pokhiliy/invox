@@ -5,7 +5,7 @@ import * as React from "react";
 import { type QueryKey, useQueryClient } from "@tanstack/react-query";
 
 import { UI } from "@app/shared/config/config";
-import { useToast } from "@app/shared/ui/toast";
+import { useToast } from "@app/shared/hooks/use-toast";
 
 interface UseOptimisticDeleteOptions<T> {
   queryKey: QueryKey;

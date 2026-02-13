@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-export const paymentMethodSchema = z.enum(["MANUAL", "BANK_TRANSFER", "CASH", "OTHER"]);
+import { PAYMENT_METHOD } from "@app/shared/config/payment-method";
+
+const paymentMethodSchema = z.nativeEnum(PAYMENT_METHOD);
 
 export const recordPaymentSchema = z.object({
   amount: z.number().positive(),

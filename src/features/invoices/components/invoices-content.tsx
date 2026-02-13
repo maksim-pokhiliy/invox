@@ -2,10 +2,8 @@
 
 import * as React from "react";
 
-import { Paper } from "@mui/material";
-
-import { NoResults } from "@app/shared/ui/empty-state";
-import { TableSkeleton } from "@app/shared/ui/loading";
+import { NoResults } from "@app/shared/ui/no-results";
+import { TableSkeleton } from "@app/shared/ui/skeletons";
 
 import { EmptyInvoicesState } from "./empty-states";
 import type { InvoiceData } from "./invoice-row";
@@ -71,11 +69,7 @@ export function InvoicesContent({
   onToggleSelectAll,
 }: InvoicesContentProps) {
   if (isLoading) {
-    return (
-      <Paper sx={{ p: 3, borderRadius: 3 }}>
-        <TableSkeleton rows={5} columns={6} />
-      </Paper>
-    );
+    return <TableSkeleton rows={5} columns={6} />;
   }
 
   if (invoices && invoices.length > 0 && filteredInvoices.length > 0) {

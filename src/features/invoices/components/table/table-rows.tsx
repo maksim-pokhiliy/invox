@@ -2,6 +2,8 @@
 
 import { TableCell, TableRow } from "@mui/material";
 
+import { VIRTUALIZATION } from "@app/shared/config/config";
+
 import type { InvoiceData } from "../invoice-row";
 import { InvoiceTableRow } from "./table-row";
 
@@ -23,7 +25,7 @@ interface VirtualizedRowsProps {
 }
 
 const TABLE_COLUMNS_BASE = 7;
-const ROW_HEIGHT = 65;
+const ROW_HEIGHT = VIRTUALIZATION.ROW_HEIGHT;
 
 export function VirtualizedRows({
   filteredInvoices,

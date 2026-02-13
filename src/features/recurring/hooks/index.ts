@@ -3,13 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { queryKeys, STALE_TIME } from "@app/shared/config/query";
+import type {
+  CreateRecurringInput,
+  RecurringInvoice,
+  UpdateRecurringInput,
+} from "@app/shared/schemas";
 
-import {
-  type CreateRecurringInput,
-  recurringApi,
-  type RecurringInvoice,
-  type UpdateRecurringInput,
-} from "../api";
+import { recurringApi } from "../api";
 
 export function useRecurringInvoices() {
   return useQuery({

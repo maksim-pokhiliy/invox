@@ -1,13 +1,30 @@
 import { z } from "zod";
 
+import { DISCOUNT_TYPE, INVOICE_EVENT, INVOICE_STATUS } from "@app/shared/config/invoice-status";
+import { PAYMENT_METHOD } from "@app/shared/config/payment-method";
+
+const invoiceStatusSchema = z.nativeEnum(INVOICE_STATUS);
+const invoiceEventTypeSchema = z.nativeEnum(INVOICE_EVENT);
+const discountTypeSchema = z.nativeEnum(DISCOUNT_TYPE);
+const paymentMethodSchema = z.nativeEnum(PAYMENT_METHOD);
+
+const clientRefSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string(),
+});
+
+const clientBriefSchema = z.object({
+  name: z.string(),
+  email: z.string(),
+});
+
 export const apiErrorSchema = z.object({
   error: z.object({
     code: z.string(),
     message: z.string(),
   }),
 });
-
-export type ApiError = z.infer<typeof apiErrorSchema>;
 
 export const clientSchema = z.object({
   id: z.string(),
@@ -19,8 +36,6 @@ export const clientSchema = z.object({
 });
 
 export const clientListSchema = z.array(clientSchema);
-
-export type Client = z.infer<typeof clientSchema>;
 
 export const invoiceItemResponseSchema = z.object({
   id: z.string(),
@@ -35,46 +50,34 @@ export const invoiceItemResponseSchema = z.object({
 export const invoiceItemGroupResponseSchema = z.object({
   id: z.string(),
   title: z.string(),
-  sortOrder: z.number(),
+  sortOrder: z.number().optional(),
   items: z.array(invoiceItemResponseSchema),
 });
 
 export const invoiceEventSchema = z.object({
   id: z.string(),
-  type: z.enum([
-    "CREATED",
-    "SENT",
-    "VIEWED",
-    "REMINDER_SENT",
-    "PAID_MANUAL",
-    "PAYMENT_RECORDED",
-    "STATUS_CHANGED",
-  ]),
+  type: invoiceEventTypeSchema,
   payload: z.unknown().optional(),
   createdAt: z.string(),
 });
-
-export type InvoiceEvent = z.infer<typeof invoiceEventSchema>;
 
 export const paymentSchema = z.object({
   id: z.string(),
   invoiceId: z.string(),
   amount: z.number(),
-  method: z.enum(["MANUAL", "BANK_TRANSFER", "CASH", "OTHER"]),
+  method: paymentMethodSchema,
   note: z.string().nullable(),
   paidAt: z.string(),
   createdAt: z.string(),
 });
 
-export type Payment = z.infer<typeof paymentSchema>;
-
 export const invoiceSchema = z.object({
   id: z.string(),
   publicId: z.string(),
-  status: z.enum(["DRAFT", "SENT", "VIEWED", "PAID", "OVERDUE", "PARTIALLY_PAID"]),
+  status: invoiceStatusSchema,
   currency: z.string(),
   subtotal: z.number(),
-  discountType: z.enum(["PERCENTAGE", "FIXED"]).nullable(),
+  discountType: discountTypeSchema.nullable(),
   discountValue: z.number(),
   discountAmount: z.number(),
   taxRate: z.number(),
@@ -90,11 +93,7 @@ export const invoiceSchema = z.object({
   paymentMethod: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  client: z.object({
-    id: z.string(),
-    name: z.string(),
-    email: z.string(),
-  }),
+  client: clientRefSchema,
   items: z.array(invoiceItemResponseSchema),
   itemGroups: z.array(invoiceItemGroupResponseSchema).optional(),
   events: z.array(invoiceEventSchema).optional(),
@@ -104,23 +103,17 @@ export const invoiceSchema = z.object({
 export const invoiceListItemSchema = z.object({
   id: z.string(),
   publicId: z.string(),
-  status: z.enum(["DRAFT", "SENT", "VIEWED", "PAID", "OVERDUE", "PARTIALLY_PAID"]),
+  status: invoiceStatusSchema,
   currency: z.string(),
   total: z.number(),
   paidAmount: z.number(),
   dueDate: z.string(),
   tags: z.array(z.string()),
   createdAt: z.string(),
-  client: z.object({
-    name: z.string(),
-    email: z.string(),
-  }),
+  client: clientBriefSchema,
 });
 
 export const invoiceListSchema = z.array(invoiceListItemSchema);
-
-export type Invoice = z.infer<typeof invoiceSchema>;
-export type InvoiceListItem = z.infer<typeof invoiceListItemSchema>;
 
 export const senderProfileResponseSchema = z.object({
   id: z.string(),
@@ -139,12 +132,10 @@ export const senderProfileResponseSchema = z.object({
   defaultRate: z.number().nullable(),
 });
 
-export type SenderProfile = z.infer<typeof senderProfileResponseSchema>;
-
 export const publicInvoiceSchema = z.object({
   id: z.string(),
   publicId: z.string(),
-  status: z.enum(["DRAFT", "SENT", "VIEWED", "PAID", "OVERDUE", "PARTIALLY_PAID"]),
+  status: invoiceStatusSchema,
   currency: z.string(),
   subtotal: z.number(),
   total: z.number(),
@@ -159,10 +150,16 @@ export const publicInvoiceSchema = z.object({
     email: z.string().nullable(),
     address: z.string().nullable(),
   }),
-  client: z.object({
-    name: z.string(),
-    email: z.string(),
-  }),
+  client: clientBriefSchema,
 });
 
+export type ApiError = z.infer<typeof apiErrorSchema>;
+export type Client = z.infer<typeof clientSchema>;
+export type InvoiceItemResponse = z.infer<typeof invoiceItemResponseSchema>;
+export type InvoiceItemGroupResponse = z.infer<typeof invoiceItemGroupResponseSchema>;
+export type InvoiceEvent = z.infer<typeof invoiceEventSchema>;
+export type Payment = z.infer<typeof paymentSchema>;
+export type Invoice = z.infer<typeof invoiceSchema>;
+export type InvoiceListItem = z.infer<typeof invoiceListItemSchema>;
+export type SenderProfile = z.infer<typeof senderProfileResponseSchema>;
 export type PublicInvoice = z.infer<typeof publicInvoiceSchema>;

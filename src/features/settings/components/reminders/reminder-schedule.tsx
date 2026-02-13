@@ -2,14 +2,14 @@
 
 import { Divider } from "@mui/material";
 
+import { REMINDER_MODE, type ReminderModeValue } from "@app/shared/config/config";
+
 import { ReminderDaysEditor } from "./reminder-days-editor";
 import { ReminderModeSelector } from "./reminder-mode-selector";
 
-type ReminderMode = "AFTER_SENT" | "AFTER_DUE";
-
 interface ReminderScheduleProps {
-  mode: ReminderMode;
-  onModeChange: (mode: ReminderMode) => void;
+  mode: ReminderModeValue;
+  onModeChange: (mode: ReminderModeValue) => void;
   days: number[];
   onDaysChange: (days: number[]) => void;
 }
@@ -20,7 +20,8 @@ export function ReminderSchedule({
   days,
   onDaysChange,
 }: ReminderScheduleProps) {
-  const daysDescription = mode === "AFTER_SENT" ? "after sending" : "after the due date";
+  const daysDescription =
+    mode === REMINDER_MODE.AFTER_SENT ? "after sending" : "after the due date";
 
   return (
     <>

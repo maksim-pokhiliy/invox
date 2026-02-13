@@ -79,24 +79,22 @@ export async function createConnectSession(
   customerId: string,
   returnUrl: string
 ): Promise<SaltEdgeConnectSession> {
-  const payload = JSON.stringify({
-    data: {
-      customer_id: "__CUSTOMER_ID__",
-      consent: {
-        scopes: ["accounts", "transactions"],
-        from_date: new Date(Date.now() - BANKING.TRANSACTION_HISTORY_DAYS * TIME.DAY)
-          .toISOString()
-          .split("T")[0],
-      },
-      attempt: {
-        return_to: returnUrl,
-      },
-    },
-  }).replace('"__CUSTOMER_ID__"', customerId);
-
   return saltEdgeFetch<SaltEdgeConnectSession>("/connections/connect", {
     method: "POST",
-    body: payload,
+    body: JSON.stringify({
+      data: {
+        customer_id: customerId,
+        consent: {
+          scopes: ["accounts", "transactions"],
+          from_date: new Date(Date.now() - BANKING.TRANSACTION_HISTORY_DAYS * TIME.DAY)
+            .toISOString()
+            .split("T")[0],
+        },
+        attempt: {
+          return_to: returnUrl,
+        },
+      },
+    }),
   });
 }
 

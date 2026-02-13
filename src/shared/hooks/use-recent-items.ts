@@ -33,7 +33,5 @@ export function useRecentItems() {
     });
   }, []);
 
-  const getRecentItems = React.useCallback(() => items, [items]);
-
-  return { recentItems: items, addRecentItem, getRecentItems };
+  return { recentItems: items, addRecentItem };
 }

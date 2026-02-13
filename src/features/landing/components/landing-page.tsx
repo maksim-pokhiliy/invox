@@ -10,7 +10,7 @@ import { LandingSelfHosted } from "./landing-self-hosted";
 
 export function LandingPage() {
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", overflowX: "hidden" }}>
       <LandingHeader />
       <LandingHero />
       <LandingFeatures />

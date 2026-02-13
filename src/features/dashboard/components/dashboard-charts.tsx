@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 
-import { Box, Button, Grid, Paper, Typography } from "@mui/material";
+import { Button, Grid, Paper, Stack, Typography } from "@mui/material";
 
-import type { AnalyticsData } from "../api";
+import { CHART } from "@app/shared/config/config";
+
+import type { AnalyticsData, MonthlyRevenue } from "../api";
 import { RecentInvoicesContent } from "./recent-invoices";
 import { RevenueChart } from "./revenue-chart";
 import { StatusBreakdown } from "./status-breakdown";
@@ -12,7 +14,7 @@ import { StatusBreakdown } from "./status-breakdown";
 interface DashboardChartsProps {
   isLoading: boolean;
   analytics: AnalyticsData | undefined;
-  monthlyRevenue: { month: string; revenue: number }[];
+  monthlyRevenue: MonthlyRevenue[];
   displayCurrency: string;
   hasMultipleCurrencies: boolean;
 }
@@ -29,7 +31,7 @@ export function DashboardCharts({
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 12, md: 8 }}>
-        <Paper sx={{ p: 3, borderRadius: 3, height: 400 }}>
+        <Paper sx={{ p: 3, borderRadius: 3, height: CHART.PANEL_HEIGHT }}>
           <Typography variant="h6" fontWeight={600} gutterBottom>
             Revenue (Last 6 Months){hasMultipleCurrencies && ` - ${displayCurrency}`}
           </Typography>
@@ -42,7 +44,7 @@ export function DashboardCharts({
       </Grid>
 
       <Grid size={{ xs: 12, md: 4 }}>
-        <Paper sx={{ p: 3, borderRadius: 3, height: 400 }}>
+        <Paper sx={{ p: 3, borderRadius: 3, height: CHART.PANEL_HEIGHT }}>
           <Typography variant="h6" fontWeight={600} gutterBottom>
             Invoice Status
           </Typography>
@@ -56,8 +58,9 @@ export function DashboardCharts({
 
       <Grid size={{ xs: 12 }}>
         <Paper sx={{ p: 3, borderRadius: 3 }}>
-          <Box
-            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}
+          <Stack
+            direction="row"
+            sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}
           >
             <Typography variant="h6" fontWeight={600}>
               Recent Invoices
@@ -65,7 +68,7 @@ export function DashboardCharts({
             <Button size="small" onClick={() => router.push("/app/invoices")}>
               View All
             </Button>
-          </Box>
+          </Stack>
           <RecentInvoicesContent
             isLoading={isLoading}
             invoices={analytics?.recentInvoices}

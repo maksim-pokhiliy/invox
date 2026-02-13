@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 
 import { formatDate } from "@app/shared/lib/format";
 
@@ -11,7 +11,7 @@ interface PreviewDatesProps {
 
 export function PreviewDates({ createdAt, dueDate }: PreviewDatesProps) {
   return (
-    <Box sx={{ display: "flex", gap: 4, mb: 4 }}>
+    <Stack direction="row" spacing={4} sx={{ mb: 4 }}>
       <Box>
         <Typography variant="caption" color="text.secondary" fontWeight={600}>
           INVOICE DATE
@@ -28,6 +28,6 @@ export function PreviewDates({ createdAt, dueDate }: PreviewDatesProps) {
           {formatDate(dueDate)}
         </Typography>
       </Box>
-    </Box>
+    </Stack>
   );
 }

@@ -13,9 +13,9 @@ import {
   useTheme,
 } from "@mui/material";
 
-import { ANIMATION, UI } from "@app/shared/config/config";
+import { UI } from "@app/shared/config/config";
 
-import { isNavActive, NAV_ITEMS } from "./desktop-nav";
+import { isNavActive, NAV_ITEMS } from "./nav-config";
 
 interface SidebarNavProps {
   pathname: string;
@@ -49,7 +49,9 @@ export function SidebarNav({ pathname, collapsed }: SidebarNavProps) {
                     ? alpha(theme.palette.primary.main, UI.ALPHA_ACTIVE)
                     : alpha(theme.palette.text.primary, UI.ALPHA_HOVER),
                 },
-                transition: `all ${ANIMATION.FAST}ms ease`,
+                transition: theme.transitions.create(["background-color", "padding"], {
+                  duration: theme.transitions.duration.short,
+                }),
               }}
             >
               <ListItemIcon
@@ -64,10 +66,12 @@ export function SidebarNav({ pathname, collapsed }: SidebarNavProps) {
               {!collapsed && (
                 <ListItemText
                   primary={item.label}
-                  primaryTypographyProps={{
-                    fontWeight: isActive ? 600 : 500,
-                    fontSize: "0.9375rem",
-                    color: isActive ? "primary.main" : "text.primary",
+                  slotProps={{
+                    primary: {
+                      fontWeight: isActive ? 600 : 500,
+                      fontSize: UI.FONT_SIZE_NAV,
+                      color: isActive ? "primary.main" : "text.primary",
+                    },
                   }}
                 />
               )}

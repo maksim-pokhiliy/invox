@@ -1,4 +1,5 @@
-import { BANKING } from "@app/shared/config/config";
+import { BANKING, TRANSACTION_STATUS } from "@app/shared/config/config";
+import { INVOICE_STATUS } from "@app/shared/config/invoice-status";
 
 import { prisma } from "@app/server/db";
 import { recordPayment } from "@app/server/invoices";
@@ -8,16 +9,25 @@ interface MatchCandidate {
   score: number;
 }
 
+interface TransactionForMatching {
+  amount: number;
+  currencyCode: string;
+  description: string;
+  madeOn: Date;
+}
+
+interface InvoiceForMatching {
+  id: string;
+  currency: string;
+  total: number;
+  paidAmount: number;
+  paymentReference: string | null;
+  sentAt: Date | null;
+}
+
 function calculateMatchScore(
-  transaction: { amount: number; currencyCode: string; description: string; madeOn: Date },
-  invoice: {
-    id: string;
-    currency: string;
-    total: number;
-    paidAmount: number;
-    paymentReference: string | null;
-    sentAt: Date | null;
-  }
+  transaction: TransactionForMatching,
+  invoice: InvoiceForMatching
 ): MatchCandidate | null {
   if (transaction.currencyCode !== invoice.currency) {
     return null;
@@ -60,14 +70,21 @@ export async function matchTransaction(transactionId: string, userId: string) {
     return;
   }
 
-  if (transaction.status !== "PENDING") {
+  if (transaction.status !== TRANSACTION_STATUS.PENDING) {
     return;
   }
 
   const invoices = await prisma.invoice.findMany({
     where: {
       userId,
-      status: { in: ["SENT", "VIEWED", "OVERDUE", "PARTIALLY_PAID"] },
+      status: {
+        in: [
+          INVOICE_STATUS.SENT,
+          INVOICE_STATUS.VIEWED,
+          INVOICE_STATUS.OVERDUE,
+          INVOICE_STATUS.PARTIALLY_PAID,
+        ],
+      },
     },
   });
 
@@ -92,7 +109,7 @@ export async function matchTransaction(transactionId: string, userId: string) {
     await prisma.bankTransaction.update({
       where: { id: transactionId },
       data: {
-        status: "AUTO_MATCHED",
+        status: TRANSACTION_STATUS.AUTO_MATCHED,
         matchedInvoiceId: bestMatch.invoiceId,
         matchConfidence: bestMatch.score,
       },
@@ -109,7 +126,7 @@ export async function matchTransaction(transactionId: string, userId: string) {
       await prisma.bankTransaction.update({
         where: { id: transactionId },
         data: {
-          status: "PENDING",
+          status: TRANSACTION_STATUS.PENDING,
           matchedInvoiceId: null,
           matchConfidence: null,
         },
@@ -137,16 +154,19 @@ export async function confirmMatch(transactionId: string, invoiceId: string, use
     return null;
   }
 
-  if (transaction.status !== "PENDING" && transaction.status !== "AUTO_MATCHED") {
+  if (
+    transaction.status !== TRANSACTION_STATUS.PENDING &&
+    transaction.status !== TRANSACTION_STATUS.AUTO_MATCHED
+  ) {
     return null;
   }
 
-  const alreadyPaid = transaction.status === "AUTO_MATCHED";
+  const alreadyPaid = transaction.status === TRANSACTION_STATUS.AUTO_MATCHED;
 
   await prisma.bankTransaction.update({
     where: { id: transactionId },
     data: {
-      status: "CONFIRMED",
+      status: TRANSACTION_STATUS.CONFIRMED,
       matchedInvoiceId: invoiceId,
       matchConfidence: 1.0,
     },
@@ -165,7 +185,7 @@ export async function confirmMatch(transactionId: string, invoiceId: string, use
     await prisma.bankTransaction.update({
       where: { id: transactionId },
       data: {
-        status: "PENDING",
+        status: TRANSACTION_STATUS.PENDING,
         matchedInvoiceId: null,
         matchConfidence: null,
       },
@@ -189,7 +209,7 @@ export async function ignoreTransaction(transactionId: string, userId: string) {
   await prisma.bankTransaction.update({
     where: { id: transactionId },
     data: {
-      status: "IGNORED",
+      status: TRANSACTION_STATUS.IGNORED,
       matchedInvoiceId: null,
       matchConfidence: null,
     },
@@ -201,7 +221,7 @@ export async function ignoreTransaction(transactionId: string, userId: string) {
 export async function getPendingTransactions(userId: string) {
   return prisma.bankTransaction.findMany({
     where: {
-      status: "PENDING",
+      status: TRANSACTION_STATUS.PENDING,
       amount: { gt: 0 },
       matchConfidence: { gte: BANKING.MATCH_SUGGEST_THRESHOLD },
       account: {
@@ -223,7 +243,7 @@ export async function getPendingTransactions(userId: string) {
 export async function getRecentAutoMatched(userId: string) {
   return prisma.bankTransaction.findMany({
     where: {
-      status: "AUTO_MATCHED",
+      status: TRANSACTION_STATUS.AUTO_MATCHED,
       account: {
         connection: { userId },
       },

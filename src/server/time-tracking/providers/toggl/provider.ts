@@ -1,4 +1,4 @@
-import { TIME_TRACKING } from "@app/shared/config/config";
+import { CURRENCY, TIME_TRACKING } from "@app/shared/config/config";
 
 import type {
   NormalizedClient,
@@ -181,7 +181,7 @@ export const togglProvider: TimeTrackingProvider = {
       name: ws.name,
       defaultCurrency: ws.default_currency || null,
       defaultHourlyRateCents: ws.default_hourly_rate
-        ? Math.round(ws.default_hourly_rate * 100)
+        ? Math.round(ws.default_hourly_rate * CURRENCY.CENTS_MULTIPLIER)
         : null,
       roundingDirection: ROUNDING_DIRECTION_MAP[ws.rounding] ?? "nearest",
       roundingMinutes: ws.rounding_minutes,
@@ -205,7 +205,7 @@ export const togglProvider: TimeTrackingProvider = {
       billable: p.billable,
       color: p.color || null,
       currency: p.currency || null,
-      rateCents: p.rate ? Math.round(p.rate * 100) : null,
+      rateCents: p.rate ? Math.round(p.rate * CURRENCY.CENTS_MULTIPLIER) : null,
     }));
   },
 

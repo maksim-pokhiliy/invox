@@ -1,12 +1,9 @@
 import { fetchApi } from "@app/shared/api/base";
 import type { SenderProfileInput } from "@app/shared/schemas";
 import type { SenderProfile } from "@app/shared/schemas/api";
+import type { ReminderSettings } from "@app/shared/schemas/reminder";
 
-export interface ReminderSettings {
-  enabled: boolean;
-  mode: "AFTER_SENT" | "AFTER_DUE";
-  delaysDays: number[];
-}
+export type { ReminderSettings } from "@app/shared/schemas/reminder";
 
 export const senderProfileApi = {
   get: () => fetchApi<SenderProfile>("/api/sender-profile"),

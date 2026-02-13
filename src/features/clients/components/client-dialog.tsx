@@ -18,17 +18,18 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { ApiError } from "@app/shared/api";
-import { ClientFormInput, clientFormSchema } from "@app/shared/schemas";
+import type { FormMode } from "@app/shared/config/config";
+import { useToast } from "@app/shared/hooks/use-toast";
+import { type Client, ClientFormInput, clientFormSchema } from "@app/shared/schemas";
 import { LoadingButton } from "@app/shared/ui/loading-button";
-import { useToast } from "@app/shared/ui/toast";
 
-import { useCreateClient, useUpdateClient } from "@app/features/clients";
+import { useCreateClient, useUpdateClient } from "../hooks";
 
 interface ClientDialogProps {
   open: boolean;
   onClose: () => void;
-  mode: "create" | "edit";
-  client?: { id: string; name: string; email: string; defaultRate?: number | null };
+  mode: FormMode;
+  client?: Pick<Client, "id" | "name" | "email" | "defaultRate">;
 }
 
 export function ClientDialog({ open, onClose, mode, client }: ClientDialogProps) {

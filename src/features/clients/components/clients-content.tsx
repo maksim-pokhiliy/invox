@@ -2,26 +2,22 @@
 
 import AddIcon from "@mui/icons-material/Add";
 import PeopleIcon from "@mui/icons-material/People";
-import { Paper } from "@mui/material";
 import { Button } from "@mui/material";
 
-import { EmptyState, NoResults } from "@app/shared/ui/empty-state";
+import type { Client } from "@app/shared/schemas";
+import { EmptyState } from "@app/shared/ui/empty-state";
 import { EmptyClientsIllustration } from "@app/shared/ui/illustrations/empty-clients";
-import { TableSkeleton } from "@app/shared/ui/loading";
+import { NoResults } from "@app/shared/ui/no-results";
+import { TableSkeleton } from "@app/shared/ui/skeletons";
 
 import { ClientsTable } from "./clients-table";
 
-interface Client {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: string;
-}
+type ClientListItem = Pick<Client, "id" | "name" | "email" | "createdAt">;
 
 interface ClientsContentProps {
   isLoading: boolean;
-  clients: Client[] | undefined;
-  filteredClients: Client[];
+  clients: ClientListItem[] | undefined;
+  filteredClients: ClientListItem[];
   setSearchQuery: (query: string) => void;
   setCreateDialogOpen: (open: boolean) => void;
   handleMenuOpen: (event: React.MouseEvent<HTMLElement>, clientId: string) => void;
@@ -50,11 +46,7 @@ export function ClientsContent({
   onRowsPerPageChange,
 }: ClientsContentProps) {
   if (isLoading) {
-    return (
-      <Paper sx={{ p: 3, borderRadius: 3 }}>
-        <TableSkeleton rows={5} columns={4} />
-      </Paper>
-    );
+    return <TableSkeleton rows={5} columns={4} />;
   }
 
   if (clients && clients.length > 0 && filteredClients.length > 0) {
@@ -79,7 +71,7 @@ export function ClientsContent({
 
   return (
     <EmptyState
-      icon={<PeopleIcon sx={{ fontSize: 40, color: "primary.main" }} />}
+      icon={<PeopleIcon />}
       illustration={<EmptyClientsIllustration />}
       title="No clients yet"
       description="Add your first client to start creating invoices. Clients help you organize your billing and keep track of who you're working with."

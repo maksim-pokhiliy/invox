@@ -2,30 +2,24 @@
 
 import * as React from "react";
 
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  type TableProps,
+  TableRow,
+} from "@mui/material";
 
 import { formatCurrency } from "@app/shared/lib/format";
-
-interface InvoiceItem {
-  id: string;
-  title: string;
-  description?: string | null;
-  quantity: number;
-  unitPrice: number;
-  amount: number;
-}
-
-interface InvoiceItemGroup {
-  id: string;
-  title: string;
-  items: InvoiceItem[];
-}
+import type { InvoiceItemGroupResponse, InvoiceItemResponse } from "@app/shared/schemas/api";
 
 interface InvoiceItemsTableProps {
-  items: InvoiceItem[];
-  itemGroups?: InvoiceItemGroup[];
+  items: InvoiceItemResponse[];
+  itemGroups?: InvoiceItemGroupResponse[];
   currency: string;
-  size?: "small" | "medium";
+  size?: TableProps["size"];
 }
 
 export function InvoiceItemsTable({ items, itemGroups, currency, size }: InvoiceItemsTableProps) {

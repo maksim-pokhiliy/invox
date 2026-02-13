@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { BANKING } from "@app/shared/config/config";
 import { queryKeys } from "@app/shared/config/query";
-import { useToast } from "@app/shared/ui/toast";
+import { useToast } from "@app/shared/hooks/use-toast";
 
 import { useCreateConnection } from "../hooks";
 

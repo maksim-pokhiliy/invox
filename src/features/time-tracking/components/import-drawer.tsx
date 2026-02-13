@@ -7,23 +7,19 @@ import { Alert, Box, Button, Drawer, IconButton, Stack, Typography } from "@mui/
 
 import { TIME_TRACKING } from "@app/shared/config/config";
 
-import type { Project, ProviderInfo, TimeEntriesResult } from "../api";
+import type {
+  ImportedGroup,
+  ImportedItem,
+  Project,
+  ProviderInfo,
+  Selection,
+  TimeEntriesResult,
+} from "../api";
 import { RATE_SOURCE, type RateSource } from "../constants";
 import { useSearchTimeEntries } from "../hooks";
+import { buildDateRange, resolveItemRate } from "../lib/import-utils";
 import { ImportDrawerFilters } from "./import-drawer-filters";
-import { type Selection, TimeEntriesTable } from "./time-entries-table";
-
-export interface ImportedGroup {
-  title: string;
-  items: ImportedItem[];
-}
-
-export interface ImportedItem {
-  title: string;
-  description: string;
-  quantity: number;
-  unitPrice: number;
-}
+import { TimeEntriesTable } from "./time-entries-table";
 
 interface ImportDrawerProps {
   open: boolean;
@@ -32,34 +28,6 @@ interface ImportDrawerProps {
   provider: ProviderInfo;
   getpaidRateCents: number;
   onImport: (groups: ImportedGroup[]) => void;
-}
-
-function buildDateRange(): { startDate: string; endDate: string } {
-  const end = new Date();
-  const start = new Date();
-
-  start.setDate(start.getDate() - TIME_TRACKING.DEFAULT_DATE_RANGE_DAYS);
-
-  return {
-    startDate: start.toISOString().split("T")[0],
-    endDate: end.toISOString().split("T")[0],
-  };
-}
-
-function resolveItemRate(
-  rateSource: RateSource,
-  providerRateCents: number | null,
-  getpaidRateCents: number,
-  customRateCents: number
-): number {
-  switch (rateSource) {
-    case RATE_SOURCE.PROVIDER:
-      return providerRateCents ?? getpaidRateCents;
-    case RATE_SOURCE.GETPAID:
-      return getpaidRateCents || providerRateCents || 0;
-    case RATE_SOURCE.CUSTOM:
-      return customRateCents;
-  }
 }
 
 export function ImportDrawer({
@@ -173,9 +141,9 @@ export function ImportDrawer({
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { maxWidth: TIME_TRACKING.IMPORT_DRAWER_WIDTH } }}
+      slotProps={{ paper: { sx: { maxWidth: TIME_TRACKING.IMPORT_DRAWER_WIDTH } } }}
     >
-      <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <Stack direction="column" sx={{ height: "100%" }}>
         <Stack
           direction="row"
           alignItems="center"
@@ -260,7 +228,7 @@ export function ImportDrawer({
             </Button>
           </Stack>
         )}
-      </Box>
+      </Stack>
     </Drawer>
   );
 }

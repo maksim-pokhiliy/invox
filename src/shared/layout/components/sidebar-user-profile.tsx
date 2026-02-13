@@ -11,6 +11,7 @@ import {
   Box,
   Divider,
   IconButton,
+  Stack,
   Tooltip,
   Typography,
   useTheme,
@@ -18,7 +19,7 @@ import {
 
 import { UI } from "@app/shared/config/config";
 
-import { useThemeMode } from "@app/providers/theme-registry";
+import { useThemeMode } from "@app/providers/theme/registry";
 
 function getInitials(email: string): string {
   return email.charAt(0).toUpperCase();
@@ -38,11 +39,11 @@ export function SidebarUserProfile({ collapsed }: SidebarUserProfileProps) {
     <Box sx={{ mt: "auto" }}>
       <Divider />
       <Box sx={{ p: collapsed ? 1 : 1.5 }}>
-        <Box
+        <Stack
+          direction="row"
+          spacing={1.5}
           sx={{
-            display: "flex",
             alignItems: "center",
-            gap: 1.5,
             p: 1,
             borderRadius: 2,
             bgcolor: alpha(theme.palette.text.primary, UI.ALPHA_LIGHT),
@@ -70,17 +71,17 @@ export function SidebarUserProfile({ collapsed }: SidebarUserProfileProps) {
               </Typography>
             </Box>
           )}
-        </Box>
+        </Stack>
       </Box>
 
-      <Box
+      <Stack
+        direction="row"
+        spacing={0.5}
         sx={{
           px: collapsed ? 0.75 : 1.5,
           pb: 1.5,
-          display: "flex",
           alignItems: "center",
           justifyContent: collapsed ? "center" : "space-between",
-          gap: 0.5,
         }}
       >
         <Tooltip title={mode === "dark" ? "Light mode" : "Dark mode"}>
@@ -104,7 +105,7 @@ export function SidebarUserProfile({ collapsed }: SidebarUserProfileProps) {
             </IconButton>
           </Tooltip>
         )}
-      </Box>
+      </Stack>
     </Box>
   );
 }

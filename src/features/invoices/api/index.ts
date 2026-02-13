@@ -1,23 +1,9 @@
 import { fetchApi } from "@app/shared/api/base";
 import type { CreateInvoiceInput, UpdateInvoiceInput } from "@app/shared/schemas";
-import type { Invoice, InvoiceListItem } from "@app/shared/schemas/api";
+import type { Invoice, InvoiceListItem, Payment } from "@app/shared/schemas/api";
+import type { RecordPaymentInput } from "@app/shared/schemas/payment";
 
-export interface Payment {
-  id: string;
-  invoiceId: string;
-  amount: number;
-  method: "MANUAL" | "BANK_TRANSFER" | "CASH" | "OTHER";
-  note: string | null;
-  paidAt: string;
-  createdAt: string;
-}
-
-export interface RecordPaymentInput {
-  amount: number;
-  method: "MANUAL" | "BANK_TRANSFER" | "CASH" | "OTHER";
-  note?: string;
-  paidAt?: string;
-}
+export type { Payment, RecordPaymentInput };
 
 export const invoicesApi = {
   list: () => fetchApi<InvoiceListItem[]>("/api/invoices"),

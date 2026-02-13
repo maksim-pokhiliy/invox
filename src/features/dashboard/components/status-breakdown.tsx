@@ -1,11 +1,11 @@
 "use client";
 
 import PeopleIcon from "@mui/icons-material/People";
-import { alpha, Box, Typography, useTheme } from "@mui/material";
+import { alpha, Box, Stack, Typography, useTheme } from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
 import { getStatusColor, STATUS_CONFIG } from "@app/shared/config/invoice-status";
-import { CardSkeleton } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/skeletons";
 
 interface StatusBreakdownProps {
   isLoading: boolean;
@@ -42,15 +42,15 @@ export function StatusBreakdown({ isLoading, statusCounts, clientCount }: Status
 
         return (
           <Box key={status} sx={{ mb: 2.5, "&:last-child": { mb: 1.5 } }}>
-            <Box
+            <Stack
+              direction="row"
               sx={{
-                display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 mb: 0.75,
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                 <Box
                   sx={{
                     width: UI.STATUS_DOT_SIZE,
@@ -60,11 +60,11 @@ export function StatusBreakdown({ isLoading, statusCounts, clientCount }: Status
                   }}
                 />
                 <Typography variant="body2">{STATUS_CONFIG[status]?.label || status}</Typography>
-              </Box>
+              </Stack>
               <Typography variant="body2" fontWeight={600}>
                 {count}
               </Typography>
-            </Box>
+            </Stack>
             <Box
               sx={{
                 height: 6,
@@ -87,9 +87,9 @@ export function StatusBreakdown({ isLoading, statusCounts, clientCount }: Status
           </Box>
         );
       })}
-      <Box
+      <Stack
+        direction="row"
         sx={{
-          display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           pt: 2,
@@ -98,14 +98,14 @@ export function StatusBreakdown({ isLoading, statusCounts, clientCount }: Status
           borderColor: "divider",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <PeopleIcon fontSize="small" color="action" />
           <Typography variant="body2">Total Clients</Typography>
-        </Box>
+        </Stack>
         <Typography variant="body2" fontWeight={600}>
           {clientCount}
         </Typography>
-      </Box>
+      </Stack>
     </Box>
   );
 }

@@ -5,14 +5,15 @@ import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
 import { Box, Button, IconButton, InputAdornment, TextField, Typography } from "@mui/material";
 
+import { RESPONSIVE_SX } from "@app/shared/config/config";
 import { ConfirmDialog } from "@app/shared/ui/confirm-dialog";
 import { HelpTooltip } from "@app/shared/ui/help-tooltip";
 import { MobileFab } from "@app/shared/ui/mobile-fab";
 import { PageHeader } from "@app/shared/ui/page-header";
 
+import { useRecurringPage } from "../hooks/use-recurring-page";
 import { RecurringContent } from "./recurring-content";
 import { RecurringOverflowMenu } from "./recurring-overflow-menu";
-import { useRecurringPage } from "./use-recurring-page";
 
 function RecurringSearch({
   searchQuery,
@@ -35,20 +36,22 @@ function RecurringSearch({
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
         sx={{ minWidth: { sm: 280 } }}
-        inputProps={{ "aria-label": "Search recurring invoices" }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon fontSize="small" color="action" />
-            </InputAdornment>
-          ),
-          endAdornment: searchQuery && (
-            <InputAdornment position="end">
-              <IconButton size="small" onClick={onClear} aria-label="Clear search">
-                <ClearIcon fontSize="small" />
-              </IconButton>
-            </InputAdornment>
-          ),
+        slotProps={{
+          htmlInput: { "aria-label": "Search recurring invoices" },
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" color="action" />
+              </InputAdornment>
+            ),
+            endAdornment: searchQuery && (
+              <InputAdornment position="end">
+                <IconButton size="small" onClick={onClear} aria-label="Clear search">
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
         }}
       />
       {searchQuery && (
@@ -81,7 +84,7 @@ export function RecurringPageContent() {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={navigateToNew}
-            sx={{ display: { xs: "none", sm: "flex" } }}
+            sx={RESPONSIVE_SX.DESKTOP_ONLY}
           >
             New Recurring Invoice
           </Button>

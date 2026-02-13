@@ -3,18 +3,23 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import HistoryIcon from "@mui/icons-material/History";
-import { alpha, Box, Chip, Collapse, Divider, Paper, Typography, useTheme } from "@mui/material";
+import {
+  alpha,
+  Box,
+  Chip,
+  Collapse,
+  Divider,
+  Paper,
+  Stack,
+  Typography,
+  useTheme,
+} from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
 import { formatDateTime } from "@app/shared/lib/format";
+import type { InvoiceEvent } from "@app/shared/schemas/api";
 
-import { EVENT_CONFIG } from "@app/features/invoices/constants/invoice";
-
-interface InvoiceEvent {
-  id: string;
-  type: string;
-  createdAt: string;
-}
+import { EVENT_CONFIG } from "../constants/invoice";
 
 interface ActivityHistoryProps {
   events: InvoiceEvent[];
@@ -31,9 +36,9 @@ export function ActivityHistory({ events, expanded, onToggle }: ActivityHistoryP
 
   return (
     <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
-      <Box
+      <Stack
+        direction="row"
         sx={{
-          display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           p: 2,
@@ -42,15 +47,15 @@ export function ActivityHistory({ events, expanded, onToggle }: ActivityHistoryP
         }}
         onClick={onToggle}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
           <HistoryIcon color="action" />
           <Typography variant="subtitle1" fontWeight={600}>
             Activity History
           </Typography>
           <Chip label={events.length} size="small" />
-        </Box>
+        </Stack>
         {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-      </Box>
+      </Stack>
       <Collapse in={expanded}>
         <Divider />
         <Box sx={{ p: 2 }}>
@@ -63,11 +68,11 @@ export function ActivityHistory({ events, expanded, onToggle }: ActivityHistoryP
             const isLast = index === events.length - 1;
 
             return (
-              <Box
+              <Stack
                 key={event.id}
+                direction="row"
+                spacing={2}
                 sx={{
-                  display: "flex",
-                  gap: 2,
                   pb: isLast ? 0 : 2,
                   position: "relative",
                 }}
@@ -84,12 +89,12 @@ export function ActivityHistory({ events, expanded, onToggle }: ActivityHistoryP
                     }}
                   />
                 )}
-                <Box
+                <Stack
+                  direction="row"
                   sx={{
                     width: UI.TIMELINE_DOT_SIZE,
                     height: UI.TIMELINE_DOT_SIZE,
                     borderRadius: "50%",
-                    display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_MUTED),
@@ -99,7 +104,7 @@ export function ActivityHistory({ events, expanded, onToggle }: ActivityHistoryP
                   }}
                 >
                   {config.icon}
-                </Box>
+                </Stack>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography variant="body2" fontWeight={500}>
                     {config.label}
@@ -108,7 +113,7 @@ export function ActivityHistory({ events, expanded, onToggle }: ActivityHistoryP
                     {formatDateTime(event.createdAt)}
                   </Typography>
                 </Box>
-              </Box>
+              </Stack>
             );
           })}
         </Box>

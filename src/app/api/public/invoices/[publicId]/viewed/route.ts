@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getUser } from "@app/server/auth/require-user";
 import { getInvoiceByPublicId, markInvoiceViewed } from "@app/server/invoices";
 
 export async function POST(
@@ -18,7 +19,11 @@ export async function POST(
       );
     }
 
-    await markInvoiceViewed(publicId);
+    const user = await getUser();
+
+    if (user?.id !== invoice.userId) {
+      await markInvoiceViewed(publicId);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

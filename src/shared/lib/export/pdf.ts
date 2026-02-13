@@ -1,49 +1,18 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
+import { DISCOUNT_TYPE, type DiscountTypeValue } from "@app/shared/config/invoice-status";
 import { formatCurrency, formatDate } from "@app/shared/lib/format";
+import type { InvoiceItemGroupResponse, InvoiceItemResponse } from "@app/shared/schemas/api";
 
-type RGB = [number, number, number];
-
-const PDF_COLORS = {
-  primary: [79, 70, 229] as RGB,
-  text: [31, 41, 55] as RGB,
-  muted: [107, 114, 128] as RGB,
-  white: [255, 255, 255] as RGB,
-  background: [249, 250, 251] as RGB,
-  success: [34, 197, 94] as RGB,
-  error: [239, 68, 68] as RGB,
-  info: [59, 130, 246] as RGB,
-  gray: [156, 163, 175] as RGB,
-};
-
-const STATUS_COLORS: Record<string, RGB> = {
-  PAID: PDF_COLORS.success,
-  OVERDUE: PDF_COLORS.error,
-  SENT: PDF_COLORS.info,
-  VIEWED: PDF_COLORS.info,
-  DRAFT: PDF_COLORS.gray,
-};
-
-interface InvoiceItem {
-  title: string;
-  description?: string | null;
-  quantity: number;
-  unitPrice: number;
-  amount: number;
-}
-
-interface InvoiceItemGroup {
-  title: string;
-  items: InvoiceItem[];
-}
+import { LAYOUT, PDF_COLORS, STATUS_COLORS } from "./pdf-constants";
 
 interface InvoicePdfData {
   publicId: string;
   status: string;
   currency: string;
   subtotal: number;
-  discountType?: string | null;
+  discountType?: DiscountTypeValue | null;
   discountValue?: number;
   discountAmount?: number;
   taxRate?: number;
@@ -60,63 +29,77 @@ interface InvoicePdfData {
     email?: string | null;
     address?: string | null;
   } | null;
-  items: InvoiceItem[];
-  itemGroups?: InvoiceItemGroup[];
+  items: InvoiceItemResponse[];
+  itemGroups?: InvoiceItemGroupResponse[];
 }
 
 function renderHeader(doc: jsPDF, invoice: InvoicePdfData): void {
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  doc.setFontSize(28);
+  doc.setFontSize(LAYOUT.HEADER_TITLE_SIZE);
   doc.setTextColor(...PDF_COLORS.primary);
-  doc.text("INVOICE", 20, 30);
+  doc.text("INVOICE", LAYOUT.MARGIN, LAYOUT.HEADER_TITLE_Y);
 
-  doc.setFontSize(12);
+  doc.setFontSize(LAYOUT.HEADER_ID_SIZE);
   doc.setTextColor(...PDF_COLORS.muted);
-  doc.text(`#${invoice.publicId}`, 20, 38);
+  doc.text(`#${invoice.publicId}`, LAYOUT.MARGIN, LAYOUT.HEADER_ID_Y);
 
   const statusColor = STATUS_COLORS[invoice.status] || STATUS_COLORS.DRAFT;
+  const badgeX = pageWidth - LAYOUT.MARGIN - LAYOUT.STATUS_BADGE_WIDTH;
 
   doc.setFillColor(...statusColor);
-  doc.roundedRect(pageWidth - 50, 22, 30, 10, 2, 2, "F");
-  doc.setFontSize(8);
+  doc.roundedRect(
+    badgeX,
+    LAYOUT.STATUS_BADGE_Y,
+    LAYOUT.STATUS_BADGE_WIDTH,
+    LAYOUT.STATUS_BADGE_HEIGHT,
+    LAYOUT.STATUS_BADGE_RADIUS,
+    LAYOUT.STATUS_BADGE_RADIUS,
+    "F"
+  );
+  doc.setFontSize(LAYOUT.STATUS_FONT_SIZE);
   doc.setTextColor(...PDF_COLORS.white);
-  doc.text(invoice.status, pageWidth - 35, 29, { align: "center" });
+  doc.text(
+    invoice.status,
+    badgeX + LAYOUT.STATUS_BADGE_WIDTH / 2,
+    LAYOUT.STATUS_BADGE_Y + LAYOUT.STATUS_TEXT_OFFSET_Y,
+    { align: "center" }
+  );
 }
 
 function renderSenderInfo(doc: jsPDF, invoice: InvoicePdfData): number {
-  let yPos = 55;
+  let yPos = LAYOUT.INFO_START_Y;
 
-  doc.setFontSize(10);
+  doc.setFontSize(LAYOUT.SECTION_LABEL_SIZE);
   doc.setTextColor(...PDF_COLORS.muted);
-  doc.text("FROM", 20, yPos);
+  doc.text("FROM", LAYOUT.MARGIN, yPos);
 
-  doc.setFontSize(11);
+  doc.setFontSize(LAYOUT.INFO_FONT_SIZE);
   doc.setTextColor(...PDF_COLORS.text);
-  yPos += 7;
+  yPos += LAYOUT.INFO_LABEL_OFFSET;
 
   if (invoice.sender?.companyName) {
     doc.setFont("helvetica", "bold");
-    doc.text(invoice.sender.companyName, 20, yPos);
-    yPos += 5;
+    doc.text(invoice.sender.companyName, LAYOUT.MARGIN, yPos);
+    yPos += LAYOUT.INFO_LINE_HEIGHT;
   }
 
   doc.setFont("helvetica", "normal");
 
   if (invoice.sender?.displayName) {
-    doc.text(invoice.sender.displayName, 20, yPos);
-    yPos += 5;
+    doc.text(invoice.sender.displayName, LAYOUT.MARGIN, yPos);
+    yPos += LAYOUT.INFO_LINE_HEIGHT;
   }
 
   if (invoice.sender?.email) {
-    doc.text(invoice.sender.email, 20, yPos);
-    yPos += 5;
+    doc.text(invoice.sender.email, LAYOUT.MARGIN, yPos);
+    yPos += LAYOUT.INFO_LINE_HEIGHT;
   }
 
   if (invoice.sender?.address) {
     invoice.sender.address.split("\n").forEach((line) => {
-      doc.text(line, 20, yPos);
-      yPos += 5;
+      doc.text(line, LAYOUT.MARGIN, yPos);
+      yPos += LAYOUT.INFO_LINE_HEIGHT;
     });
   }
 
@@ -125,49 +108,58 @@ function renderSenderInfo(doc: jsPDF, invoice: InvoicePdfData): number {
 
 function renderClientInfo(doc: jsPDF, invoice: InvoicePdfData): void {
   const pageWidth = doc.internal.pageSize.getWidth();
-  let yPos = 55;
+  const clientX = pageWidth / 2 + LAYOUT.SECTION_LABEL_SIZE;
+  let yPos = LAYOUT.INFO_START_Y;
 
-  doc.setFontSize(10);
+  doc.setFontSize(LAYOUT.SECTION_LABEL_SIZE);
   doc.setTextColor(...PDF_COLORS.muted);
-  doc.text("BILL TO", pageWidth / 2 + 10, yPos);
+  doc.text("BILL TO", clientX, yPos);
 
-  doc.setFontSize(11);
+  doc.setFontSize(LAYOUT.INFO_FONT_SIZE);
   doc.setTextColor(...PDF_COLORS.text);
-  yPos += 7;
+  yPos += LAYOUT.INFO_LABEL_OFFSET;
   doc.setFont("helvetica", "bold");
-  doc.text(invoice.client.name, pageWidth / 2 + 10, yPos);
-  yPos += 5;
+  doc.text(invoice.client.name, clientX, yPos);
+  yPos += LAYOUT.INFO_LINE_HEIGHT;
   doc.setFont("helvetica", "normal");
-  doc.text(invoice.client.email, pageWidth / 2 + 10, yPos);
+  doc.text(invoice.client.email, clientX, yPos);
 }
 
 function renderDates(doc: jsPDF, invoice: InvoicePdfData): void {
   const pageWidth = doc.internal.pageSize.getWidth();
-  const yPos = 100;
+  const yPos = LAYOUT.DATES_Y;
 
   doc.setFillColor(...PDF_COLORS.background);
-  doc.roundedRect(20, yPos - 5, pageWidth - 40, 25, 3, 3, "F");
+  doc.roundedRect(
+    LAYOUT.MARGIN,
+    yPos - LAYOUT.INFO_LINE_HEIGHT,
+    pageWidth - LAYOUT.MARGIN * 2,
+    LAYOUT.DATES_HEIGHT,
+    LAYOUT.DATES_RADIUS,
+    LAYOUT.DATES_RADIUS,
+    "F"
+  );
 
-  doc.setFontSize(9);
+  doc.setFontSize(LAYOUT.DATES_LABEL_SIZE);
   doc.setTextColor(...PDF_COLORS.muted);
-  doc.text("INVOICE DATE", 30, yPos + 3);
-  doc.text("DUE DATE", 90, yPos + 3);
+  doc.text("INVOICE DATE", LAYOUT.DATES_COL_1, yPos + LAYOUT.DATES_LABEL_OFFSET);
+  doc.text("DUE DATE", LAYOUT.DATES_COL_2, yPos + LAYOUT.DATES_LABEL_OFFSET);
 
   if (invoice.paidAt) {
-    doc.text("PAID DATE", 150, yPos + 3);
+    doc.text("PAID DATE", LAYOUT.DATES_COL_3, yPos + LAYOUT.DATES_LABEL_OFFSET);
   }
 
-  doc.setFontSize(10);
+  doc.setFontSize(LAYOUT.DATES_VALUE_SIZE);
   doc.setTextColor(...PDF_COLORS.text);
-  doc.text(formatDate(invoice.createdAt), 30, yPos + 12);
-  doc.text(formatDate(invoice.dueDate), 90, yPos + 12);
+  doc.text(formatDate(invoice.createdAt), LAYOUT.DATES_COL_1, yPos + LAYOUT.DATES_VALUE_OFFSET);
+  doc.text(formatDate(invoice.dueDate), LAYOUT.DATES_COL_2, yPos + LAYOUT.DATES_VALUE_OFFSET);
 
   if (invoice.paidAt) {
-    doc.text(formatDate(invoice.paidAt), 150, yPos + 12);
+    doc.text(formatDate(invoice.paidAt), LAYOUT.DATES_COL_3, yPos + LAYOUT.DATES_VALUE_OFFSET);
   }
 }
 
-function buildItemRow(item: InvoiceItem, currency: string, indent = false): string[] {
+function buildItemRow(item: InvoiceItemResponse, currency: string, indent = false): string[] {
   return [
     indent ? `    ${item.title}` : item.title,
     item.quantity.toString(),
@@ -193,7 +185,7 @@ function renderItemsTable(doc: jsPDF, invoice: InvoicePdfData): number {
   });
 
   autoTable(doc, {
-    startY: 135,
+    startY: LAYOUT.TABLE_START_Y,
     head: [["Item", "Qty", "Unit Price", "Amount"]],
     body: tableData,
     theme: "plain",
@@ -201,74 +193,79 @@ function renderItemsTable(doc: jsPDF, invoice: InvoicePdfData): number {
       fillColor: PDF_COLORS.background,
       textColor: PDF_COLORS.text,
       fontStyle: "bold",
-      fontSize: 9,
+      fontSize: LAYOUT.TABLE_HEAD_SIZE,
     },
-    bodyStyles: { textColor: PDF_COLORS.text, fontSize: 10 },
+    bodyStyles: { textColor: PDF_COLORS.text, fontSize: LAYOUT.TABLE_BODY_SIZE },
     columnStyles: {
-      0: { cellWidth: 80 },
-      1: { cellWidth: 25, halign: "right" },
-      2: { cellWidth: 40, halign: "right" },
-      3: { cellWidth: 40, halign: "right" },
+      0: { cellWidth: LAYOUT.TABLE_COL_ITEM },
+      1: { cellWidth: LAYOUT.TABLE_COL_QTY, halign: "right" },
+      2: { cellWidth: LAYOUT.TABLE_COL_PRICE, halign: "right" },
+      3: { cellWidth: LAYOUT.TABLE_COL_AMOUNT, halign: "right" },
     },
-    margin: { left: 20, right: 20 },
+    margin: { left: LAYOUT.MARGIN, right: LAYOUT.MARGIN },
   });
 
-  return (doc.lastAutoTable.finalY ?? 135) + 15;
+  return (doc.lastAutoTable.finalY ?? LAYOUT.TABLE_START_Y) + LAYOUT.TABLE_END_GAP;
 }
 
 function renderTotals(doc: jsPDF, invoice: InvoicePdfData, startY: number): number {
   const pageWidth = doc.internal.pageSize.getWidth();
-  const totalsX = pageWidth - 90;
-  const totalsWidth = 70;
+  const totalsX = pageWidth - LAYOUT.TOTALS_OFFSET_X;
   let yPos = startY;
 
-  doc.setFontSize(10);
+  doc.setFontSize(LAYOUT.TOTALS_FONT_SIZE);
   doc.setTextColor(...PDF_COLORS.muted);
   doc.text("Subtotal", totalsX, yPos);
   doc.setTextColor(...PDF_COLORS.text);
-  doc.text(formatCurrency(invoice.subtotal, invoice.currency), totalsX + totalsWidth, yPos, {
-    align: "right",
-  });
-  yPos += 8;
+  doc.text(
+    formatCurrency(invoice.subtotal, invoice.currency),
+    totalsX + LAYOUT.TOTALS_WIDTH,
+    yPos,
+    { align: "right" }
+  );
+  yPos += LAYOUT.TOTALS_LINE_HEIGHT;
 
   if (invoice.discountAmount && invoice.discountAmount > 0) {
     doc.setTextColor(...PDF_COLORS.muted);
     const discountLabel =
-      invoice.discountType === "PERCENTAGE" ? `Discount (${invoice.discountValue}%)` : "Discount";
+      invoice.discountType === DISCOUNT_TYPE.PERCENTAGE
+        ? `Discount (${invoice.discountValue}%)`
+        : "Discount";
 
     doc.text(discountLabel, totalsX, yPos);
     doc.setTextColor(...PDF_COLORS.error);
     doc.text(
       `-${formatCurrency(invoice.discountAmount, invoice.currency)}`,
-      totalsX + totalsWidth,
+      totalsX + LAYOUT.TOTALS_WIDTH,
       yPos,
-      {
-        align: "right",
-      }
+      { align: "right" }
     );
-    yPos += 8;
+    yPos += LAYOUT.TOTALS_LINE_HEIGHT;
   }
 
   if (invoice.taxAmount && invoice.taxAmount > 0) {
     doc.setTextColor(...PDF_COLORS.muted);
     doc.text(`Tax (${invoice.taxRate}%)`, totalsX, yPos);
     doc.setTextColor(...PDF_COLORS.text);
-    doc.text(formatCurrency(invoice.taxAmount, invoice.currency), totalsX + totalsWidth, yPos, {
-      align: "right",
-    });
-    yPos += 8;
+    doc.text(
+      formatCurrency(invoice.taxAmount, invoice.currency),
+      totalsX + LAYOUT.TOTALS_WIDTH,
+      yPos,
+      { align: "right" }
+    );
+    yPos += LAYOUT.TOTALS_LINE_HEIGHT;
   }
 
-  doc.setDrawColor(229, 231, 235);
-  doc.line(totalsX, yPos, totalsX + totalsWidth, yPos);
-  yPos += 10;
+  doc.setDrawColor(...PDF_COLORS.divider);
+  doc.line(totalsX, yPos, totalsX + LAYOUT.TOTALS_WIDTH, yPos);
+  yPos += LAYOUT.TOTALS_SEPARATOR_GAP;
 
-  doc.setFontSize(12);
+  doc.setFontSize(LAYOUT.TOTALS_TOTAL_SIZE);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...PDF_COLORS.text);
   doc.text("Total", totalsX, yPos);
   doc.setTextColor(...PDF_COLORS.primary);
-  doc.text(formatCurrency(invoice.total, invoice.currency), totalsX + totalsWidth, yPos, {
+  doc.text(formatCurrency(invoice.total, invoice.currency), totalsX + LAYOUT.TOTALS_WIDTH, yPos, {
     align: "right",
   });
 
@@ -281,25 +278,25 @@ function renderNotes(doc: jsPDF, invoice: InvoicePdfData, startY: number): void 
   }
 
   const pageWidth = doc.internal.pageSize.getWidth();
-  let yPos = startY + 25;
+  let yPos = startY + LAYOUT.NOTES_GAP;
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(LAYOUT.NOTES_LABEL_SIZE);
   doc.setTextColor(...PDF_COLORS.muted);
-  doc.text("Notes", 20, yPos);
-  yPos += 6;
-  doc.setFontSize(10);
+  doc.text("Notes", LAYOUT.MARGIN, yPos);
+  yPos += LAYOUT.NOTES_LABEL_OFFSET;
+  doc.setFontSize(LAYOUT.NOTES_BODY_SIZE);
   doc.setTextColor(...PDF_COLORS.text);
-  const noteLines = doc.splitTextToSize(invoice.notes, pageWidth - 40);
+  const noteLines = doc.splitTextToSize(invoice.notes, pageWidth - LAYOUT.MARGIN * 2);
 
-  doc.text(noteLines, 20, yPos);
+  doc.text(noteLines, LAYOUT.MARGIN, yPos);
 }
 
 function renderFooter(doc: jsPDF): void {
   const pageWidth = doc.internal.pageSize.getWidth();
-  const footerY = doc.internal.pageSize.getHeight() - 20;
+  const footerY = doc.internal.pageSize.getHeight() - LAYOUT.FOOTER_OFFSET_Y;
 
-  doc.setFontSize(8);
+  doc.setFontSize(LAYOUT.FOOTER_FONT_SIZE);
   doc.setTextColor(...PDF_COLORS.muted);
   doc.text("Generated with GetPaid — getpaid.dev", pageWidth / 2, footerY, { align: "center" });
 }

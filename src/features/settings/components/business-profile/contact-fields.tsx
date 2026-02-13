@@ -2,7 +2,7 @@
 
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
 
-import { Box, Divider, TextField, Typography } from "@mui/material";
+import { Divider, Stack, TextField, Typography } from "@mui/material";
 
 import type { SenderProfileFormInput } from "@app/shared/schemas";
 
@@ -17,7 +17,7 @@ export function ContactFields({ register, errors }: ContactFieldsProps) {
       <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
         Contact & Address
       </Typography>
-      <Box sx={{ display: "grid", gap: 3, mb: 4 }}>
+      <Stack direction="column" spacing={3} sx={{ mb: 4 }}>
         <TextField
           {...register("emailFrom")}
           label="Reply-to Email"
@@ -42,7 +42,7 @@ export function ContactFields({ register, errors }: ContactFieldsProps) {
           error={!!errors.taxId}
           helperText={errors.taxId?.message || "Optional - displayed on invoices"}
         />
-      </Box>
+      </Stack>
 
       <Divider sx={{ my: 4 }} />
     </>

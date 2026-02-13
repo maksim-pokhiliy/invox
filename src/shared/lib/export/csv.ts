@@ -1,3 +1,26 @@
+import { CURRENCY } from "@app/shared/config/config";
+
+interface InvoiceExportData {
+  id: string;
+  publicId: string;
+  status: string;
+  currency: string;
+  total: number;
+  dueDate: string;
+  createdAt: string;
+  client: {
+    name: string;
+    email: string;
+  };
+}
+
+interface ClientExportData {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+}
+
 export function escapeCSVValue(value: string | number | null | undefined): string {
   if (value === null || value === undefined) {
     return "";
@@ -39,27 +62,13 @@ export function downloadCSV(csv: string, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
-interface InvoiceExportData {
-  id: string;
-  publicId: string;
-  status: string;
-  currency: string;
-  total: number;
-  dueDate: string;
-  createdAt: string;
-  client: {
-    name: string;
-    email: string;
-  };
-}
-
 export function exportInvoicesToCSV(invoices: InvoiceExportData[]): void {
   const formattedData = invoices.map((invoice) => ({
     invoiceNumber: invoice.publicId,
     clientName: invoice.client.name,
     clientEmail: invoice.client.email,
     status: invoice.status,
-    amount: (invoice.total / 100).toFixed(2),
+    amount: (invoice.total / CURRENCY.CENTS_MULTIPLIER).toFixed(2),
     currency: invoice.currency,
     dueDate: new Date(invoice.dueDate).toLocaleDateString(),
     createdAt: new Date(invoice.createdAt).toLocaleDateString(),
@@ -80,13 +89,6 @@ export function exportInvoicesToCSV(invoices: InvoiceExportData[]): void {
   const date = new Date().toISOString().split("T")[0];
 
   downloadCSV(csv, `invoices-${date}.csv`);
-}
-
-interface ClientExportData {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: string;
 }
 
 export function exportClientsToCSV(clients: ClientExportData[]): void {

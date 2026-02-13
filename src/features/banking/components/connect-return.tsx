@@ -4,9 +4,9 @@ import * as React from "react";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { CircularProgress, Stack, Typography } from "@mui/material";
 
-import { BANKING } from "@app/shared/config/config";
+import { BANKING, UI } from "@app/shared/config/config";
 
 import { useCompleteConnection } from "../hooks";
 
@@ -39,28 +39,27 @@ export function ConnectReturn() {
   }, []);
 
   return (
-    <Box
+    <Stack
+      direction="column"
+      spacing={2}
       sx={{
         minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 2,
         p: 4,
       }}
     >
       {status === "loading" && <ConnectReturnLoading />}
       {status === "success" && <ConnectReturnSuccess />}
       {status === "error" && <ConnectReturnError />}
-    </Box>
+    </Stack>
   );
 }
 
 function ConnectReturnLoading() {
   return (
     <>
-      <CircularProgress size={48} />
+      <CircularProgress size={UI.ICON_SIZE_XL} />
       <Typography variant="h6" fontWeight={600}>
         Connecting your bank...
       </Typography>
@@ -71,7 +70,7 @@ function ConnectReturnLoading() {
 function ConnectReturnSuccess() {
   return (
     <>
-      <CheckCircleIcon sx={{ fontSize: 48, color: "success.main" }} />
+      <CheckCircleIcon sx={{ fontSize: UI.ICON_SIZE_XL, color: "success.main" }} />
       <Typography variant="h6" fontWeight={600}>
         Bank connected!
       </Typography>
@@ -85,7 +84,7 @@ function ConnectReturnSuccess() {
 function ConnectReturnError() {
   return (
     <>
-      <ErrorIcon sx={{ fontSize: 48, color: "error.main" }} />
+      <ErrorIcon sx={{ fontSize: UI.ICON_SIZE_XL, color: "error.main" }} />
       <Typography variant="h6" fontWeight={600}>
         Connection failed
       </Typography>

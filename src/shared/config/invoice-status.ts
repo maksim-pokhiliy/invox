@@ -1,4 +1,4 @@
-import type { Theme } from "@mui/material";
+import type { ChipProps, Theme } from "@mui/material";
 
 export const INVOICE_STATUS = {
   DRAFT: "DRAFT",
@@ -16,7 +16,13 @@ export const DISCOUNT_TYPE = {
   FIXED: "FIXED",
 } as const;
 
+export const DISCOUNT_NONE = "NONE" as const;
+
 export type DiscountTypeValue = (typeof DISCOUNT_TYPE)[keyof typeof DISCOUNT_TYPE];
+
+export function isDiscountType(value: string | null | undefined): value is DiscountTypeValue {
+  return value === DISCOUNT_TYPE.PERCENTAGE || value === DISCOUNT_TYPE.FIXED;
+}
 
 export const INVOICE_EVENT = {
   CREATED: "CREATED",
@@ -27,16 +33,20 @@ export const INVOICE_EVENT = {
   PAYMENT_RECORDED: "PAYMENT_RECORDED",
   PAYMENT_DELETED: "PAYMENT_DELETED",
   REMINDER_SENT: "REMINDER_SENT",
+  STATUS_CHANGED: "STATUS_CHANGED",
 } as const;
+
+export type InvoiceEventValue = (typeof INVOICE_EVENT)[keyof typeof INVOICE_EVENT];
 
 export const FOLLOWUP_STATUS = {
   PENDING: "PENDING",
+  SENT: "SENT",
   CANCELED: "CANCELED",
 } as const;
 
 export const STATUS_CONFIG: Record<
   string,
-  { color: "success" | "error" | "info" | "warning" | "default"; label: string }
+  { color: NonNullable<ChipProps["color"]>; label: string }
 > = {
   PAID: { color: "success", label: "Paid" },
   PARTIALLY_PAID: { color: "warning", label: "Partially Paid" },
@@ -45,6 +55,16 @@ export const STATUS_CONFIG: Record<
   VIEWED: { color: "info", label: "Viewed" },
   DRAFT: { color: "default", label: "Draft" },
 };
+
+export const INVOICE_STATUS_FILTER_OPTIONS = [
+  { value: "ALL", label: "All Statuses" },
+  { value: INVOICE_STATUS.DRAFT, label: STATUS_CONFIG.DRAFT.label },
+  { value: INVOICE_STATUS.SENT, label: STATUS_CONFIG.SENT.label },
+  { value: INVOICE_STATUS.VIEWED, label: STATUS_CONFIG.VIEWED.label },
+  { value: INVOICE_STATUS.PARTIALLY_PAID, label: STATUS_CONFIG.PARTIALLY_PAID.label },
+  { value: INVOICE_STATUS.PAID, label: STATUS_CONFIG.PAID.label },
+  { value: INVOICE_STATUS.OVERDUE, label: STATUS_CONFIG.OVERDUE.label },
+];
 
 export function getStatusColor(theme: Theme, status: string): string {
   const config = STATUS_CONFIG[status];

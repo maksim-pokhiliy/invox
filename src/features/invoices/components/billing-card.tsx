@@ -1,12 +1,21 @@
 "use client";
 
-import { alpha, Box, Divider, LinearProgress, Paper, Typography, useTheme } from "@mui/material";
+import {
+  alpha,
+  Box,
+  Divider,
+  LinearProgress,
+  Paper,
+  Stack,
+  Typography,
+  useTheme,
+} from "@mui/material";
 
 import { formatCurrency } from "@app/shared/lib/format";
 import type { Invoice } from "@app/shared/schemas/api";
 import { InvoiceItemsTable } from "@app/shared/ui/invoice-items-table";
 
-export function TotalsSummary({
+function TotalsSummary({
   invoice,
   remainingBalance,
 }: {
@@ -17,15 +26,16 @@ export function TotalsSummary({
   const paidPercentage = invoice.total > 0 ? ((invoice.paidAmount || 0) / invoice.total) * 100 : 0;
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+    <Stack direction="row" sx={{ justifyContent: "flex-end" }}>
       <Box sx={{ minWidth: 280 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+        <Stack direction="row" sx={{ justifyContent: "space-between", mb: 1.5 }}>
           <Typography color="text.secondary">Subtotal</Typography>
           <Typography>{formatCurrency(invoice.subtotal, invoice.currency)}</Typography>
-        </Box>
+        </Stack>
         <Divider sx={{ my: 1.5 }} />
-        <Box
-          sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}
+        <Stack
+          direction="row"
+          sx={{ justifyContent: "space-between", alignItems: "center", mb: 1.5 }}
         >
           <Typography variant="h6" fontWeight={600}>
             Total
@@ -33,17 +43,17 @@ export function TotalsSummary({
           <Typography variant="h5" fontWeight={700} color="primary.main">
             {formatCurrency(invoice.total, invoice.currency)}
           </Typography>
-        </Box>
+        </Stack>
         {(invoice.paidAmount || 0) > 0 && (
           <>
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+            <Stack direction="row" sx={{ justifyContent: "space-between", mb: 1 }}>
               <Typography color="success.main" fontWeight={500}>
                 Paid
               </Typography>
               <Typography color="success.main" fontWeight={500}>
                 -{formatCurrency(invoice.paidAmount || 0, invoice.currency)}
               </Typography>
-            </Box>
+            </Stack>
             <LinearProgress
               variant="determinate"
               value={paidPercentage}
@@ -55,7 +65,7 @@ export function TotalsSummary({
                 "& .MuiLinearProgress-bar": { bgcolor: "success.main" },
               }}
             />
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
               <Typography
                 fontWeight={600}
                 color={remainingBalance > 0 ? "error.main" : "success.main"}
@@ -69,11 +79,11 @@ export function TotalsSummary({
               >
                 {formatCurrency(remainingBalance, invoice.currency)}
               </Typography>
-            </Box>
+            </Stack>
           </>
         )}
       </Box>
-    </Box>
+    </Stack>
   );
 }
 

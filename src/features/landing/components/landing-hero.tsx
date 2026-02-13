@@ -23,17 +23,7 @@ export function LandingHero() {
         sx={{ mb: 3 }}
       />
 
-      <Typography
-        variant="h2"
-        component="h1"
-        fontWeight={800}
-        sx={{
-          fontSize: { xs: "2.25rem", md: "3.5rem" },
-          lineHeight: 1.15,
-          letterSpacing: "-0.025em",
-          mb: 2.5,
-        }}
-      >
+      <Typography variant="h1" sx={{ mb: 2.5 }}>
         Invoicing that gets
         <br />
         out of your way
@@ -49,13 +39,18 @@ export function LandingHero() {
         lock-in.
       </Typography>
 
-      <Stack direction="row" spacing={2} justifyContent="center">
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        justifyContent="center"
+        alignItems="center"
+      >
         <Button
           component={Link}
           href="/auth/sign-up"
           variant="contained"
           size="large"
-          sx={{ px: 4, py: 1.5 }}
+          sx={{ px: 4, py: 1.5, whiteSpace: "nowrap" }}
         >
           Try for Free
         </Button>
@@ -67,7 +62,7 @@ export function LandingHero() {
           variant="outlined"
           size="large"
           startIcon={<GitHubIcon />}
-          sx={{ px: 4, py: 1.5 }}
+          sx={{ px: 4, py: 1.5, whiteSpace: "nowrap" }}
         >
           View Source
         </Button>

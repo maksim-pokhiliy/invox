@@ -1,4 +1,4 @@
-import { BANKING, CURRENCY, TIME } from "@app/shared/config/config";
+import { BANKING, CONNECTION_STATUS, CURRENCY, TIME } from "@app/shared/config/config";
 
 import { prisma } from "@app/server/db";
 
@@ -71,7 +71,9 @@ export async function syncConnectionForUser(connectionId: string, userId: string
 }
 
 export async function syncAllConnections(userId?: string) {
-  const where = userId ? { userId, status: "active" } : { status: "active" };
+  const where = userId
+    ? { userId, status: CONNECTION_STATUS.ACTIVE }
+    : { status: CONNECTION_STATUS.ACTIVE };
 
   const connections = await prisma.bankConnection.findMany({ where });
 
@@ -83,7 +85,7 @@ export async function syncAllConnections(userId?: string) {
 
       await prisma.bankConnection.update({
         where: { id: connection.id },
-        data: { status: "error" },
+        data: { status: CONNECTION_STATUS.ERROR },
       });
     }
   }

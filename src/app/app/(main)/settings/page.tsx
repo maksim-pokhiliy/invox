@@ -1,7 +1,6 @@
 "use client";
 
-import * as React from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import BrushIcon from "@mui/icons-material/Brush";
 import BusinessIcon from "@mui/icons-material/Business";
@@ -13,7 +12,7 @@ import { alpha, Box, Divider, Paper, Stack, Tab, Tabs, Typography, useTheme } fr
 import { env } from "@app/shared/config/env";
 import { AppLayout } from "@app/shared/layout/app-layout";
 import { Breadcrumbs } from "@app/shared/ui/breadcrumbs";
-import { CardSkeleton } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/skeletons";
 
 import {
   ConnectBankButton,
@@ -65,13 +64,24 @@ function TabPanel({ children, tabKey, activeKey, ...other }: TabPanelProps) {
 
 export default function SettingsPage() {
   const theme = useTheme();
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const tabParam = searchParams.get("tab");
-  const initialTab = tabParam ? (TAB_MAP[tabParam] ?? 0) : 0;
-  const [tabValue, setTabValue] = React.useState(initialTab);
-
+  const tabValue = tabParam ? (TAB_MAP[tabParam] ?? 0) : 0;
   const activeKey = ALL_TABS[tabValue]?.key ?? "profile";
+
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+    const key = ALL_TABS[newValue]?.key;
+
+    if (key) {
+      const params = new URLSearchParams(searchParams.toString());
+
+      params.set("tab", key);
+      router.replace(`${pathname}?${params.toString()}`);
+    }
+  };
 
   const { data: profile, isLoading } = useSenderProfile();
   const { data: reminderSettings, isLoading: reminderLoading } = useReminderSettings();
@@ -95,7 +105,9 @@ export default function SettingsPage() {
       <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
         <Tabs
           value={tabValue}
-          onChange={(_, newValue) => setTabValue(newValue)}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
           sx={{
             borderBottom: 1,
             borderColor: "divider",

@@ -3,6 +3,7 @@
 import { TableCell, Typography } from "@mui/material";
 
 import { formatDateCompact } from "@app/shared/lib/format";
+import type { Client } from "@app/shared/schemas";
 import {
   DataTable,
   DataTableActions,
@@ -16,15 +17,10 @@ const COLUMNS: DataTableColumn[] = [
   { id: "createdAt", label: "Created", hideOnMobile: true },
 ];
 
-interface Client {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: string;
-}
+type ClientListItem = Pick<Client, "id" | "name" | "email" | "createdAt">;
 
 interface ClientsTableProps {
-  filteredClients: Client[];
+  filteredClients: ClientListItem[];
   handleMenuOpen: (event: React.MouseEvent<HTMLElement>, clientId: string) => void;
   sortColumn: string;
   sortDirection: "asc" | "desc";

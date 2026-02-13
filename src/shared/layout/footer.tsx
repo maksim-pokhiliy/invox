@@ -1,8 +1,6 @@
 "use client";
 
-import * as React from "react";
-
-import { Box, Container, Link as MuiLink, Typography } from "@mui/material";
+import { Box, Container, Link as MuiLink, Stack, Typography } from "@mui/material";
 
 import { Logo } from "@app/shared/ui/logo";
 
@@ -19,16 +17,15 @@ export function Footer() {
       }}
     >
       <Container maxWidth="lg" disableGutters>
-        <Box
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
           sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
             justifyContent: "space-between",
             alignItems: "center",
-            gap: 2,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
             <Logo size="small" showText={false} />
             <Typography variant="body2" color="text.secondary">
               &copy; {currentYear}{" "}
@@ -41,17 +38,17 @@ export function Footer() {
                 GetPaid
               </a>
             </Typography>
-          </Box>
+          </Stack>
 
-          <Box sx={{ display: "flex", gap: 3 }}>
+          <Stack direction="row" spacing={3}>
             <MuiLink href="/app/invoices" color="text.secondary" underline="hover" variant="body2">
               Invoices
             </MuiLink>
             <MuiLink href="/app/settings" color="text.secondary" underline="hover" variant="body2">
               Settings
             </MuiLink>
-          </Box>
-        </Box>
+          </Stack>
+        </Stack>
       </Container>
     </Box>
   );

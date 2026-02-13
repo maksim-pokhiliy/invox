@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import { alpha, Box, Chip, Paper, Typography, useTheme } from "@mui/material";
+import { alpha, Box, Chip, Paper, Stack, Typography, useTheme } from "@mui/material";
 
 import { ANIMATION, UI } from "@app/shared/config/config";
 import { useCountUp } from "@app/shared/hooks";
@@ -34,7 +34,6 @@ export function MetricCard({
   href,
 }: MetricCardProps) {
   const theme = useTheme();
-  const router = useRouter();
   const isPositive = change !== undefined && change >= 0;
   const animatedValue = useCountUp(numericValue ?? 0, ANIMATION.SLOW);
   const displayValue =
@@ -43,25 +42,28 @@ export function MetricCard({
 
   return (
     <Paper
+      {...(href ? { component: Link, href } : {})}
       sx={{
+        display: "flex",
+        flexDirection: "column",
         p: 2.5,
         borderRadius: 3,
         width: "100%",
         height: "100%",
-        display: "flex",
-        flexDirection: "column",
         position: "relative",
         overflow: "hidden",
+        textDecoration: "none",
         ...(href && {
           cursor: "pointer",
-          transition: `all ${ANIMATION.FAST}ms ease`,
+          transition: theme.transitions.create(["box-shadow", "transform"], {
+            duration: theme.transitions.duration.short,
+          }),
           "&:hover": {
             boxShadow: `0 8px 24px ${alpha(cardColor, 0.15)}`,
             transform: "translateY(-2px)",
           },
         }),
       }}
-      onClick={href ? () => router.push(href) : undefined}
     >
       <Box
         sx={{
@@ -74,13 +76,13 @@ export function MetricCard({
           borderRadius: "16px 16px 0 0",
         }}
       />
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Box
+      <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+        <Stack
+          direction="row"
           sx={{
             width: UI.METRIC_ICON_SIZE,
             height: UI.METRIC_ICON_SIZE,
             borderRadius: 2.5,
-            display: "flex",
             alignItems: "center",
             justifyContent: "center",
             bgcolor: alpha(cardColor, UI.ALPHA_MUTED),
@@ -88,7 +90,7 @@ export function MetricCard({
           }}
         >
           {icon}
-        </Box>
+        </Stack>
         {change !== undefined && (
           <Chip
             size="small"
@@ -98,7 +100,7 @@ export function MetricCard({
             sx={{ fontWeight: 600 }}
           />
         )}
-      </Box>
+      </Stack>
       <Typography variant="body2" color="text.secondary" gutterBottom>
         {title}
       </Typography>

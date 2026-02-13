@@ -5,7 +5,15 @@ import Link from "next/link";
 
 import HomeIcon from "@mui/icons-material/Home";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import { Box, Breadcrumbs as MuiBreadcrumbs, Link as MuiLink, Typography } from "@mui/material";
+import {
+  Box,
+  Breadcrumbs as MuiBreadcrumbs,
+  Link as MuiLink,
+  Stack,
+  Typography,
+} from "@mui/material";
+
+import { UI } from "@app/shared/config/config";
 
 export interface BreadcrumbItem {
   label: string;
@@ -20,12 +28,15 @@ interface BreadcrumbsProps {
 
 export function Breadcrumbs({ items, showHome = true }: BreadcrumbsProps) {
   const allItems = showHome
-    ? [{ label: "Home", href: "/app", icon: <HomeIcon sx={{ fontSize: 18 }} /> }, ...items]
+    ? [
+        { label: "Home", href: "/app", icon: <HomeIcon sx={{ fontSize: UI.ICON_SIZE_SM }} /> },
+        ...items,
+      ]
     : items;
 
   return (
     <MuiBreadcrumbs
-      separator={<NavigateNextIcon sx={{ fontSize: 16, color: "text.secondary" }} />}
+      separator={<NavigateNextIcon sx={{ fontSize: UI.ICON_SIZE_XS, color: "text.secondary" }} />}
       sx={{ mb: 1.5 }}
     >
       {allItems.map((item, index) => {
@@ -33,12 +44,12 @@ export function Breadcrumbs({ items, showHome = true }: BreadcrumbsProps) {
 
         if (isLast) {
           return (
-            <Box key={item.label} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <Stack key={item.label} direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
               {item.icon}
               <Typography variant="body2" color="text.primary" fontWeight={500}>
                 {item.label}
               </Typography>
-            </Box>
+            </Stack>
           );
         }
 

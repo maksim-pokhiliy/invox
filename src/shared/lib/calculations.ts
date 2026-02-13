@@ -1,5 +1,12 @@
+import {
+  DISCOUNT_NONE,
+  DISCOUNT_TYPE,
+  type DiscountTypeValue,
+  isDiscountType,
+} from "@app/shared/config/invoice-status";
+
 export interface DiscountInput {
-  type: "PERCENTAGE" | "FIXED";
+  type: DiscountTypeValue;
   value: number;
 }
 
@@ -25,7 +32,7 @@ export function calculateTotals(
   let discountAmount = 0;
 
   if (discount && discount.value > 0) {
-    if (discount.type === "PERCENTAGE") {
+    if (discount.type === DISCOUNT_TYPE.PERCENTAGE) {
       discountAmount = Math.round((subtotal * discount.value) / 100);
     } else {
       discountAmount = discount.value;
@@ -43,9 +50,13 @@ export function buildDiscountInput(
   discountType: string | null | undefined,
   discountValue: number | null | undefined
 ): DiscountInput | null {
-  if (!discountType || discountType === "NONE" || !discountValue || discountValue <= 0) {
+  if (!discountType || discountType === DISCOUNT_NONE || !discountValue || discountValue <= 0) {
     return null;
   }
 
-  return { type: discountType as DiscountInput["type"], value: discountValue };
+  if (!isDiscountType(discountType)) {
+    return null;
+  }
+
+  return { type: discountType, value: discountValue };
 }

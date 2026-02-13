@@ -3,15 +3,16 @@
 import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
 
-import { Alert, Box } from "@mui/material";
+import { Alert, Box, Stack } from "@mui/material";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { ApiError } from "@app/shared/api";
+import { BRANDING } from "@app/shared/config/config";
+import { useToast } from "@app/shared/hooks/use-toast";
 import { SenderProfileFormInput, senderProfileFormSchema } from "@app/shared/schemas";
 import type { SenderProfile } from "@app/shared/schemas/api";
 import { LoadingButton } from "@app/shared/ui/loading-button";
-import { useToast } from "@app/shared/ui/toast";
 
 import { useUpdateSenderProfile } from "@app/features/settings";
 
@@ -42,7 +43,7 @@ export function BusinessProfileTab({ profile }: BusinessProfileTabProps) {
       emailFrom: "",
       address: "",
       taxId: "",
-      defaultCurrency: "USD",
+      defaultCurrency: BRANDING.DEFAULT_CURRENCY,
     },
   });
 
@@ -54,7 +55,7 @@ export function BusinessProfileTab({ profile }: BusinessProfileTabProps) {
         emailFrom: profile.emailFrom || "",
         address: profile.address || "",
         taxId: profile.taxId || "",
-        defaultCurrency: profile.defaultCurrency || "USD",
+        defaultCurrency: profile.defaultCurrency || BRANDING.DEFAULT_CURRENCY,
         defaultRate: profile.defaultRate ? profile.defaultRate / 100 : undefined,
       });
     }
@@ -96,7 +97,7 @@ export function BusinessProfileTab({ profile }: BusinessProfileTabProps) {
         <ContactFields register={register} errors={errors} />
         <CurrencySelector register={register} errors={errors} currentValue={currency} />
 
-        <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
+        <Stack direction="row" sx={{ mt: 4, justifyContent: "flex-end" }}>
           <LoadingButton
             type="submit"
             variant="contained"
@@ -105,7 +106,7 @@ export function BusinessProfileTab({ profile }: BusinessProfileTabProps) {
           >
             Save Changes
           </LoadingButton>
-        </Box>
+        </Stack>
       </Box>
     </>
   );

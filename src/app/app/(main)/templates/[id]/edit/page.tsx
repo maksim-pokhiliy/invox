@@ -6,8 +6,9 @@ import { Alert, Box, Button } from "@mui/material";
 
 import { AppLayout } from "@app/shared/layout/app-layout";
 import { Breadcrumbs } from "@app/shared/ui/breadcrumbs";
-import { CardSkeleton } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/skeletons";
 
+import { useSenderProfile } from "@app/features/settings";
 import { useTemplate } from "@app/features/templates";
 import { TemplateForm } from "@app/features/templates/components";
 
@@ -16,6 +17,7 @@ export default function EditTemplatePage() {
   const router = useRouter();
   const templateId = String(params.id);
   const { data: template, isLoading, error } = useTemplate(templateId);
+  const { data: senderProfile } = useSenderProfile();
 
   if (isLoading) {
     return (
@@ -54,6 +56,7 @@ export default function EditTemplatePage() {
       <TemplateForm
         mode="edit"
         templateId={templateId}
+        defaultCurrency={senderProfile?.defaultCurrency}
         initialData={{
           name: template.name,
           description: template.description || "",
@@ -67,9 +70,19 @@ export default function EditTemplatePage() {
           notes: template.notes || "",
           dueDays: template.dueDays,
           items: template.items.map((item) => ({
-            description: item.description,
+            title: item.title,
+            description: item.description || "",
             quantity: item.quantity,
             unitPrice: item.unitPrice / 100,
+          })),
+          itemGroups: template.itemGroups?.map((group) => ({
+            title: group.title,
+            items: group.items.map((item) => ({
+              title: item.title,
+              description: item.description || "",
+              quantity: item.quantity,
+              unitPrice: item.unitPrice / 100,
+            })),
           })),
         }}
       />

@@ -1,24 +1,16 @@
 "use client";
 
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import { alpha, Box, Button, Chip, Typography, useTheme } from "@mui/material";
+import { alpha, Box, Button, Chip, Stack, Typography, useTheme } from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
 import { getStatusColor, STATUS_CONFIG } from "@app/shared/config/invoice-status";
 import { formatCurrency, formatDateShort } from "@app/shared/lib/format";
 import { EmptyState } from "@app/shared/ui/empty-state";
 import { EmptyInvoicesIllustration } from "@app/shared/ui/illustrations/empty-invoices";
-import { CardSkeleton } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/skeletons";
 
-interface RecentInvoice {
-  id: string;
-  publicId: string;
-  clientName: string;
-  total: number;
-  currency: string;
-  status: string;
-  createdAt: string;
-}
+import type { RecentInvoice } from "../api";
 
 interface RecentInvoicesContentProps {
   isLoading: boolean;
@@ -40,7 +32,7 @@ export function RecentInvoicesContent({
   if (!invoices || invoices.length === 0) {
     return (
       <EmptyState
-        icon={<ReceiptLongIcon sx={{ fontSize: 40, color: "primary.main" }} />}
+        icon={<ReceiptLongIcon />}
         illustration={<EmptyInvoicesIllustration />}
         title="No invoices yet"
         description="Create your first invoice to see activity here"
@@ -59,10 +51,10 @@ export function RecentInvoicesContent({
         const statusLabel = STATUS_CONFIG[invoice.status]?.label || invoice.status;
 
         return (
-          <Box
+          <Stack
             key={invoice.id}
+            direction="row"
             sx={{
-              display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               py: 1.5,
@@ -85,7 +77,7 @@ export function RecentInvoicesContent({
                 {invoice.clientName} &bull; {formatDateShort(invoice.createdAt)}
               </Typography>
             </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
               <Typography
                 variant="body2"
                 fontWeight={600}
@@ -100,11 +92,11 @@ export function RecentInvoicesContent({
                   bgcolor: alpha(getStatusColor(theme, invoice.status), UI.ALPHA_MUTED),
                   color: getStatusColor(theme, invoice.status),
                   fontWeight: 600,
-                  fontSize: "0.7rem",
+                  fontSize: "caption.fontSize",
                 }}
               />
-            </Box>
-          </Box>
+            </Stack>
+          </Stack>
         );
       })}
     </Box>

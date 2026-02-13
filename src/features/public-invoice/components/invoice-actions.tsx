@@ -2,7 +2,7 @@
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PrintIcon from "@mui/icons-material/Print";
-import { alpha, Box, Button } from "@mui/material";
+import { alpha, Button, Stack } from "@mui/material";
 
 interface InvoiceActionsProps {
   isPaid: boolean;
@@ -15,10 +15,10 @@ export function InvoiceActions({ isPaid, accentColor }: InvoiceActionsProps) {
   };
 
   return (
-    <Box
+    <Stack
+      direction="row"
+      spacing={2}
       sx={{
-        display: "flex",
-        gap: 2,
         mt: 5,
         justifyContent: "center",
         "@media print": { display: "none" },
@@ -52,6 +52,6 @@ export function InvoiceActions({ isPaid, accentColor }: InvoiceActionsProps) {
           Paid
         </Button>
       )}
-    </Box>
+    </Stack>
   );
 }

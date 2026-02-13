@@ -2,7 +2,7 @@
 
 import { Box, Stack, Typography } from "@mui/material";
 
-import { CardSkeleton } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/skeletons";
 
 import { useTimeTrackingConnections, useTimeTrackingProviders } from "../hooks";
 import { ProviderCard } from "./provider-card";

@@ -8,15 +8,15 @@ import EditIcon from "@mui/icons-material/Edit";
 import LinkIcon from "@mui/icons-material/Link";
 import PreviewIcon from "@mui/icons-material/Preview";
 import SendIcon from "@mui/icons-material/Send";
-import { Box, Button, Chip, Typography } from "@mui/material";
+import { Box, Button, Chip, type ChipProps, Stack, Typography } from "@mui/material";
 
+import { RESPONSIVE_SX } from "@app/shared/config/config";
 import { formatDate } from "@app/shared/lib/format";
 import type { Invoice } from "@app/shared/schemas/api";
 import { Breadcrumbs } from "@app/shared/ui/breadcrumbs";
 
-import { InvoiceOverflowMenu } from "@app/features/invoices/components";
-
-import { useInvoiceDetail } from "./use-invoice-detail";
+import { InvoiceOverflowMenu } from "../components/invoice-overflow-menu";
+import { useInvoiceDetail } from "../hooks/use-invoice-detail";
 
 type InvoiceDetailReturn = ReturnType<typeof useInvoiceDetail>;
 
@@ -38,7 +38,7 @@ export function DetailActions({
   const router = useRouter();
 
   return (
-    <Box sx={{ display: "flex", gap: 1.5, alignItems: "center" }}>
+    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
       {isDraft && (
         <>
           <Button
@@ -59,7 +59,7 @@ export function DetailActions({
             variant="outlined"
             startIcon={<PreviewIcon />}
             onClick={() => detail.setPreviewDialogOpen(true)}
-            sx={{ display: { xs: "none", sm: "flex" } }}
+            sx={RESPONSIVE_SX.DESKTOP_ONLY}
           >
             Preview
           </Button>
@@ -84,7 +84,7 @@ export function DetailActions({
           variant="outlined"
           startIcon={<CheckCircleIcon />}
           onClick={() => detail.setMarkPaidDialogOpen(true)}
-          sx={{ display: { xs: "none", md: "flex" } }}
+          sx={RESPONSIVE_SX.DESKTOP_MD_ONLY}
         >
           Mark Paid
         </Button>
@@ -100,13 +100,13 @@ export function DetailActions({
         onDuplicate={detail.handleDuplicate}
         onDelete={detail.handleDelete}
       />
-    </Box>
+    </Stack>
   );
 }
 
 interface DetailHeaderProps {
   invoice: Invoice;
-  status: { label: string; color: "success" | "error" | "info" | "warning" | "default" };
+  status: { label: string; color: NonNullable<ChipProps["color"]> };
   isDraft: boolean;
   isPaid: boolean;
   isPartiallyPaid: boolean;
@@ -129,23 +129,22 @@ export function DetailHeader({
         items={[{ label: "Invoices", href: "/app/invoices" }, { label: `#${invoice.publicId}` }]}
       />
 
-      <Box
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
         sx={{
-          display: "flex",
           justifyContent: "space-between",
           alignItems: { xs: "flex-start", sm: "center" },
-          flexDirection: { xs: "column", sm: "row" },
-          gap: 2,
           mb: 4,
         }}
       >
         <Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 0.5 }}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: "center", mb: 0.5 }}>
             <Typography variant="h4" component="h1" fontWeight={700}>
               Invoice #{invoice.publicId}
             </Typography>
             <Chip label={status.label} color={status.color} sx={{ fontWeight: 600 }} />
-          </Box>
+          </Stack>
           <Typography variant="body2" color="text.secondary">
             Created on {formatDate(invoice.createdAt)}
           </Typography>
@@ -158,7 +157,7 @@ export function DetailHeader({
           invoiceId={invoiceId}
           detail={detail}
         />
-      </Box>
+      </Stack>
     </>
   );
 }

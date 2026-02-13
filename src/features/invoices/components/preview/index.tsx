@@ -12,8 +12,11 @@ import {
   DialogTitle,
   Divider,
   Paper,
+  Stack,
   useTheme,
 } from "@mui/material";
+
+import type { Invoice } from "@app/shared/schemas/api";
 
 import { PreviewDates } from "./preview-dates";
 import { PreviewHeader } from "./preview-header";
@@ -21,39 +24,22 @@ import { PreviewItems } from "./preview-items";
 import { PreviewParties } from "./preview-parties";
 import { PreviewTotals } from "./preview-totals";
 
-interface InvoiceItem {
-  id: string;
-  title: string;
-  description?: string | null;
-  quantity: number;
-  unitPrice: number;
-  amount: number;
-}
-
-interface InvoiceItemGroup {
-  id: string;
-  title: string;
-  items: InvoiceItem[];
-}
-
 interface InvoicePreviewDialogProps {
   open: boolean;
   onClose: () => void;
   onSend: () => void;
-  invoice: {
-    publicId: string;
-    createdAt: string;
-    dueDate: string;
-    currency: string;
-    subtotal: number;
-    total: number;
-    client: {
-      name: string;
-      email: string;
-    };
-    items: InvoiceItem[];
-    itemGroups?: InvoiceItemGroup[];
-  };
+  invoice: Pick<
+    Invoice,
+    | "publicId"
+    | "createdAt"
+    | "dueDate"
+    | "currency"
+    | "subtotal"
+    | "total"
+    | "client"
+    | "items"
+    | "itemGroups"
+  >;
 }
 
 export function InvoicePreviewDialog({
@@ -66,7 +52,11 @@ export function InvoicePreviewDialog({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: 600, display: "flex", justifyContent: "space-between" }}>
+      <DialogTitle
+        component={Stack}
+        direction="row"
+        sx={{ fontWeight: 600, justifyContent: "space-between" }}
+      >
         Invoice Preview
         <Chip label="Preview Mode" size="small" color="info" />
       </DialogTitle>

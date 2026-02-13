@@ -14,12 +14,9 @@ import {
 
 import { CHART } from "@app/shared/config/config";
 import { formatCurrencyCompact } from "@app/shared/lib/format";
-import { CardSkeleton } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/skeletons";
 
-interface MonthlyRevenue {
-  month: string;
-  revenue: number;
-}
+import type { MonthlyRevenue } from "../api";
 
 interface RevenueChartProps {
   isLoading: boolean;

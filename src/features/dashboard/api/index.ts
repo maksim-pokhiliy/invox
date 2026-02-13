@@ -1,12 +1,27 @@
 import { fetchApi } from "@app/shared/api/base";
 
+export interface MonthlyRevenue {
+  month: string;
+  revenue: number;
+}
+
+export interface RecentInvoice {
+  id: string;
+  publicId: string;
+  clientName: string;
+  total: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+}
+
 export interface CurrencyMetrics {
   totalRevenue: number;
   revenueThisMonth: number;
   revenueLastMonth: number;
   outstandingBalance: number;
   overdueAmount: number;
-  monthlyRevenue: { month: string; revenue: number }[];
+  monthlyRevenue: MonthlyRevenue[];
 }
 
 export interface AnalyticsData {
@@ -21,17 +36,9 @@ export interface AnalyticsData {
   paidInvoices: number;
   overdueInvoices: number;
   statusCounts: Record<string, number>;
-  monthlyRevenue: { month: string; revenue: number }[];
+  monthlyRevenue: MonthlyRevenue[];
   clientCount: number;
-  recentInvoices: {
-    id: string;
-    publicId: string;
-    status: string;
-    total: number;
-    currency: string;
-    clientName: string;
-    createdAt: string;
-  }[];
+  recentInvoices: RecentInvoice[];
 }
 
 export const analyticsApi = {

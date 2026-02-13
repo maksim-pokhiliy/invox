@@ -10,6 +10,21 @@ import {
 import { buildDiscountInput, calculateTotals } from "@app/shared/lib/calculations";
 
 import { prisma } from "@app/server/db";
+import { createItemGroups } from "@app/server/invoices/item-groups";
+
+interface RecurringItem {
+  title: string;
+  description: string | null;
+  quantity: number;
+  unitPrice: number;
+  sortOrder: number;
+}
+
+interface RecurringItemGroup {
+  title: string;
+  sortOrder: number;
+  items: RecurringItem[];
+}
 
 export function calculateNextRunDate(currentDate: Date, frequency: RecurringFrequency): Date {
   const next = new Date(currentDate);
@@ -47,15 +62,21 @@ export async function generateInvoiceFromRecurring(recurringInvoice: {
   dueDays: number;
   autoSend: boolean;
   frequency: RecurringFrequency;
-  items: { description: string; quantity: number; unitPrice: number }[];
+  items: RecurringItem[];
+  itemGroups: RecurringItemGroup[];
 }) {
+  const allItems = [
+    ...recurringInvoice.items,
+    ...recurringInvoice.itemGroups.flatMap((g) => g.items),
+  ];
+
   const discount = buildDiscountInput(
     recurringInvoice.discountType,
     recurringInvoice.discountValue
   );
 
   const { subtotal, discountAmount, taxAmount, total } = calculateTotals(
-    recurringInvoice.items,
+    allItems,
     discount,
     recurringInvoice.taxRate
   );
@@ -82,12 +103,13 @@ export async function generateInvoiceFromRecurring(recurringInvoice: {
       notes: recurringInvoice.notes,
       sentAt: recurringInvoice.autoSend ? new Date() : null,
       items: {
-        create: recurringInvoice.items.map((item) => ({
-          title: item.description,
-          description: null,
+        create: recurringInvoice.items.map((item, i) => ({
+          title: item.title,
+          description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           amount: Math.round(item.quantity * item.unitPrice),
+          sortOrder: item.sortOrder ?? i,
         })),
       },
       events: {
@@ -98,6 +120,23 @@ export async function generateInvoiceFromRecurring(recurringInvoice: {
       },
     },
   });
+
+  if (recurringInvoice.itemGroups.length > 0) {
+    await createItemGroups(
+      invoice.id,
+      recurringInvoice.itemGroups.map((g) => ({
+        title: g.title,
+        sortOrder: g.sortOrder,
+        items: g.items.map((item) => ({
+          title: item.title,
+          description: item.description ?? undefined,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          sortOrder: item.sortOrder,
+        })),
+      }))
+    );
+  }
 
   const nextRunAt = calculateNextRunDate(new Date(), recurringInvoice.frequency);
 
@@ -123,6 +162,9 @@ export async function processDueRecurringInvoices() {
     },
     include: {
       items: true,
+      itemGroups: {
+        include: { items: true },
+      },
     },
   });
 

@@ -3,7 +3,9 @@
 import * as React from "react";
 
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { Box, Button, Paper, Typography } from "@mui/material";
+import { Button, Paper, Stack, Typography } from "@mui/material";
+
+import { UI } from "@app/shared/config/config";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -36,9 +38,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       }
 
       return (
-        <Box
+        <Stack
+          direction="row"
           sx={{
-            display: "flex",
             alignItems: "center",
             justifyContent: "center",
             minHeight: "40vh",
@@ -46,7 +48,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           }}
         >
           <Paper sx={{ p: 4, borderRadius: 3, textAlign: "center", maxWidth: 480 }}>
-            <ErrorOutlineIcon sx={{ fontSize: 44, color: "error.main", mb: 2 }} />
+            <ErrorOutlineIcon sx={{ fontSize: UI.METRIC_ICON_SIZE, color: "error.main", mb: 2 }} />
             <Typography variant="h6" fontWeight={600} gutterBottom>
               Something went wrong
             </Typography>
@@ -57,7 +59,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               Try Again
             </Button>
           </Paper>
-        </Box>
+        </Stack>
       );
     }
 

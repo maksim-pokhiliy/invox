@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
+import { Box, CircularProgress, keyframes, Stack, Typography } from "@mui/material";
 
-import { Box, CircularProgress, keyframes, Skeleton, Typography } from "@mui/material";
+import { UI } from "@app/shared/config/config";
 
 const pulse = keyframes`
   0%, 100% {
@@ -24,23 +24,22 @@ const bounce = keyframes`
 
 export function PageLoader({ message }: { message?: string }) {
   return (
-    <Box
+    <Stack
+      direction="column"
+      spacing={2}
       sx={{
-        display: "flex",
-        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         minHeight: "50vh",
-        gap: 2,
       }}
     >
-      <CircularProgress size={40} thickness={4} />
+      <CircularProgress size={UI.LOADER_SIZE_LG} thickness={4} />
       {message && (
         <Typography color="text.secondary" variant="body2">
           {message}
         </Typography>
       )}
-    </Box>
+    </Stack>
   );
 }
 
@@ -50,7 +49,7 @@ export function Spinner({ size = 24 }: { size?: number }) {
 
 export function DotsLoader() {
   return (
-    <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
+    <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
       {[0, 1, 2].map((i) => (
         <Box
           key={i}
@@ -64,76 +63,7 @@ export function DotsLoader() {
           }}
         />
       ))}
-    </Box>
-  );
-}
-
-export function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; columns?: number }) {
-  return (
-    <Box sx={{ width: "100%" }}>
-      <Box sx={{ display: "flex", gap: 2, mb: 2, pb: 2, borderBottom: 1, borderColor: "divider" }}>
-        {Array.from({ length: columns }).map((_, i) => (
-          <Skeleton
-            key={i}
-            animation="wave"
-            variant="text"
-            width={`${100 / columns}%`}
-            height={24}
-          />
-        ))}
-      </Box>
-      {Array.from({ length: rows }).map((_, rowIndex) => (
-        <Box key={rowIndex} sx={{ display: "flex", gap: 2, py: 1.5 }}>
-          {Array.from({ length: columns }).map((_, colIndex) => (
-            <Skeleton
-              key={colIndex}
-              animation="wave"
-              variant="text"
-              width={`${100 / columns}%`}
-              height={20}
-            />
-          ))}
-        </Box>
-      ))}
-    </Box>
-  );
-}
-
-export function CardSkeleton() {
-  return (
-    <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 3 }}>
-      <Skeleton animation="wave" variant="text" width="60%" height={28} sx={{ mb: 2 }} />
-      <Skeleton animation="wave" variant="text" width="100%" height={20} />
-      <Skeleton animation="wave" variant="text" width="80%" height={20} />
-      <Skeleton animation="wave" variant="text" width="40%" height={20} sx={{ mt: 2 }} />
-    </Box>
-  );
-}
-
-export function InvoiceItemSkeleton() {
-  return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 3, py: 2 }}>
-      <Skeleton animation="wave" variant="rounded" width={80} height={24} />
-      <Box sx={{ flex: 1 }}>
-        <Skeleton animation="wave" variant="text" width="40%" height={20} />
-        <Skeleton animation="wave" variant="text" width="25%" height={16} />
-      </Box>
-      <Skeleton animation="wave" variant="text" width={80} height={20} />
-      <Skeleton animation="wave" variant="text" width={100} height={20} />
-      <Skeleton animation="wave" variant="rounded" width={70} height={24} />
-    </Box>
-  );
-}
-
-export function StatSkeleton() {
-  return (
-    <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 3 }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Skeleton animation="wave" variant="circular" width={48} height={48} />
-      </Box>
-      <Skeleton animation="wave" variant="text" width="50%" height={16} sx={{ mb: 1 }} />
-      <Skeleton animation="wave" variant="text" width="70%" height={36} />
-    </Box>
+    </Stack>
   );
 }
 

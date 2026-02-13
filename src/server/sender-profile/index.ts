@@ -2,14 +2,14 @@ import { SenderProfileInput } from "@app/shared/schemas";
 
 import { prisma } from "@app/server/db";
 
-function normalizeProfileData(data: SenderProfileInput, isCreate: boolean) {
+function buildCreateData(data: SenderProfileInput) {
   return {
     companyName: data.companyName ?? null,
     displayName: data.displayName ?? null,
     emailFrom: data.emailFrom ?? null,
     address: data.address ?? null,
     taxId: data.taxId ?? null,
-    defaultCurrency: isCreate ? (data.defaultCurrency ?? "USD") : data.defaultCurrency,
+    defaultCurrency: data.defaultCurrency ?? "USD",
     logoUrl: data.logoUrl ?? null,
     primaryColor: data.primaryColor ?? null,
     accentColor: data.accentColor ?? null,
@@ -18,6 +18,10 @@ function normalizeProfileData(data: SenderProfileInput, isCreate: boolean) {
     invoicePrefix: data.invoicePrefix ?? null,
     defaultRate: data.defaultRate ?? null,
   };
+}
+
+function buildUpdateData(data: SenderProfileInput) {
+  return Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined));
 }
 
 export async function getSenderProfile(userId: string) {
@@ -30,7 +34,7 @@ export async function createSenderProfile(userId: string, data: SenderProfileInp
   return prisma.senderProfile.create({
     data: {
       userId,
-      ...normalizeProfileData(data, true),
+      ...buildCreateData(data),
     },
   });
 }
@@ -38,17 +42,14 @@ export async function createSenderProfile(userId: string, data: SenderProfileInp
 export async function updateSenderProfile(userId: string, data: SenderProfileInput) {
   return prisma.senderProfile.update({
     where: { userId },
-    data: normalizeProfileData(data, false),
+    data: buildUpdateData(data),
   });
 }
 
 export async function upsertSenderProfile(userId: string, data: SenderProfileInput) {
-  const createData = normalizeProfileData(data, true);
-  const updateData = normalizeProfileData(data, false);
-
   return prisma.senderProfile.upsert({
     where: { userId },
-    create: { userId, ...createData },
-    update: updateData,
+    create: { userId, ...buildCreateData(data) },
+    update: buildUpdateData(data),
   });
 }

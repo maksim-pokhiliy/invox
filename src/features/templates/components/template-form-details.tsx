@@ -6,7 +6,6 @@ import {
   FormControl,
   FormHelperText,
   Grid,
-  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
@@ -18,71 +17,13 @@ import {
 import { CURRENCIES } from "@app/shared/config/currencies";
 import type { TemplateFormData } from "@app/shared/schemas";
 
+import { DiscountAndTaxFields } from "./discount-and-tax-fields";
+
 interface TemplateFormDetailsProps {
   register: UseFormRegister<TemplateFormData>;
   errors: FieldErrors<TemplateFormData>;
   currency: string;
   discountType: string | undefined;
-}
-
-function DiscountAndTaxFields({
-  register,
-  discountType,
-  currency,
-}: Pick<TemplateFormDetailsProps, "register" | "discountType" | "currency">) {
-  return (
-    <>
-      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <FormControl fullWidth>
-          <InputLabel>Discount Type</InputLabel>
-          <Select label="Discount Type" defaultValue="" {...register("discountType")}>
-            <MenuItem value="">No Discount</MenuItem>
-            <MenuItem value="PERCENTAGE">Percentage (%)</MenuItem>
-            <MenuItem value="FIXED">Fixed Amount</MenuItem>
-          </Select>
-        </FormControl>
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <TextField
-          label="Discount Value"
-          type="number"
-          fullWidth
-          {...register("discountValue", { valueAsNumber: true })}
-          slotProps={{
-            input: {
-              startAdornment: discountType === "FIXED" && (
-                <InputAdornment position="start">{currency}</InputAdornment>
-              ),
-              endAdornment: discountType === "PERCENTAGE" && (
-                <InputAdornment position="end">%</InputAdornment>
-              ),
-            },
-          }}
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <TextField
-          label="Tax Rate (%)"
-          type="number"
-          fullWidth
-          {...register("taxRate", { valueAsNumber: true })}
-          slotProps={{
-            input: { endAdornment: <InputAdornment position="end">%</InputAdornment> },
-          }}
-        />
-      </Grid>
-      <Grid size={{ xs: 12 }}>
-        <TextField
-          label="Notes (optional)"
-          multiline
-          rows={2}
-          fullWidth
-          {...register("notes")}
-          placeholder="Default notes to include on invoices"
-        />
-      </Grid>
-    </>
-  );
 }
 
 export function TemplateFormDetails({
@@ -112,7 +53,7 @@ export function TemplateFormDetails({
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <FormControl fullWidth error={!!errors.currency}>
             <InputLabel>Currency</InputLabel>
-            <Select label="Currency" defaultValue="USD" {...register("currency")}>
+            <Select label="Currency" {...register("currency")}>
               {CURRENCIES.map((c) => (
                 <MenuItem key={c.value} value={c.value}>
                   {c.label}

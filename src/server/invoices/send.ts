@@ -6,7 +6,7 @@ import { INVOICE_EVENT, INVOICE_STATUS } from "@app/shared/config/invoice-status
 
 import { prisma } from "@app/server/db";
 import { type EmailBranding, sendInvoiceEmail } from "@app/server/email";
-import { getFollowUpRule, scheduleFollowUps } from "@app/server/followups";
+import { getFollowUpRule, parseDelaysDays, scheduleFollowUps } from "@app/server/followups";
 import { logInvoiceEvent, updateInvoiceStatus } from "@app/server/invoices";
 import { ITEM_GROUPS_INCLUDE } from "@app/server/invoices/item-groups";
 
@@ -126,7 +126,7 @@ export async function sendInvoice(invoiceId: string, userId: string) {
   if (followUpRule?.enabled) {
     await scheduleFollowUps(invoice.id, sentAt, invoice.dueDate, {
       mode: followUpRule.mode,
-      delaysDays: followUpRule.delaysDays as number[],
+      delaysDays: parseDelaysDays(followUpRule.delaysDays),
     });
   }
 

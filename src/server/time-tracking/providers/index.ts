@@ -1,3 +1,8 @@
+import { registerProvider } from "./registry";
+import { togglProvider } from "./toggl";
+
+registerProvider(togglProvider);
+
 export { getAllProviders, getProvider, registerProvider } from "./registry";
 export type {
   BreakdownOption,

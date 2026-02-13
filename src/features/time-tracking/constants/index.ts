@@ -1,11 +1,16 @@
-export const PROVIDER_META: Record<string, { name: string; description: string; docsUrl: string }> =
-  {
-    toggl: {
-      name: "Toggl Track",
-      description: "Import time entries from Toggl Track to create invoice line items",
-      docsUrl: "https://track.toggl.com/profile",
-    },
-  };
+interface ProviderMeta {
+  name: string;
+  description: string;
+  docsUrl: string;
+}
+
+export const PROVIDER_META: Record<string, ProviderMeta> = {
+  toggl: {
+    name: "Toggl Track",
+    description: "Import time entries from Toggl Track to create invoice line items",
+    docsUrl: "https://track.toggl.com/profile",
+  },
+};
 
 export const BREAKDOWN_LABELS: Record<string, string> = {
   projects: "Project",

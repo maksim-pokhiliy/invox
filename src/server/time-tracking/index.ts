@@ -1,8 +1,3 @@
-import { registerProvider } from "./providers/registry";
-import { togglProvider } from "./providers/toggl";
-
-registerProvider(togglProvider);
-
 export type {
   BreakdownOption,
   NormalizedProject,

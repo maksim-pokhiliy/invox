@@ -19,7 +19,7 @@ import {
 import { formatDateTime } from "@app/shared/lib/format";
 import { ConfirmDialog } from "@app/shared/ui/confirm-dialog";
 import { EmptyState } from "@app/shared/ui/empty-state";
-import { CardSkeleton } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/skeletons";
 
 import { CONNECTION_STATUS_CONFIG } from "../constants";
 import { useConnections, useDeleteConnection, useSyncConnection } from "../hooks";
@@ -56,7 +56,7 @@ export function ConnectionList() {
   if (!connections?.length) {
     return (
       <EmptyState
-        icon={<AccountBalanceIcon sx={{ fontSize: 40, color: "primary.main" }} />}
+        icon={<AccountBalanceIcon />}
         title="No banks connected"
         description="Connect your bank account to automatically detect incoming payments and match them to invoices."
       />
@@ -74,16 +74,17 @@ export function ConnectionList() {
           return (
             <Card key={connection.id} variant="outlined" sx={{ borderRadius: 2 }}>
               <CardContent
+                component={Stack}
+                direction="row"
                 sx={{
                   p: 2,
                   "&:last-child": { pb: 2 },
-                  display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                 }}
               >
                 <Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.5 }}>
                     <Typography variant="subtitle2" fontWeight={600}>
                       {connection.providerName}
                     </Typography>
@@ -91,9 +92,9 @@ export function ConnectionList() {
                       label={statusConfig.label}
                       color={statusConfig.color}
                       size="small"
-                      sx={{ height: 20, fontSize: "0.7rem" }}
+                      sx={{ height: 20, fontSize: "caption.fontSize" }}
                     />
-                  </Box>
+                  </Stack>
                   <Typography variant="caption" color="text.secondary">
                     {connection.accounts.length} account
                     {connection.accounts.length !== 1 ? "s" : ""}
@@ -116,7 +117,7 @@ export function ConnectionList() {
                           animation: isSyncing ? "spin 1s linear infinite" : "none",
                           "@keyframes spin": {
                             "0%": { transform: "rotate(0deg)" },
-                            "100%": { transform: "rotate(360deg)" },
+                            "100%": { transform: "rotate(-360deg)" },
                           },
                         }}
                       />

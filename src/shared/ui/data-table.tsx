@@ -52,6 +52,21 @@ interface DataTableProps {
   onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
+interface DataTableRowProps {
+  children: React.ReactNode;
+  onClick?: () => void;
+  onMouseEnter?: () => void;
+  selected?: boolean;
+  height?: number;
+  dataIndex?: number;
+  sx?: Record<string, unknown>;
+}
+
+interface DataTableActionsProps {
+  onMenuOpen: (event: React.MouseEvent<HTMLElement>) => void;
+  ariaLabel?: string;
+}
+
 function HeaderCellContent({
   col,
   sortColumn,
@@ -127,7 +142,7 @@ export function DataTable({
                   />
                 </TableCell>
               ))}
-              <TableCell sx={{ fontWeight: 600, width: 48 }} />
+              <TableCell sx={{ fontWeight: 600, width: UI.TABLE_ACTION_WIDTH }} />
             </TableRow>
           </TableHead>
           <TableBody>{children}</TableBody>
@@ -147,16 +162,6 @@ export function DataTable({
       )}
     </Paper>
   );
-}
-
-interface DataTableRowProps {
-  children: React.ReactNode;
-  onClick?: () => void;
-  onMouseEnter?: () => void;
-  selected?: boolean;
-  height?: number;
-  dataIndex?: number;
-  sx?: Record<string, unknown>;
 }
 
 export function DataTableRow({
@@ -189,11 +194,6 @@ export function DataTableRow({
       {children}
     </TableRow>
   );
-}
-
-interface DataTableActionsProps {
-  onMenuOpen: (event: React.MouseEvent<HTMLElement>) => void;
-  ariaLabel?: string;
 }
 
 export function DataTableActions({ onMenuOpen, ariaLabel = "Actions" }: DataTableActionsProps) {

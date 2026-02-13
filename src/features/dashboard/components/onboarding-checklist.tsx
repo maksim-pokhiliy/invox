@@ -13,6 +13,7 @@ import {
   IconButton,
   LinearProgress,
   Paper,
+  Stack,
   Typography,
   useTheme,
 } from "@mui/material";
@@ -44,14 +45,14 @@ function ChecklistSteps({
   const theme = useTheme();
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+    <Stack direction="column" spacing={1}>
       {steps.map((step) => (
-        <Box
+        <Stack
           key={step.label}
+          direction="row"
+          spacing={1.5}
           sx={{
-            display: "flex",
             alignItems: "center",
-            gap: 1.5,
             p: 1,
             borderRadius: 1.5,
             cursor: step.completed ? "default" : "pointer",
@@ -76,9 +77,9 @@ function ChecklistSteps({
           >
             {step.label}
           </Typography>
-        </Box>
+        </Stack>
       ))}
-    </Box>
+    </Stack>
   );
 }
 
@@ -122,14 +123,14 @@ export function OnboardingChecklist({ steps, isLoading, onNavigate }: Onboarding
         bgcolor: alpha(theme.palette.primary.main, 0.02),
       }}
     >
-      <Box
+      <Stack
+        direction="row"
+        spacing={2}
         onClick={handleToggle}
         sx={{
           px: 2.5,
           py: 1.5,
-          display: "flex",
           alignItems: "center",
-          gap: 2,
           cursor: "pointer",
           "&:hover": { bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_HOVER) },
           borderRadius: 3,
@@ -163,7 +164,7 @@ export function OnboardingChecklist({ steps, isLoading, onNavigate }: Onboarding
             <KeyboardArrowDownIcon fontSize="small" />
           )}
         </IconButton>
-      </Box>
+      </Stack>
 
       <Collapse in={expanded}>
         <Box sx={{ px: 2.5, pb: 2.5 }}>

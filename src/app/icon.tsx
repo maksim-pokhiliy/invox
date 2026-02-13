@@ -1,6 +1,8 @@
 import { ImageResponse } from "next/og";
 
-export const size = { width: 128, height: 128 };
+import { UI } from "@app/shared/config/config";
+
+export const size = { width: UI.FAVICON_SIZE, height: UI.FAVICON_SIZE };
 export const contentType = "image/png";
 
 export default function Icon() {
@@ -19,7 +21,7 @@ export default function Icon() {
       <span
         style={{
           color: "white",
-          fontSize: 84,
+          fontSize: UI.FAVICON_ICON_SIZE,
           fontWeight: 900,
           lineHeight: 1,
         }}

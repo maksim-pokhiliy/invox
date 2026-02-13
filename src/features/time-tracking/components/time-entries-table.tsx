@@ -4,27 +4,9 @@ import * as React from "react";
 
 import { alpha, Box, Checkbox, Stack, Typography, useTheme } from "@mui/material";
 
-import { TIME_TRACKING } from "@app/shared/config/config";
-
-import type { TimeEntriesResult, TimeEntryGroup, TimeEntryItem } from "../api";
-
-function formatHours(seconds: number): string {
-  const hours = seconds / TIME_TRACKING.SECONDS_PER_HOUR;
-
-  return `${hours.toFixed(2)}h`;
-}
-
-function formatAmount(cents: number | null): string {
-  if (cents === null) {
-    return "";
-  }
-
-  return `$${(cents / 100).toFixed(2)}`;
-}
-
-export interface Selection {
-  [groupId: string]: Set<string>;
-}
+import type { Selection, TimeEntriesResult, TimeEntryGroup } from "../api";
+import { formatAmount, formatHours } from "../lib/import-utils";
+import { TimeEntryGroupSection } from "./time-entry-group-section";
 
 interface TimeEntriesTableProps {
   data: TimeEntriesResult;
@@ -157,7 +139,7 @@ export function TimeEntriesTable({ data, selection, onSelectionChange }: TimeEnt
       </Stack>
 
       {data.groups.map((group) => (
-        <GroupSection
+        <TimeEntryGroupSection
           key={group.id}
           group={group}
           selectedItems={selection[group.id] ?? new Set()}
@@ -166,106 +148,5 @@ export function TimeEntriesTable({ data, selection, onSelectionChange }: TimeEnt
         />
       ))}
     </Box>
-  );
-}
-
-interface GroupSectionProps {
-  group: TimeEntryGroup;
-  selectedItems: Set<string>;
-  onToggleGroup: () => void;
-  onToggleItem: (itemId: string) => void;
-}
-
-function GroupSection({ group, selectedItems, onToggleGroup, onToggleItem }: GroupSectionProps) {
-  const theme = useTheme();
-  const allSelected = group.items.every((i) => selectedItems.has(i.id));
-  const someSelected = group.items.some((i) => selectedItems.has(i.id));
-
-  return (
-    <Box sx={{ mb: 1 }}>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        sx={{
-          py: 0.5,
-          px: 1.5,
-          borderRadius: 1,
-          bgcolor: alpha(theme.palette.text.primary, 0.03),
-        }}
-      >
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <Checkbox
-            size="small"
-            checked={allSelected}
-            indeterminate={someSelected && !allSelected}
-            onChange={onToggleGroup}
-          />
-          <Typography variant="subtitle2" fontWeight={600}>
-            {group.title}
-          </Typography>
-        </Stack>
-        <Stack direction="row" spacing={3}>
-          <Typography variant="body2" color="text.secondary">
-            {formatHours(group.totalSeconds)}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {formatAmount(group.totalAmountCents)}
-          </Typography>
-        </Stack>
-      </Stack>
-
-      {group.items.map((item) => (
-        <ItemRow
-          key={item.id}
-          item={item}
-          selected={selectedItems.has(item.id)}
-          onToggle={() => onToggleItem(item.id)}
-        />
-      ))}
-    </Box>
-  );
-}
-
-interface ItemRowProps {
-  item: TimeEntryItem;
-  selected: boolean;
-  onToggle: () => void;
-}
-
-function ItemRow({ item, selected, onToggle }: ItemRowProps) {
-  return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      justifyContent="space-between"
-      sx={{ py: 0.5, px: 1.5, pl: 5 }}
-    >
-      <Stack direction="row" alignItems="center" spacing={1}>
-        <Checkbox size="small" checked={selected} onChange={onToggle} />
-        <Typography variant="body2">{item.title}</Typography>
-      </Stack>
-      <Stack direction="row" spacing={3} sx={{ minWidth: 180 }} justifyContent="flex-end">
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ minWidth: 50, textAlign: "right" }}
-        >
-          {formatHours(item.seconds)}
-        </Typography>
-        {item.rateCents !== null && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ minWidth: 80, textAlign: "right" }}
-          >
-            × ${(item.rateCents / 100).toFixed(2)}
-          </Typography>
-        )}
-        <Typography variant="body2" fontWeight={500} sx={{ minWidth: 70, textAlign: "right" }}>
-          {formatAmount(item.amountCents)}
-        </Typography>
-      </Stack>
-    </Stack>
   );
 }

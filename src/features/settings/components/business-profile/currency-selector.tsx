@@ -3,13 +3,13 @@
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
 
 import {
-  Box,
   FormControl,
   FormHelperText,
   InputAdornment,
   InputLabel,
   MenuItem,
   Select,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -29,7 +29,7 @@ export function CurrencySelector({ register, errors, currentValue }: CurrencySel
       <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
         Invoice Defaults
       </Typography>
-      <Box sx={{ display: "grid", gap: 3, maxWidth: 300 }}>
+      <Stack direction="column" spacing={3} sx={{ maxWidth: 300 }}>
         <FormControl fullWidth error={!!errors.defaultCurrency}>
           <InputLabel id="currency-label">Default Currency</InputLabel>
           <Select
@@ -64,7 +64,7 @@ export function CurrencySelector({ register, errors, currentValue }: CurrencySel
             errors.defaultRate?.message || "Auto-fills unit price for new invoice line items"
           }
         />
-      </Box>
+      </Stack>
     </>
   );
 }

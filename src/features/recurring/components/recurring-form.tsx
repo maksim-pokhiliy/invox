@@ -4,23 +4,25 @@ import { useCallback } from "react";
 
 import { Box } from "@mui/material";
 
+import type { FormMode } from "@app/shared/config/config";
 import type { RecurringFormData } from "@app/shared/schemas";
 import type { Client } from "@app/shared/schemas/api";
 import { FormActions } from "@app/shared/ui/form-actions";
 import { Spinner } from "@app/shared/ui/loading";
 import { PageHeader } from "@app/shared/ui/page-header";
 
+import { useRecurringForm } from "../hooks/use-recurring-form";
 import { RecurringFormDiscounts } from "./recurring-form-discounts";
 import { RecurringFormItems } from "./recurring-form-items";
 import { RecurringFormSchedule } from "./recurring-form-schedule";
-import { useRecurringForm } from "./use-recurring-form";
 
 interface RecurringFormProps {
-  mode?: "create" | "edit";
+  mode?: FormMode;
   recurringId?: string;
   initialData?: RecurringFormData;
   clients: Client[] | undefined;
   clientsLoading: boolean;
+  defaultCurrency?: string;
 }
 
 export function RecurringForm({
@@ -29,6 +31,7 @@ export function RecurringForm({
   initialData,
   clients,
   clientsLoading,
+  defaultCurrency,
 }: RecurringFormProps) {
   const {
     register,
@@ -38,7 +41,12 @@ export function RecurringForm({
     fields,
     append,
     remove,
+    sensors,
+    handleDragEnd,
     duplicateItem,
+    groupFields,
+    removeGroup,
+    addGroup,
     currency,
     discountType,
     subtotal,
@@ -46,10 +54,17 @@ export function RecurringForm({
     isEdit,
     onSubmit,
     router,
-  } = useRecurringForm({ mode, recurringId, initialData, clients, clientsLoading });
+  } = useRecurringForm({
+    mode,
+    recurringId,
+    initialData,
+    clients,
+    clientsLoading,
+    defaultCurrency,
+  });
 
   const handleAppend = useCallback(
-    () => append({ description: "", quantity: 1, unitPrice: 0 }),
+    () => append({ title: "", description: "", quantity: 1, unitPrice: 0 }),
     [append]
   );
 
@@ -74,13 +89,19 @@ export function RecurringForm({
 
         <RecurringFormItems
           fields={fields}
+          sensors={sensors}
+          handleDragEnd={handleDragEnd}
           register={register}
+          control={control}
           errors={errors}
           currency={currency}
           subtotal={subtotal}
           onAppend={handleAppend}
           onRemove={remove}
           onDuplicate={duplicateItem}
+          groupFields={groupFields}
+          onRemoveGroup={removeGroup}
+          onAddGroup={addGroup}
         />
 
         <RecurringFormDiscounts

@@ -4,7 +4,6 @@ import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import SettingsIcon from "@mui/icons-material/Settings";
 import {
-  Box,
   Divider,
   Drawer,
   IconButton,
@@ -13,10 +12,13 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Stack,
 } from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
 import { Logo } from "@app/shared/ui/logo";
+
+import type { ThemeMode } from "@app/providers/theme/registry";
 
 import { DrawerFooter } from "./drawer-footer";
 import { DrawerNavList } from "./drawer-nav-list";
@@ -25,7 +27,7 @@ interface MobileDrawerProps {
   open: boolean;
   onClose: () => void;
   pathname: string;
-  mode: "light" | "dark";
+  mode: ThemeMode;
   onToggleTheme: () => void;
   onNavigate: (href: string) => void;
   onSettings: () => void;
@@ -47,14 +49,14 @@ export function MobileDrawer({
       anchor="left"
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { width: UI.DRAWER_WIDTH, bgcolor: "background.paper" } }}
+      slotProps={{ paper: { sx: { width: UI.DRAWER_WIDTH, bgcolor: "background.paper" } } }}
     >
-      <Box sx={{ p: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <Stack direction="row" sx={{ p: 2, alignItems: "center", justifyContent: "space-between" }}>
         <Logo size="medium" />
         <IconButton onClick={onClose} aria-label="Close navigation menu">
           <CloseIcon />
         </IconButton>
-      </Box>
+      </Stack>
       <Divider />
       <DrawerNavList pathname={pathname} onNavigate={onNavigate} />
       <Divider sx={{ my: 1 }} />
@@ -67,7 +69,7 @@ export function MobileDrawer({
             <ListItemIcon sx={{ color: "primary.main" }}>
               <AddIcon />
             </ListItemIcon>
-            <ListItemText primary="New Invoice" primaryTypographyProps={{ fontWeight: 500 }} />
+            <ListItemText primary="New Invoice" slotProps={{ primary: { fontWeight: 500 } }} />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>

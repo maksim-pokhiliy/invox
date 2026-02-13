@@ -1,9 +1,8 @@
 "use client";
 
-import * as React from "react";
-
 import {
   Button,
+  type ButtonProps,
   Dialog,
   DialogActions,
   DialogContent,
@@ -21,7 +20,7 @@ interface ConfirmDialogProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  confirmColor?: "primary" | "error" | "warning";
+  confirmColor?: ButtonProps["color"];
   isLoading?: boolean;
 }
 
@@ -57,68 +56,4 @@ export function ConfirmDialog({
       </DialogActions>
     </Dialog>
   );
-}
-
-export function useConfirmDialog() {
-  const [state, setState] = React.useState<{
-    open: boolean;
-    title: string;
-    message: string;
-    confirmText?: string;
-    confirmColor?: "primary" | "error" | "warning";
-    onConfirm: () => void | Promise<void>;
-  }>({
-    open: false,
-    title: "",
-    message: "",
-    onConfirm: () => {},
-  });
-  const [isLoading, setIsLoading] = React.useState(false);
-
-  const confirm = React.useCallback(
-    (options: {
-      title: string;
-      message: string;
-      confirmText?: string;
-      confirmColor?: "primary" | "error" | "warning";
-      onConfirm: () => void | Promise<void>;
-    }) => {
-      setState({ open: true, ...options });
-    },
-    []
-  );
-
-  const handleClose = React.useCallback(() => {
-    if (!isLoading) {
-      setState((prev) => ({ ...prev, open: false }));
-    }
-  }, [isLoading]);
-
-  const onConfirmRef = React.useRef(state.onConfirm);
-
-  onConfirmRef.current = state.onConfirm;
-
-  const handleConfirm = React.useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      await onConfirmRef.current();
-      setState((prev) => ({ ...prev, open: false }));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const dialogProps = {
-    open: state.open,
-    onClose: handleClose,
-    onConfirm: handleConfirm,
-    title: state.title,
-    message: state.message,
-    confirmText: state.confirmText,
-    confirmColor: state.confirmColor,
-    isLoading,
-  };
-
-  return { confirm, dialogProps, ConfirmDialog };
 }

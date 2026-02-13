@@ -1,25 +1,10 @@
 "use client";
 
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import RepeatIcon from "@mui/icons-material/Repeat";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import { alpha, Box, Container, Paper, Typography, useTheme } from "@mui/material";
+import { alpha, Box, Container, Grid, Paper, Stack, Typography, useTheme } from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
 
 import { FEATURES } from "../constants";
-
-const FEATURE_ICONS: Record<string, React.ReactElement> = {
-  Invoices: <ReceiptLongIcon />,
-  "View Tracking": <VisibilityIcon />,
-  Recurring: <RepeatIcon />,
-  "Follow-ups": <NotificationsActiveIcon />,
-  "PDF Export": <PictureAsPdfIcon />,
-  Dashboard: <DashboardIcon />,
-};
 
 export function LandingFeatures() {
   const theme = useTheme();
@@ -27,12 +12,7 @@ export function LandingFeatures() {
   return (
     <Box sx={{ bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_LIGHT), py: { xs: 8, md: 10 } }}>
       <Container maxWidth="lg">
-        <Typography
-          variant="h4"
-          fontWeight={700}
-          textAlign="center"
-          sx={{ mb: 1.5, letterSpacing: "-0.015em" }}
-        >
+        <Typography variant="h4" fontWeight={700} textAlign="center" sx={{ mb: 1.5 }}>
           Everything you need, nothing you don&apos;t
         </Typography>
         <Typography
@@ -45,50 +25,45 @@ export function LandingFeatures() {
           software.
         </Typography>
 
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr" },
-            gap: 3,
-          }}
-        >
+        <Grid container spacing={3}>
           {FEATURES.map((feature) => (
-            <Paper
-              key={feature.title}
-              elevation={0}
-              sx={{
-                p: 3.5,
-                borderRadius: 3,
-                border: 1,
-                borderColor: "divider",
-                transition: (t) => t.transitions.create("border-color"),
-                "&:hover": { borderColor: "primary.main" },
-              }}
-            >
-              <Box
+            <Grid key={feature.title} size={{ xs: 12, sm: 6, md: 4 }}>
+              <Paper
+                elevation={0}
                 sx={{
-                  width: UI.METRIC_ICON_SIZE,
-                  height: UI.METRIC_ICON_SIZE,
-                  borderRadius: 2,
-                  bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_MEDIUM),
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "primary.main",
-                  mb: 2,
+                  p: 3.5,
+                  borderRadius: 3,
+                  border: 1,
+                  borderColor: "divider",
+                  transition: (t) => t.transitions.create("border-color"),
+                  "&:hover": { borderColor: "primary.main" },
+                  height: "100%",
                 }}
               >
-                {FEATURE_ICONS[feature.title]}
-              </Box>
-              <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.75 }}>
-                {feature.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" lineHeight={1.6}>
-                {feature.description}
-              </Typography>
-            </Paper>
+                <Stack
+                  sx={{
+                    width: UI.METRIC_ICON_SIZE,
+                    height: UI.METRIC_ICON_SIZE,
+                    borderRadius: 2,
+                    bgcolor: alpha(theme.palette.primary.main, UI.ALPHA_MEDIUM),
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "primary.main",
+                    mb: 2,
+                  }}
+                >
+                  <feature.icon />
+                </Stack>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.75 }}>
+                  {feature.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" lineHeight={1.6}>
+                  {feature.description}
+                </Typography>
+              </Paper>
+            </Grid>
           ))}
-        </Box>
+        </Grid>
       </Container>
     </Box>
   );

@@ -6,12 +6,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 
 import MenuIcon from "@mui/icons-material/Menu";
-import { alpha, Box, IconButton, useTheme } from "@mui/material";
+import { alpha, Box, IconButton, Stack, useTheme } from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
 import { Logo } from "@app/shared/ui/logo";
 
-import { useThemeMode } from "@app/providers/theme-registry";
+import { useThemeMode } from "@app/providers/theme/registry";
 
 import { AccountMenu } from "./components/account-menu";
 import { DesktopNav } from "./components/desktop-nav";
@@ -65,7 +65,8 @@ export function Header() {
         pb: 2,
       }}
     >
-      <Box
+      <Stack
+        direction="row"
         sx={{
           maxWidth: "lg",
           mx: "auto",
@@ -76,7 +77,6 @@ export function Header() {
           borderColor: "divider",
           px: 3,
           height: UI.HEADER_HEIGHT,
-          display: "flex",
           alignItems: "center",
         }}
       >
@@ -88,13 +88,14 @@ export function Header() {
           <MenuIcon />
         </IconButton>
 
-        <Box
+        <Stack
           component={Link}
           href="/app"
-          sx={{ display: "flex", alignItems: "center", textDecoration: "none", mr: 4 }}
+          direction="row"
+          sx={{ alignItems: "center", textDecoration: "none", mr: 4 }}
         >
           <Logo size="medium" />
-        </Box>
+        </Stack>
 
         <DesktopNav pathname={pathname} />
 
@@ -108,7 +109,7 @@ export function Header() {
           onSettings={handleSettings}
           onSignOut={handleSignOut}
         />
-      </Box>
+      </Stack>
 
       <MobileDrawer
         open={mobileMenuOpen}

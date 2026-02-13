@@ -2,16 +2,18 @@
 
 import { useRouter } from "next/navigation";
 
-import { alpha, Box, Button, Divider, Typography, useTheme } from "@mui/material";
+import { alpha, Box, Button, Divider, Stack, Typography, useTheme } from "@mui/material";
 
 import { UI } from "@app/shared/config/config";
 import { LoadingButton } from "@app/shared/ui/loading-button";
+
+import type { InvoiceFormMode } from "../types";
 
 interface InvoiceFormTotalsProps {
   subtotal: number;
   currency: string;
   isPending: boolean;
-  mode: "create" | "edit";
+  mode: InvoiceFormMode;
   invoiceId?: string;
 }
 
@@ -30,7 +32,7 @@ export function InvoiceFormTotals({
 
   return (
     <>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 4 }}>
+      <Stack direction="row" sx={{ justifyContent: "flex-end", mb: 4 }}>
         <Box
           sx={{
             p: 3,
@@ -39,34 +41,34 @@ export function InvoiceFormTotals({
             minWidth: { xs: "100%", sm: 250 },
           }}
         >
-          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+          <Stack direction="row" sx={{ justifyContent: "space-between", mb: 1 }}>
             <Typography variant="body2" color="text.secondary">
               Subtotal
             </Typography>
             <Typography variant="body2">
               {currency} {formattedTotal}
             </Typography>
-          </Box>
+          </Stack>
           <Divider sx={{ my: 1.5 }} />
-          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Stack direction="row" sx={{ justifyContent: "space-between" }}>
             <Typography variant="subtitle1" fontWeight={600}>
               Total
             </Typography>
             <Typography variant="subtitle1" fontWeight={700} color="primary.main">
               {currency} {formattedTotal}
             </Typography>
-          </Box>
+          </Stack>
         </Box>
-      </Box>
+      </Stack>
 
-      <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+      <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
         <Button variant="outlined" onClick={() => router.push(cancelPath)}>
           Cancel
         </Button>
         <LoadingButton type="submit" variant="contained" loading={isPending}>
           {mode === "create" ? "Create Invoice" : "Save Changes"}
         </LoadingButton>
-      </Box>
+      </Stack>
     </>
   );
 }

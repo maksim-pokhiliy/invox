@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import AddIcon from "@mui/icons-material/Add";
 import { Alert, Button, ToggleButton, ToggleButtonGroup } from "@mui/material";
 
+import { RESPONSIVE_SX } from "@app/shared/config/config";
 import { PageHeader } from "@app/shared/ui/page-header";
 
+import { useDashboard } from "../hooks/use-dashboard";
 import { DashboardCharts } from "./dashboard-charts";
 import { DashboardMetrics } from "./dashboard-metrics";
 import { OnboardingChecklist } from "./onboarding-checklist";
-import { useDashboard } from "./use-dashboard";
 
 interface DashboardContentProps {
   clientCount: number;
@@ -58,7 +59,7 @@ export function DashboardContent(props: DashboardContentProps) {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => router.push("/app/invoices/new")}
-              sx={{ display: { xs: "none", sm: "flex" } }}
+              sx={RESPONSIVE_SX.DESKTOP_ONLY}
             >
               New Invoice
             </Button>

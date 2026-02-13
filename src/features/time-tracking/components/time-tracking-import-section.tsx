@@ -1,47 +1,15 @@
 "use client";
 
-import * as React from "react";
-
 import TimerIcon from "@mui/icons-material/Timer";
 import { Button, Stack } from "@mui/material";
 
 import type { InvoiceItemGroupInput } from "@app/shared/schemas";
 
-import type { ProviderInfo, TimeTrackingConnection } from "../api";
+import type { ImportedGroup } from "../api";
 import { useTimeTrackingConnections, useTimeTrackingProviders } from "../hooks";
-import { ImportDrawer, type ImportedGroup } from "./import-drawer";
-
-function useImportDrawer(
-  connections: TimeTrackingConnection[] | undefined,
-  providers: ProviderInfo[] | undefined
-) {
-  const [open, setOpen] = React.useState(false);
-
-  const activeConnection = connections?.[0];
-  const activeProvider = activeConnection
-    ? providers?.find((p) => p.id === activeConnection.provider)
-    : undefined;
-
-  return {
-    open,
-    setOpen,
-    hasConnection: !!activeConnection,
-    providerId: activeConnection?.provider ?? "",
-    provider: activeProvider ?? null,
-  };
-}
-
-function mapImportedGroups(groups: ImportedGroup[]): InvoiceItemGroupInput[] {
-  return groups.map((g) => ({
-    title: g.title,
-    items: g.items.map((item) => ({
-      title: item.title,
-      description: item.description || undefined,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-    })),
-  }));
-}
+import { useImportDrawer } from "../hooks/use-import-drawer";
+import { mapImportedGroups } from "../lib/import-utils";
+import { ImportDrawer } from "./import-drawer";
 
 interface TimeTrackingImportSectionProps {
   onImport: (groups: InvoiceItemGroupInput[]) => void;

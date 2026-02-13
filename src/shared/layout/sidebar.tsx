@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import AddIcon from "@mui/icons-material/Add";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -17,11 +17,12 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Stack,
   Tooltip,
   useTheme,
 } from "@mui/material";
 
-import { ANIMATION, UI } from "@app/shared/config/config";
+import { RESPONSIVE_SX, UI } from "@app/shared/config/config";
 import { Logo } from "@app/shared/ui/logo";
 
 import { SidebarNav } from "./components/sidebar-nav";
@@ -34,7 +35,6 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const theme = useTheme();
   const sidebarWidth = collapsed ? UI.SIDEBAR_COLLAPSED_WIDTH : UI.SIDEBAR_WIDTH;
 
@@ -42,7 +42,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
     <Box
       component="nav"
       sx={{
-        display: { xs: "none", md: "flex" },
+        ...RESPONSIVE_SX.DESKTOP_MD_ONLY,
         flexDirection: "column",
         width: sidebarWidth,
         height: "100vh",
@@ -53,20 +53,19 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
         borderRight: 1,
         borderColor: "divider",
         zIndex: theme.zIndex.drawer,
-        transition: `width ${ANIMATION.NORMAL}ms ease`,
+        transition: theme.transitions.create("width"),
         overflow: "hidden",
       }}
     >
-      <Box
+      <Stack
+        direction={collapsed ? "column" : "row"}
+        spacing={0.5}
         sx={{
-          display: "flex",
-          flexDirection: collapsed ? "column" : "row",
           alignItems: "center",
           justifyContent: collapsed ? "center" : "space-between",
           px: collapsed ? 1 : 2.5,
           py: collapsed ? 1 : 2.5,
           minHeight: UI.TOP_BAR_HEIGHT,
-          gap: 0.5,
         }}
       >
         <Box component={Link} href="/app" sx={{ textDecoration: "none" }}>
@@ -86,13 +85,14 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
             )}
           </IconButton>
         </Tooltip>
-      </Box>
+      </Stack>
 
       <Box sx={{ px: collapsed ? 0.75 : 2, mb: 2 }}>
         {collapsed ? (
           <Tooltip title="New Invoice" placement="right" arrow>
             <IconButton
-              onClick={() => router.push("/app/invoices/new")}
+              component={Link}
+              href="/app/invoices/new"
               sx={{
                 width: "100%",
                 borderRadius: 2,
@@ -109,7 +109,8 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
             variant="contained"
             fullWidth
             startIcon={<AddIcon />}
-            onClick={() => router.push("/app/invoices/new")}
+            component={Link}
+            href="/app/invoices/new"
             sx={{ py: 1.25 }}
           >
             New Invoice
@@ -156,7 +157,10 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
               <ListItemIcon sx={{ minWidth: 36, color: "text.secondary" }}>
                 <SettingsIcon fontSize="small" />
               </ListItemIcon>
-              <ListItemText primary="Settings" primaryTypographyProps={{ fontSize: "0.9375rem" }} />
+              <ListItemText
+                primary="Settings"
+                slotProps={{ primary: { fontSize: UI.FONT_SIZE_NAV } }}
+              />
             </ListItemButton>
           </ListItem>
         </List>

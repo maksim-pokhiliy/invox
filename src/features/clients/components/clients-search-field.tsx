@@ -25,20 +25,26 @@ export function ClientsSearchField({
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
         sx={{ minWidth: { sm: 280 } }}
-        inputProps={{ "aria-label": "Search clients" }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon fontSize="small" color="action" />
-            </InputAdornment>
-          ),
-          endAdornment: searchQuery && (
-            <InputAdornment position="end">
-              <IconButton size="small" onClick={() => onSearchChange("")} aria-label="Clear search">
-                <ClearIcon fontSize="small" />
-              </IconButton>
-            </InputAdornment>
-          ),
+        slotProps={{
+          htmlInput: { "aria-label": "Search clients" },
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" color="action" />
+              </InputAdornment>
+            ),
+            endAdornment: searchQuery && (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={() => onSearchChange("")}
+                  aria-label="Clear search"
+                >
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
         }}
       />
       {searchQuery && (

@@ -35,6 +35,7 @@ export default function NewInvoicePage() {
         templateLoading={templateLoading}
         createClientMutation={createClientMutation}
         defaultRate={senderProfile?.defaultRate ?? undefined}
+        defaultCurrency={senderProfile?.defaultCurrency}
         renderImport={({ addGroups, rateCents }) => (
           <TimeTrackingImportSection onImport={addGroups} getpaidRateCents={rateCents} />
         )}

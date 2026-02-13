@@ -2,47 +2,18 @@
 
 import AddIcon from "@mui/icons-material/Add";
 import DownloadIcon from "@mui/icons-material/Download";
-import { Alert, Button } from "@mui/material";
+import { Alert } from "@mui/material";
 
 import { ConfirmDialog } from "@app/shared/ui/confirm-dialog";
 import { MobileFab } from "@app/shared/ui/mobile-fab";
 import { PageHeader } from "@app/shared/ui/page-header";
 
+import { useInvoicesPage } from "../hooks/use-invoices-page";
 import { InvoicesContent } from "./invoices-content";
+import { InvoicesHeaderActions } from "./invoices-header-actions";
 import { InvoicesOverflowMenu } from "./invoices-overflow-menu";
 import { InvoicesSearchFilters } from "./invoices-search-filters";
 import { SelectionToolbar } from "./selection-toolbar";
-import { useInvoicesPage } from "./use-invoices-page";
-
-const DESKTOP_ONLY_SX = { display: { xs: "none", sm: "flex" } } as const;
-
-function HeaderActions({
-  hasInvoices,
-  onExport,
-  onNew,
-}: {
-  hasInvoices: boolean;
-  onExport: () => void;
-  onNew: () => void;
-}) {
-  return (
-    <>
-      {hasInvoices && (
-        <Button
-          variant="outlined"
-          startIcon={<DownloadIcon />}
-          onClick={onExport}
-          sx={DESKTOP_ONLY_SX}
-        >
-          Export CSV
-        </Button>
-      )}
-      <Button variant="contained" startIcon={<AddIcon />} onClick={onNew} sx={DESKTOP_ONLY_SX}>
-        New Invoice
-      </Button>
-    </>
-  );
-}
 
 export function InvoicesPageContent() {
   const state = useInvoicesPage();
@@ -54,7 +25,7 @@ export function InvoicesPageContent() {
         title="Invoices"
         subtitle="Manage and track all your invoices"
         actions={
-          <HeaderActions
+          <InvoicesHeaderActions
             hasInvoices={hasInvoices}
             onExport={state.handleExportCSV}
             onNew={state.navigateToNew}

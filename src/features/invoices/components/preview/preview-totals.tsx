@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Divider, Typography } from "@mui/material";
+import { Box, Divider, Stack, Typography } from "@mui/material";
 
 import { formatCurrency } from "@app/shared/lib/format";
 
@@ -12,22 +12,22 @@ interface PreviewTotalsProps {
 
 export function PreviewTotals({ subtotal, total, currency }: PreviewTotalsProps) {
   return (
-    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+    <Stack direction="row" sx={{ justifyContent: "flex-end" }}>
       <Box sx={{ minWidth: 250 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+        <Stack direction="row" sx={{ justifyContent: "space-between", mb: 1 }}>
           <Typography color="text.secondary">Subtotal</Typography>
           <Typography>{formatCurrency(subtotal, currency)}</Typography>
-        </Box>
+        </Stack>
         <Divider sx={{ my: 1 }} />
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Stack direction="row" sx={{ justifyContent: "space-between" }}>
           <Typography variant="h6" fontWeight={600}>
             Total
           </Typography>
           <Typography variant="h6" fontWeight={700} color="primary.main">
             {formatCurrency(total, currency)}
           </Typography>
-        </Box>
+        </Stack>
       </Box>
-    </Box>
+    </Stack>
   );
 }

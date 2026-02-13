@@ -3,9 +3,11 @@
 import * as React from "react";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { Alert, Box, Chip, Container, Divider, Paper, Typography } from "@mui/material";
+import { Alert, Box, Chip, Container, Divider, Paper, Stack, Typography } from "@mui/material";
 
 import { FONT_FAMILY_MAP } from "@app/shared/config/config";
+import { INVOICE_STATUS, STATUS_CONFIG } from "@app/shared/config/invoice-status";
+import type { InvoiceItemGroupResponse, InvoiceItemResponse } from "@app/shared/schemas/api";
 
 import { publicApi } from "../api";
 import { InvoiceActions } from "./invoice-actions";
@@ -15,21 +17,6 @@ import { InvoiceItemsTable } from "./invoice-items-table";
 import { InvoiceTotals } from "./invoice-totals";
 import { PaymentReferenceBlock } from "./payment-reference-block";
 import { SenderBillTo } from "./sender-bill-to";
-
-interface InvoiceItem {
-  id: string;
-  title: string;
-  description?: string | null;
-  quantity: number;
-  unitPrice: number;
-  amount: number;
-}
-
-interface InvoiceItemGroup {
-  id: string;
-  title: string;
-  items: InvoiceItem[];
-}
 
 interface Invoice {
   id: string;
@@ -46,8 +33,8 @@ interface Invoice {
     name: string;
     email: string;
   };
-  items: InvoiceItem[];
-  itemGroups?: InvoiceItemGroup[];
+  items: InvoiceItemResponse[];
+  itemGroups?: InvoiceItemGroupResponse[];
   sender: {
     name: string;
     address: string;
@@ -69,10 +56,7 @@ interface Props {
   justPaid: boolean;
 }
 
-const PUBLIC_STATUS_CONFIG: Record<string, { color: "success" | "error"; label: string }> = {
-  PAID: { color: "success", label: "Paid" },
-  OVERDUE: { color: "error", label: "Overdue" },
-};
+const PUBLIC_VISIBLE_STATUSES: Set<string> = new Set([INVOICE_STATUS.PAID, INVOICE_STATUS.OVERDUE]);
 
 export default function PublicInvoiceView({ publicId, invoice, branding, justPaid }: Props) {
   const [viewTracked, setViewTracked] = React.useState(false);
@@ -84,9 +68,11 @@ export default function PublicInvoiceView({ publicId, invoice, branding, justPai
     }
   }, [publicId, viewTracked]);
 
-  const isPaid = invoice.status === "PAID";
-  const isOverdue = invoice.status === "OVERDUE";
-  const statusConfig = PUBLIC_STATUS_CONFIG[invoice.status] ?? null;
+  const isPaid = invoice.status === INVOICE_STATUS.PAID;
+  const isOverdue = invoice.status === INVOICE_STATUS.OVERDUE;
+  const statusConfig = PUBLIC_VISIBLE_STATUSES.has(invoice.status)
+    ? STATUS_CONFIG[invoice.status]
+    : null;
   const fontStack = branding.fontFamily ? FONT_FAMILY_MAP[branding.fontFamily] : undefined;
 
   return (
@@ -123,9 +109,9 @@ export default function PublicInvoiceView({ publicId, invoice, branding, justPai
             "@media print": { boxShadow: "none", p: 0 },
           }}
         >
-          <Box
+          <Stack
+            direction="row"
             sx={{
-              display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
               mb: 4,
@@ -146,7 +132,7 @@ export default function PublicInvoiceView({ publicId, invoice, branding, justPai
                 sx={{ fontWeight: 600, px: 1, "@media print": { display: "none" } }}
               />
             )}
-          </Box>
+          </Stack>
 
           <SenderBillTo
             sender={invoice.sender}

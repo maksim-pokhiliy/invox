@@ -6,7 +6,7 @@ import { Alert, Box, Button } from "@mui/material";
 
 import { AppLayout } from "@app/shared/layout/app-layout";
 import { Breadcrumbs } from "@app/shared/ui/breadcrumbs";
-import { CardSkeleton } from "@app/shared/ui/loading";
+import { CardSkeleton } from "@app/shared/ui/skeletons";
 
 import { useClients, useCreateClient } from "@app/features/clients";
 import { useInvoice } from "@app/features/invoices";
@@ -98,6 +98,7 @@ export default function EditInvoicePage() {
         templateLoading={false}
         createClientMutation={createClientMutation}
         defaultRate={senderProfile?.defaultRate ?? undefined}
+        defaultCurrency={senderProfile?.defaultCurrency}
         renderImport={({ addGroups, rateCents }) => (
           <TimeTrackingImportSection onImport={addGroups} getpaidRateCents={rateCents} />
         )}

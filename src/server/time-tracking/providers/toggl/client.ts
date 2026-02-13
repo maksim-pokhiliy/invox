@@ -62,6 +62,33 @@ export interface TogglSummaryResponse {
   groups: TogglSummaryGroup[];
 }
 
+export interface SummaryReportParams {
+  workspaceId: string;
+  startDate: string;
+  endDate: string;
+  projectIds?: string[];
+  grouping: string;
+  subGrouping: string;
+  roundingMinutes?: number;
+  billableOnly?: boolean;
+}
+
+const PROJECTS_PER_PAGE = 200;
+
+const GROUPING_API_MAP: Record<string, string> = {
+  projects: "projects",
+  clients: "clients",
+  tasks: "projects",
+  descriptions: "projects",
+};
+
+const SUB_GROUPING_API_MAP: Record<string, string> = {
+  projects: "projects",
+  clients: "clients",
+  tasks: "tasks",
+  descriptions: "time_entries",
+};
+
 class TogglApiError extends Error {
   constructor(
     public status: number,
@@ -106,17 +133,16 @@ export async function fetchWorkspaces(token: string): Promise<TogglWorkspace[]> 
 export async function fetchProjects(token: string, workspaceId: string): Promise<TogglProject[]> {
   const results: TogglProject[] = [];
   let page = 1;
-  const perPage = 200;
 
   while (true) {
     const batch = await togglFetch<TogglProject[]>(
-      `${TIME_TRACKING.TOGGL_API_BASE_URL}/workspaces/${workspaceId}/projects?active=both&per_page=${perPage}&page=${page}`,
+      `${TIME_TRACKING.TOGGL_API_BASE_URL}/workspaces/${workspaceId}/projects?active=both&per_page=${PROJECTS_PER_PAGE}&page=${page}`,
       token
     );
 
     results.push(...batch);
 
-    if (batch.length < perPage) {
+    if (batch.length < PROJECTS_PER_PAGE) {
       break;
     }
 
@@ -142,31 +168,6 @@ export async function fetchTasks(
     `${TIME_TRACKING.TOGGL_API_BASE_URL}/workspaces/${workspaceId}/projects/${projectId}/tasks`,
     token
   );
-}
-
-const GROUPING_API_MAP: Record<string, string> = {
-  projects: "projects",
-  clients: "clients",
-  tasks: "projects",
-  descriptions: "projects",
-};
-
-const SUB_GROUPING_API_MAP: Record<string, string> = {
-  projects: "projects",
-  clients: "clients",
-  tasks: "tasks",
-  descriptions: "time_entries",
-};
-
-export interface SummaryReportParams {
-  workspaceId: string;
-  startDate: string;
-  endDate: string;
-  projectIds?: string[];
-  grouping: string;
-  subGrouping: string;
-  roundingMinutes?: number;
-  billableOnly?: boolean;
 }
 
 export async function fetchSummaryReport(

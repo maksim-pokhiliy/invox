@@ -3,13 +3,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { queryKeys, STALE_TIME } from "@app/shared/config/query";
+import type { CreateTemplateInput, Template, UpdateTemplateInput } from "@app/shared/schemas";
 
-import {
-  type CreateTemplateInput,
-  type Template,
-  templatesApi,
-  type UpdateTemplateInput,
-} from "../api";
+import { templatesApi } from "../api";
 
 export function useTemplates() {
   return useQuery({

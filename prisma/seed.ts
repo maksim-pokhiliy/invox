@@ -69,8 +69,8 @@ const TEMPLATE_DATA = [
     dueDays: 30,
     taxRate: 0,
     items: [
-      { description: "Consulting Hours", quantity: 10, unitPrice: cents(150) },
-      { description: "Project Management", quantity: 5, unitPrice: cents(110) },
+      { title: "Consulting Hours", quantity: 10, unitPrice: cents(150) },
+      { title: "Project Management", quantity: 5, unitPrice: cents(110) },
     ],
   },
   {
@@ -79,9 +79,9 @@ const TEMPLATE_DATA = [
     dueDays: 14,
     taxRate: 20,
     items: [
-      { description: "Web Development", quantity: 40, unitPrice: cents(150) },
-      { description: "UI/UX Design", quantity: 20, unitPrice: cents(120) },
-      { description: "QA Testing", quantity: 10, unitPrice: cents(95) },
+      { title: "Web Development", description: "Full-stack React + Node.js", quantity: 40, unitPrice: cents(150) },
+      { title: "UI/UX Design", description: "Figma mockups and prototyping", quantity: 20, unitPrice: cents(120) },
+      { title: "QA Testing", quantity: 10, unitPrice: cents(95) },
     ],
   },
   {
@@ -90,8 +90,8 @@ const TEMPLATE_DATA = [
     dueDays: 15,
     taxRate: 0,
     items: [
-      { description: "Monthly Retainer Fee", quantity: 1, unitPrice: cents(5000) },
-      { description: "Support Hours (included)", quantity: 20, unitPrice: cents(0) },
+      { title: "Monthly Retainer Fee", quantity: 1, unitPrice: cents(5000) },
+      { title: "Support Hours (included)", quantity: 20, unitPrice: cents(0) },
     ],
   },
   {
@@ -100,10 +100,10 @@ const TEMPLATE_DATA = [
     dueDays: 30,
     taxRate: 10,
     items: [
-      { description: "Security Assessment", quantity: 8, unitPrice: cents(210) },
-      { description: "Code Review & Audit", quantity: 16, unitPrice: cents(130) },
-      { description: "Technical Writing", quantity: 4, unitPrice: cents(90) },
-      { description: "DevOps Consulting", quantity: 4, unitPrice: cents(180) },
+      { title: "Security Assessment", description: "OWASP Top 10 review", quantity: 8, unitPrice: cents(210) },
+      { title: "Code Review & Audit", quantity: 16, unitPrice: cents(130) },
+      { title: "Technical Writing", description: "Security report and recommendations", quantity: 4, unitPrice: cents(90) },
+      { title: "DevOps Consulting", quantity: 4, unitPrice: cents(180) },
     ],
   },
 ];
@@ -385,8 +385,8 @@ async function main() {
         nextRunDays: 8,
         lastRunDaysAgo: 22,
         items: [
-          { description: "Monthly Retainer Fee", quantity: 1, unitPrice: cents(5000) },
-          { description: "Support Hours (20h)", quantity: 20, unitPrice: cents(0) },
+          { title: "Monthly Retainer Fee", quantity: 1, unitPrice: cents(5000) },
+          { title: "Support Hours (20h)", quantity: 20, unitPrice: cents(0) },
         ],
       },
       {
@@ -400,8 +400,8 @@ async function main() {
         nextRunDays: 45,
         lastRunDaysAgo: 45,
         items: [
-          { description: "Security Assessment", quantity: 8, unitPrice: cents(210) },
-          { description: "Code Review & Audit", quantity: 12, unitPrice: cents(130) },
+          { title: "Security Assessment", description: "OWASP Top 10 review", quantity: 8, unitPrice: cents(210) },
+          { title: "Code Review & Audit", quantity: 12, unitPrice: cents(130) },
         ],
       },
       {
@@ -415,9 +415,9 @@ async function main() {
         nextRunDays: 3,
         lastRunDaysAgo: 11,
         items: [
-          { description: "Web Development", quantity: 40, unitPrice: cents(150) },
-          { description: "QA Testing", quantity: 8, unitPrice: cents(95) },
-          { description: "Project Management", quantity: 4, unitPrice: cents(110) },
+          { title: "Web Development", quantity: 40, unitPrice: cents(150) },
+          { title: "QA Testing", quantity: 8, unitPrice: cents(95) },
+          { title: "Project Management", quantity: 4, unitPrice: cents(110) },
         ],
       },
       {
@@ -431,8 +431,8 @@ async function main() {
         nextRunDays: 180,
         lastRunDaysAgo: 185,
         items: [
-          { description: "Annual Software License", quantity: 1, unitPrice: cents(12000) },
-          { description: "Priority Support Package", quantity: 1, unitPrice: cents(3600) },
+          { title: "Annual Software License", quantity: 1, unitPrice: cents(12000) },
+          { title: "Priority Support Package", quantity: 1, unitPrice: cents(3600) },
         ],
       },
     ];

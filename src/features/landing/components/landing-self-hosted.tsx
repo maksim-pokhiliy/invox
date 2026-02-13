@@ -17,7 +17,7 @@ export function LandingSelfHosted() {
         </Typography>
       </Stack>
 
-      <Typography variant="h4" fontWeight={700} sx={{ mb: 1.5, letterSpacing: "-0.015em" }}>
+      <Typography variant="h4" fontWeight={700} sx={{ mb: 1.5 }}>
         Self-host in one command
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 480, mx: "auto" }}>
@@ -31,7 +31,7 @@ export function LandingSelfHosted() {
           borderRadius: 2,
           bgcolor: alpha(theme.palette.text.primary, 0.04),
           fontFamily: "monospace",
-          fontSize: "0.95rem",
+          fontSize: "body1.fontSize",
           mb: 5,
           maxWidth: 550,
           mx: "auto",
