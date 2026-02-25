@@ -4,6 +4,7 @@ import SendIcon from "@mui/icons-material/Send";
 import {
   Alert,
   alpha,
+  Box,
   Button,
   Chip,
   Dialog,
@@ -13,6 +14,7 @@ import {
   Divider,
   Paper,
   Stack,
+  Typography,
   useTheme,
 } from "@mui/material";
 
@@ -33,9 +35,12 @@ interface InvoicePreviewDialogProps {
     | "publicId"
     | "createdAt"
     | "dueDate"
+    | "periodStart"
+    | "periodEnd"
     | "currency"
     | "subtotal"
     | "total"
+    | "message"
     | "client"
     | "items"
     | "itemGroups"
@@ -71,7 +76,12 @@ export function InvoicePreviewDialog({
         >
           <PreviewHeader publicId={invoice.publicId} />
           <PreviewParties client={invoice.client} />
-          <PreviewDates createdAt={invoice.createdAt} dueDate={invoice.dueDate} />
+          <PreviewDates
+            createdAt={invoice.createdAt}
+            dueDate={invoice.dueDate}
+            periodStart={invoice.periodStart}
+            periodEnd={invoice.periodEnd}
+          />
           <Divider sx={{ my: 3 }} />
           <PreviewItems
             items={invoice.items}
@@ -84,6 +94,23 @@ export function InvoicePreviewDialog({
             total={invoice.total}
             currency={invoice.currency}
           />
+          {invoice.message && (
+            <Box
+              sx={{
+                mt: 4,
+                p: 3,
+                borderRadius: 2,
+                bgcolor: alpha(theme.palette.primary.main, 0.02),
+              }}
+            >
+              <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                MESSAGE
+              </Typography>
+              <Typography variant="body2" sx={{ mt: 0.5, whiteSpace: "pre-line" }}>
+                {invoice.message}
+              </Typography>
+            </Box>
+          )}
         </Paper>
 
         <Alert severity="info" sx={{ mt: 2, borderRadius: 2 }}>

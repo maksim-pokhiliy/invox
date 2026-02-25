@@ -25,9 +25,12 @@ export const invoiceFormSchema = z
     clientId: z.string().min(1, "Client is required"),
     currency: z.string().min(1, "Currency is required"),
     dueDate: z.string().min(1, "Due date is required"),
+    periodStart: z.string().optional(),
+    periodEnd: z.string().optional(),
     items: z.array(invoiceItemSchema),
     itemGroups: z.array(invoiceItemGroupSchema).optional(),
     notes: z.string().optional(),
+    message: z.string().optional(),
     tags: z.array(tagSchema).optional(),
     discount: discountSchema,
     taxRate: z.number().min(0).max(INVOICE.MAX_TAX_RATE).optional(),
@@ -40,7 +43,24 @@ export const invoiceFormSchema = z
       return ungroupedCount + groupedCount > 0;
     },
     { message: "At least one item is required", path: ["items"] }
+  )
+  .refine(
+    (data) => {
+      if (data.periodStart && data.periodEnd) {
+        return data.periodEnd >= data.periodStart;
+      }
+
+      return true;
+    },
+    { message: "Period end must be after period start", path: ["periodEnd"] }
   );
+
+const optionalDateTransform = z
+  .string()
+  .or(z.date())
+  .transform((val) => new Date(val))
+  .optional()
+  .nullable();
 
 export const createInvoiceSchema = z
   .object({
@@ -50,9 +70,12 @@ export const createInvoiceSchema = z
       .string()
       .or(z.date())
       .transform((val) => new Date(val)),
+    periodStart: optionalDateTransform,
+    periodEnd: optionalDateTransform,
     items: z.array(invoiceItemSchema),
     itemGroups: z.array(invoiceItemGroupSchema).optional(),
     notes: z.string().optional(),
+    message: z.string().optional(),
     tags: z.array(tagSchema).optional(),
     discount: discountSchema,
     taxRate: z.number().min(0).max(INVOICE.MAX_TAX_RATE).optional(),
@@ -75,9 +98,12 @@ export const updateInvoiceSchema = z.object({
     .or(z.date())
     .transform((val) => new Date(val))
     .optional(),
+  periodStart: optionalDateTransform,
+  periodEnd: optionalDateTransform,
   items: z.array(invoiceItemSchema).optional(),
   itemGroups: z.array(invoiceItemGroupSchema).optional(),
   notes: z.string().optional().nullable(),
+  message: z.string().optional().nullable(),
   tags: z.array(tagSchema).optional(),
   discount: discountSchema,
   taxRate: z.number().min(0).max(INVOICE.MAX_TAX_RATE).optional(),

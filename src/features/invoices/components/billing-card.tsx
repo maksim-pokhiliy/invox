@@ -11,7 +11,7 @@ import {
   useTheme,
 } from "@mui/material";
 
-import { formatCurrency } from "@app/shared/lib/format";
+import { formatCurrency, formatDate } from "@app/shared/lib/format";
 import type { Invoice } from "@app/shared/schemas/api";
 import { InvoiceItemsTable } from "@app/shared/ui/invoice-items-table";
 
@@ -108,6 +108,17 @@ export function BillingCard({
         </Typography>
       </Box>
 
+      {invoice.periodStart && invoice.periodEnd && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="overline" color="text.secondary" sx={{ mb: 0.5, display: "block" }}>
+            Billing Period
+          </Typography>
+          <Typography variant="body1" fontWeight={500}>
+            {formatDate(invoice.periodStart)} — {formatDate(invoice.periodEnd)}
+          </Typography>
+        </Box>
+      )}
+
       <Divider sx={{ my: 3 }} />
 
       <InvoiceItemsTable
@@ -118,6 +129,24 @@ export function BillingCard({
 
       <Divider sx={{ my: 3 }} />
       <TotalsSummary invoice={invoice} remainingBalance={remainingBalance} />
+
+      {invoice.message && (
+        <Box
+          sx={(theme) => ({
+            mt: 4,
+            p: 3,
+            borderRadius: 2,
+            bgcolor: alpha(theme.palette.primary.main, 0.02),
+          })}
+        >
+          <Typography variant="overline" color="text.secondary" sx={{ mb: 0.5, display: "block" }}>
+            Message to Client
+          </Typography>
+          <Typography variant="body2" sx={{ whiteSpace: "pre-line" }}>
+            {invoice.message}
+          </Typography>
+        </Box>
+      )}
     </Paper>
   );
 }

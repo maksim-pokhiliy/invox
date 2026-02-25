@@ -21,7 +21,10 @@ interface InvoicePdfData {
   dueDate: string;
   createdAt: string;
   paidAt?: string | null;
+  periodStart?: string | null;
+  periodEnd?: string | null;
   notes?: string | null;
+  message?: string | null;
   client: { name: string; email: string };
   sender?: {
     companyName?: string | null;
@@ -127,6 +130,9 @@ function renderClientInfo(doc: jsPDF, invoice: InvoicePdfData): void {
 
 function renderDates(doc: jsPDF, invoice: InvoicePdfData): void {
   const pageWidth = doc.internal.pageSize.getWidth();
+  const hasPeriod = invoice.periodStart && invoice.periodEnd;
+  const rowCount = hasPeriod ? 2 : 1;
+  const blockHeight = LAYOUT.DATES_HEIGHT + (rowCount > 1 ? 18 : 0);
   const yPos = LAYOUT.DATES_Y;
 
   doc.setFillColor(...PDF_COLORS.background);
@@ -134,7 +140,7 @@ function renderDates(doc: jsPDF, invoice: InvoicePdfData): void {
     LAYOUT.MARGIN,
     yPos - LAYOUT.INFO_LINE_HEIGHT,
     pageWidth - LAYOUT.MARGIN * 2,
-    LAYOUT.DATES_HEIGHT,
+    blockHeight,
     LAYOUT.DATES_RADIUS,
     LAYOUT.DATES_RADIUS,
     "F"
@@ -157,6 +163,21 @@ function renderDates(doc: jsPDF, invoice: InvoicePdfData): void {
   if (invoice.paidAt) {
     doc.text(formatDate(invoice.paidAt), LAYOUT.DATES_COL_3, yPos + LAYOUT.DATES_VALUE_OFFSET);
   }
+
+  if (hasPeriod && invoice.periodStart && invoice.periodEnd) {
+    const periodY = yPos + 18;
+
+    doc.setFontSize(LAYOUT.DATES_LABEL_SIZE);
+    doc.setTextColor(...PDF_COLORS.muted);
+    doc.text("BILLING PERIOD", LAYOUT.DATES_COL_1, periodY + LAYOUT.DATES_LABEL_OFFSET);
+    doc.setFontSize(LAYOUT.DATES_VALUE_SIZE);
+    doc.setTextColor(...PDF_COLORS.text);
+    doc.text(
+      `${formatDate(invoice.periodStart)} — ${formatDate(invoice.periodEnd)}`,
+      LAYOUT.DATES_COL_1,
+      periodY + LAYOUT.DATES_VALUE_OFFSET
+    );
+  }
 }
 
 function buildItemRow(item: InvoiceItemResponse, currency: string, indent = false): string[] {
@@ -168,7 +189,7 @@ function buildItemRow(item: InvoiceItemResponse, currency: string, indent = fals
   ];
 }
 
-function renderItemsTable(doc: jsPDF, invoice: InvoicePdfData): number {
+function renderItemsTable(doc: jsPDF, invoice: InvoicePdfData, yOffset = 0): number {
   const tableData: string[][] = [];
 
   invoice.itemGroups?.forEach((group) => {
@@ -185,7 +206,7 @@ function renderItemsTable(doc: jsPDF, invoice: InvoicePdfData): number {
   });
 
   autoTable(doc, {
-    startY: LAYOUT.TABLE_START_Y,
+    startY: LAYOUT.TABLE_START_Y + yOffset,
     head: [["Item", "Qty", "Unit Price", "Amount"]],
     body: tableData,
     theme: "plain",
@@ -272,8 +293,8 @@ function renderTotals(doc: jsPDF, invoice: InvoicePdfData, startY: number): numb
   return yPos;
 }
 
-function renderNotes(doc: jsPDF, invoice: InvoicePdfData, startY: number): void {
-  if (!invoice.notes) {
+function renderMessage(doc: jsPDF, invoice: InvoicePdfData, startY: number): void {
+  if (!invoice.message) {
     return;
   }
 
@@ -283,13 +304,13 @@ function renderNotes(doc: jsPDF, invoice: InvoicePdfData, startY: number): void 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(LAYOUT.NOTES_LABEL_SIZE);
   doc.setTextColor(...PDF_COLORS.muted);
-  doc.text("Notes", LAYOUT.MARGIN, yPos);
+  doc.text("Message", LAYOUT.MARGIN, yPos);
   yPos += LAYOUT.NOTES_LABEL_OFFSET;
   doc.setFontSize(LAYOUT.NOTES_BODY_SIZE);
   doc.setTextColor(...PDF_COLORS.text);
-  const noteLines = doc.splitTextToSize(invoice.notes, pageWidth - LAYOUT.MARGIN * 2);
+  const messageLines = doc.splitTextToSize(invoice.message, pageWidth - LAYOUT.MARGIN * 2);
 
-  doc.text(noteLines, LAYOUT.MARGIN, yPos);
+  doc.text(messageLines, LAYOUT.MARGIN, yPos);
 }
 
 function renderFooter(doc: jsPDF): void {
@@ -308,10 +329,12 @@ export function generateInvoicePdf(invoice: InvoicePdfData): void {
   renderSenderInfo(doc, invoice);
   renderClientInfo(doc, invoice);
   renderDates(doc, invoice);
-  const tableEndY = renderItemsTable(doc, invoice);
+  const hasPeriod = invoice.periodStart && invoice.periodEnd;
+  const tableStartOffset = hasPeriod ? 18 : 0;
+  const tableEndY = renderItemsTable(doc, invoice, tableStartOffset);
   const totalsEndY = renderTotals(doc, invoice, tableEndY);
 
-  renderNotes(doc, invoice, totalsEndY);
+  renderMessage(doc, invoice, totalsEndY);
   renderFooter(doc);
 
   doc.save(`invoice-${invoice.publicId}.pdf`);

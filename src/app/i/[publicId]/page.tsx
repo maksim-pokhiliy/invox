@@ -45,8 +45,11 @@ export default async function PublicInvoicePage({ params, searchParams }: Props)
         subtotal: invoice.subtotal,
         total: invoice.total,
         dueDate: invoice.dueDate.toISOString(),
+        periodStart: invoice.periodStart?.toISOString() || null,
+        periodEnd: invoice.periodEnd?.toISOString() || null,
         paidAt: invoice.paidAt?.toISOString() || null,
         createdAt: invoice.createdAt.toISOString(),
+        message: invoice.message || null,
         paymentReference: invoice.paymentReference || null,
         client: {
           name: invoice.client.name,

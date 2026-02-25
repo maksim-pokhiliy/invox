@@ -91,6 +91,9 @@ export async function sendInvoice(invoiceId: string, userId: string) {
       total: invoice.total,
       currency: invoice.currency,
       dueDate: invoice.dueDate,
+      periodStart: invoice.periodStart,
+      periodEnd: invoice.periodEnd,
+      message: invoice.message,
       branding,
       paymentReference,
       items: invoice.items.map((item) => ({

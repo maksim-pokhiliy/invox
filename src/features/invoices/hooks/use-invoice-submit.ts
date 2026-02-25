@@ -59,9 +59,12 @@ export function useInvoiceSubmit({ mode, invoiceId, onDraftClear }: UseInvoiceSu
             clientId: data.clientId,
             currency: data.currency,
             dueDate: new Date(data.dueDate),
+            periodStart: data.periodStart ? new Date(data.periodStart) : undefined,
+            periodEnd: data.periodEnd ? new Date(data.periodEnd) : undefined,
             items,
             itemGroups,
             notes: data.notes || undefined,
+            message: data.message || undefined,
           },
           {
             onSuccess: (invoice) => {
@@ -94,9 +97,12 @@ export function useInvoiceSubmit({ mode, invoiceId, onDraftClear }: UseInvoiceSu
             clientId: data.clientId,
             currency: data.currency,
             dueDate: new Date(data.dueDate),
+            periodStart: data.periodStart ? new Date(data.periodStart) : undefined,
+            periodEnd: data.periodEnd ? new Date(data.periodEnd) : undefined,
             items,
             itemGroups,
             notes: data.notes || null,
+            message: data.message || null,
           },
         },
         {
