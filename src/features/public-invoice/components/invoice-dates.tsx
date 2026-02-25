@@ -9,9 +9,18 @@ interface InvoiceDatesProps {
   dueDate: string;
   paidAt: string | null;
   isOverdue: boolean;
+  periodStart?: string | null;
+  periodEnd?: string | null;
 }
 
-export function InvoiceDates({ createdAt, dueDate, paidAt, isOverdue }: InvoiceDatesProps) {
+export function InvoiceDates({
+  createdAt,
+  dueDate,
+  paidAt,
+  isOverdue,
+  periodStart,
+  periodEnd,
+}: InvoiceDatesProps) {
   return (
     <Stack direction="row" spacing={4} sx={{ mb: 4, flexWrap: "wrap" }}>
       <Box>
@@ -35,6 +44,16 @@ export function InvoiceDates({ createdAt, dueDate, paidAt, isOverdue }: InvoiceD
           {formatDate(dueDate)}
         </Typography>
       </Box>
+      {periodStart && periodEnd && (
+        <Box>
+          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+            BILLING PERIOD
+          </Typography>
+          <Typography variant="body1" fontWeight={500} sx={{ mt: 0.5 }}>
+            {formatDate(periodStart)} — {formatDate(periodEnd)}
+          </Typography>
+        </Box>
+      )}
       {paidAt && (
         <Box>
           <Typography variant="caption" color="text.secondary" fontWeight={600}>

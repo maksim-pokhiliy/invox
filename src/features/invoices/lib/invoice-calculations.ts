@@ -17,9 +17,12 @@ export function getFormDefaults(
     clientId: "",
     currency,
     dueDate,
+    periodStart: "",
+    periodEnd: "",
     items: [{ title: "", description: "", quantity: 1, unitPrice: 0 }],
     itemGroups: [],
     notes: "",
+    message: "",
   };
 }
 

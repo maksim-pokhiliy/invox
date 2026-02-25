@@ -91,6 +91,13 @@ export default function EditInvoicePage() {
             })),
           })),
           notes: invoice.notes || "",
+          message: invoice.message || "",
+          periodStart: invoice.periodStart
+            ? new Date(invoice.periodStart).toISOString().split("T")[0]
+            : "",
+          periodEnd: invoice.periodEnd
+            ? new Date(invoice.periodEnd).toISOString().split("T")[0]
+            : "",
         }}
         clients={clients}
         clientsLoading={clientsLoading}

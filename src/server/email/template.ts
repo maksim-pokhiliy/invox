@@ -48,7 +48,8 @@ export function buildEmailButton(url: string, label: string, color: string) {
 export function buildInvoiceDetailsBlock(
   formattedTotal: string,
   formattedDueDate: string,
-  paymentReference: string | null
+  paymentReference: string | null,
+  periodHtml = ""
 ) {
   const referenceRow = paymentReference
     ? `<p style="margin: 10px 0 0;"><strong>Reference:</strong> ${paymentReference}</p>`
@@ -57,6 +58,7 @@ export function buildInvoiceDetailsBlock(
   return `<div style="background: white; padding: 20px; border-radius: 4px; margin: 20px 0;">
       <p style="margin: 0;"><strong>Amount Due:</strong> ${formattedTotal}</p>
       <p style="margin: 10px 0 0;"><strong>Due Date:</strong> ${formattedDueDate}</p>
+      ${periodHtml}
       ${referenceRow}
     </div>`;
 }

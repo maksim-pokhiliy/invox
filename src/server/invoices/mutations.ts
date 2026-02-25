@@ -25,8 +25,20 @@ function buildBasicUpdateFields(data: UpdateInvoiceInput): Prisma.InvoiceUncheck
     updateData.dueDate = data.dueDate;
   }
 
+  if (data.periodStart !== undefined) {
+    updateData.periodStart = data.periodStart ?? null;
+  }
+
+  if (data.periodEnd !== undefined) {
+    updateData.periodEnd = data.periodEnd ?? null;
+  }
+
   if (data.notes !== undefined) {
     updateData.notes = data.notes;
+  }
+
+  if (data.message !== undefined) {
+    updateData.message = data.message ?? null;
   }
 
   if (data.tags !== undefined) {
@@ -93,7 +105,10 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
       publicId,
       currency: data.currency,
       dueDate: data.dueDate,
+      periodStart: data.periodStart ?? null,
+      periodEnd: data.periodEnd ?? null,
       notes: data.notes,
+      message: data.message,
       tags: data.tags || [],
       subtotal,
       discountType: data.discount?.type || null,

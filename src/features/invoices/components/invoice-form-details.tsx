@@ -112,6 +112,63 @@ export function InvoiceFormDetails({
         </Grid>
       </Grid>
 
+      <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
+        Billing Period
+      </Typography>
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Controller
+            name="periodStart"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                label="Period Start"
+                value={field.value ? dayjs(field.value) : null}
+                onChange={(date) => field.onChange(date?.format("YYYY-MM-DD") || "")}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: !!errors.periodStart,
+                    helperText: errors.periodStart?.message,
+                  },
+                }}
+              />
+            )}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Controller
+            name="periodEnd"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                label="Period End"
+                value={field.value ? dayjs(field.value) : null}
+                onChange={(date) => field.onChange(date?.format("YYYY-MM-DD") || "")}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: !!errors.periodEnd,
+                    helperText: errors.periodEnd?.message,
+                  },
+                }}
+              />
+            )}
+          />
+        </Grid>
+      </Grid>
+
+      <TextField
+        {...register("message")}
+        label="Message to Client"
+        placeholder="Thank you for your business!"
+        fullWidth
+        multiline
+        rows={3}
+        sx={{ mb: 3 }}
+        helperText="This message will be visible on the invoice sent to the client"
+      />
+
       <TextField
         {...register("notes")}
         label="Internal Notes"
@@ -119,7 +176,6 @@ export function InvoiceFormDetails({
         fullWidth
         multiline
         rows={3}
-        sx={{ mt: 3 }}
         helperText="These notes are for your reference only and won't be shown on the invoice"
       />
 

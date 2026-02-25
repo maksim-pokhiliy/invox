@@ -29,7 +29,10 @@ export interface InvoiceInitialData {
   clientId: string;
   currency: string;
   dueDate: string;
+  periodStart?: string;
+  periodEnd?: string;
   items: { title: string; description: string; quantity: number; unitPrice: number }[];
   itemGroups?: InvoiceItemGroupInput[];
   notes: string;
+  message?: string;
 }

@@ -141,7 +141,10 @@ model Invoice {
   total          Int            @default(0)
   paidAmount     Int            @default(0)
   dueDate        DateTime
+  periodStart    DateTime?
+  periodEnd      DateTime?
   notes          String?        @db.Text
+  message        String?        @db.Text
   tags           Json           @default("[]")
   sentAt         DateTime?
   viewedAt       DateTime?

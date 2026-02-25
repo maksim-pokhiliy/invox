@@ -31,8 +31,11 @@ export async function duplicateInvoice(id: string, userId: string) {
       currency: invoice.currency,
       status: INVOICE_STATUS.DRAFT,
       dueDate: new Date(Date.now() + INVOICE.DEFAULT_DUE_DAYS * TIME.DAY),
+      periodStart: invoice.periodStart,
+      periodEnd: invoice.periodEnd,
       subtotal: invoice.subtotal,
       total: invoice.total,
+      message: invoice.message,
       tags: invoice.tags as string[],
       items: {
         create: ungroupedItems.map((item) => ({

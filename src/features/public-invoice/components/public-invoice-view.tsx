@@ -3,7 +3,17 @@
 import * as React from "react";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { Alert, Box, Chip, Container, Divider, Paper, Stack, Typography } from "@mui/material";
+import {
+  Alert,
+  alpha,
+  Box,
+  Chip,
+  Container,
+  Divider,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 
 import { FONT_FAMILY_MAP } from "@app/shared/config/config";
 import { INVOICE_STATUS, STATUS_CONFIG } from "@app/shared/config/invoice-status";
@@ -26,8 +36,11 @@ interface Invoice {
   subtotal: number;
   total: number;
   dueDate: string;
+  periodStart: string | null;
+  periodEnd: string | null;
   paidAt: string | null;
   createdAt: string;
+  message: string | null;
   paymentReference: string | null;
   client: {
     name: string;
@@ -144,6 +157,8 @@ export default function PublicInvoiceView({ publicId, invoice, branding, justPai
             dueDate={invoice.dueDate}
             paidAt={invoice.paidAt}
             isOverdue={isOverdue}
+            periodStart={invoice.periodStart}
+            periodEnd={invoice.periodEnd}
           />
           <Divider sx={{ my: 3 }} />
           <InvoiceItemsTable
@@ -158,6 +173,24 @@ export default function PublicInvoiceView({ publicId, invoice, branding, justPai
             currency={invoice.currency}
             primaryColor={branding.primaryColor}
           />
+
+          {invoice.message && (
+            <Box
+              sx={(theme) => ({
+                mt: 4,
+                p: 3,
+                borderRadius: 2,
+                bgcolor: alpha(theme.palette.primary.main, 0.02),
+              })}
+            >
+              <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                MESSAGE
+              </Typography>
+              <Typography variant="body2" sx={{ mt: 0.5, whiteSpace: "pre-line" }}>
+                {invoice.message}
+              </Typography>
+            </Box>
+          )}
 
           {invoice.paymentReference && !isPaid && (
             <PaymentReferenceBlock paymentReference={invoice.paymentReference} />

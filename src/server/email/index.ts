@@ -34,6 +34,9 @@ interface InvoiceEmailData {
   total: number;
   currency: string;
   dueDate: Date;
+  periodStart: Date | null;
+  periodEnd: Date | null;
+  message: string | null;
   branding: EmailBranding;
   paymentReference: string | null;
   items: EmailLineItem[];
@@ -57,22 +60,40 @@ export async function sendInvoiceEmail(data: InvoiceEmailData) {
   const title = `Invoice from ${data.senderName}`;
   const color = data.branding.primaryColor;
 
+  const periodHtml =
+    data.periodStart && data.periodEnd
+      ? `<p style="margin: 10px 0 0;"><strong>Billing Period:</strong> ${formatDate(data.periodStart)} — ${formatDate(data.periodEnd)}</p>`
+      : "";
+
+  const messageHtml = data.message
+    ? `<div style="background: ${color}05; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 0 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; font-weight: 600;">Message</p>
+        <p style="margin: 0; font-size: 14px; white-space: pre-line;">${data.message}</p>
+      </div>`
+    : "";
+
   const bodyHtml = `
     ${buildBrandingHeader(data.branding.logoUrl)}
     <p>Hi ${data.clientName},</p>
     <p>You have received a new invoice for <strong>${formattedTotal}</strong>.</p>
-    ${buildInvoiceDetailsBlock(formattedTotal, formattedDueDate, data.paymentReference)}
+    ${buildInvoiceDetailsBlock(formattedTotal, formattedDueDate, data.paymentReference, periodHtml)}
     ${buildLineItemsTable(data.items, data.currency, data.itemGroups)}
+    ${messageHtml}
     <p>${buildEmailButton(invoiceUrl, "View Invoice", color)}</p>
     <p style="color: #666; font-size: 14px; margin-top: 30px;">
       If you have any questions about this invoice, please reply to this email or contact ${data.senderName} directly.
     </p>
     ${buildEmailFooter(data.senderName, data.branding.companyAddress, data.branding.footerText)}`;
 
+  const periodText =
+    data.periodStart && data.periodEnd
+      ? `Billing Period: ${formatDate(data.periodStart)} — ${formatDate(data.periodEnd)}\n`
+      : "";
   const itemsText = buildPlainTextItems(data.items, data.itemGroups, data.currency);
   const referenceText = data.paymentReference ? `Reference: ${data.paymentReference}\n` : "";
+  const messageText = data.message ? `\nMessage:\n${data.message}\n` : "";
 
-  const text = `${title}\n\nHi ${data.clientName},\n\nYou have received a new invoice for ${formattedTotal}.\n\nAmount Due: ${formattedTotal}\nDue Date: ${formattedDueDate}\n${referenceText}\nLine Items:\n${itemsText}\n\nView Invoice: ${invoiceUrl}\n\nIf you have any questions about this invoice, please reply to this email or contact ${data.senderName} directly.`;
+  const text = `${title}\n\nHi ${data.clientName},\n\nYou have received a new invoice for ${formattedTotal}.\n\nAmount Due: ${formattedTotal}\nDue Date: ${formattedDueDate}\n${periodText}${referenceText}\nLine Items:\n${itemsText}\n${messageText}\nView Invoice: ${invoiceUrl}\n\nIf you have any questions about this invoice, please reply to this email or contact ${data.senderName} directly.`;
 
   return getResend().emails.send({
     from: env.EMAIL_FROM,
@@ -93,12 +114,17 @@ export async function sendReminderEmail(data: InvoiceEmailData & { isOverdue: bo
     ? `Overdue Invoice Reminder from ${data.senderName}`
     : `Invoice Reminder from ${data.senderName}`;
 
+  const periodHtml =
+    data.periodStart && data.periodEnd
+      ? `<p style="margin: 10px 0 0;"><strong>Billing Period:</strong> ${formatDate(data.periodStart)} — ${formatDate(data.periodEnd)}</p>`
+      : "";
+
   const bodyHtml = `
     ${buildBrandingHeader(data.branding.logoUrl)}
     <p>Hi ${data.clientName},</p>
     <p>This is a friendly reminder about an outstanding invoice for <strong>${formattedTotal}</strong>.</p>
     ${data.isOverdue ? `<p style="color: ${EMAIL.OVERDUE_COLOR};"><strong>This invoice is now overdue.</strong></p>` : ""}
-    ${buildInvoiceDetailsBlock(formattedTotal, formattedDueDate, data.paymentReference)}
+    ${buildInvoiceDetailsBlock(formattedTotal, formattedDueDate, data.paymentReference, periodHtml)}
     ${buildLineItemsTable(data.items, data.currency, data.itemGroups)}
     <p>${buildEmailButton(invoiceUrl, "View & Pay Invoice", color)}</p>
     <p style="color: #666; font-size: 14px; margin-top: 30px;">
@@ -106,10 +132,14 @@ export async function sendReminderEmail(data: InvoiceEmailData & { isOverdue: bo
     </p>
     ${buildEmailFooter(data.senderName, data.branding.companyAddress, data.branding.footerText)}`;
 
+  const periodText =
+    data.periodStart && data.periodEnd
+      ? `Billing Period: ${formatDate(data.periodStart)} — ${formatDate(data.periodEnd)}\n`
+      : "";
   const itemsText = buildPlainTextItems(data.items, data.itemGroups, data.currency);
   const referenceText = data.paymentReference ? `Reference: ${data.paymentReference}\n` : "";
 
-  const text = `${title}\n\nHi ${data.clientName},\n\nThis is a friendly reminder about an outstanding invoice for ${formattedTotal}.\n\n${data.isOverdue ? "This invoice is now overdue.\n\n" : ""}Amount Due: ${formattedTotal}\nDue Date: ${formattedDueDate}\n${referenceText}\nLine Items:\n${itemsText}\n\nView & Pay Invoice: ${invoiceUrl}\n\nIf you have already paid this invoice, please disregard this reminder. For any questions, please contact ${data.senderName} directly.`;
+  const text = `${title}\n\nHi ${data.clientName},\n\nThis is a friendly reminder about an outstanding invoice for ${formattedTotal}.\n\n${data.isOverdue ? "This invoice is now overdue.\n\n" : ""}Amount Due: ${formattedTotal}\nDue Date: ${formattedDueDate}\n${periodText}${referenceText}\nLine Items:\n${itemsText}\n\nView & Pay Invoice: ${invoiceUrl}\n\nIf you have already paid this invoice, please disregard this reminder. For any questions, please contact ${data.senderName} directly.`;
 
   return getResend().emails.send({
     from: env.EMAIL_FROM,
