@@ -5,14 +5,17 @@ export type { Edition };
 
 interface FeatureFlags {
   publicRegistration: boolean;
+  waitlistAdmin: boolean;
 }
 
 const EDITION_FEATURES: Record<Edition, FeatureFlags> = {
   community: {
     publicRegistration: true,
+    waitlistAdmin: false,
   },
   pro: {
     publicRegistration: false,
+    waitlistAdmin: true,
   },
 };
 

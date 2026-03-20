@@ -37,3 +37,19 @@ export async function isEmailApproved(email: string): Promise<boolean> {
 
   return entry?.status === "APPROVED";
 }
+
+export async function listWaitlistEntries() {
+  return prisma.waitlistEntry.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function deleteWaitlistEntry(id: string) {
+  const entry = await prisma.waitlistEntry.findUnique({ where: { id } });
+
+  if (!entry) {
+    return null;
+  }
+
+  return prisma.waitlistEntry.delete({ where: { id } });
+}
