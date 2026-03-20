@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import type { ZodType } from "zod";
 
+import { env } from "@app/shared/config/env";
+
 import { AuthenticationError, requireUser } from "@app/server/auth/require-user";
 
 type ErrorCode =
@@ -26,6 +28,10 @@ export function validationErrorResponse(zodError: { issues: Array<{ message: str
 
 export function notFoundResponse(entity: string) {
   return errorResponse("NOT_FOUND", `${entity} not found`, 404);
+}
+
+export function forbiddenResponse() {
+  return errorResponse("FORBIDDEN", "Access denied", 403);
 }
 
 export function internalErrorResponse() {
@@ -71,6 +77,16 @@ export function withAuth(handler: AuthHandler, errorHandlers?: ErrorHandler[]) {
       return internalErrorResponse();
     }
   };
+}
+
+export function withAdmin(handler: AuthHandler, errorHandlers?: ErrorHandler[]) {
+  return withAuth(async (user, request, context) => {
+    if (!env.ADMIN_EMAIL || user.email !== env.ADMIN_EMAIL) {
+      return forbiddenResponse();
+    }
+
+    return handler(user, request, context);
+  }, errorHandlers);
 }
 
 export async function parseBody<T>(request: Request, schema: ZodType<T>) {
