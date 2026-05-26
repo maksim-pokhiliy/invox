@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 
 import { z } from "zod";
 
-import { asUserId } from "@app/shared/types/ids";
-
 import { errorResponse, parseBody, withAuth } from "@app/server/api/route-helpers";
 import {
   connectProvider,
@@ -20,7 +18,7 @@ const connectSchema = z.object({
 });
 
 export const GET = withAuth(async (user) => {
-  const connections = await getConnections(asUserId(user.id));
+  const connections = await getConnections(user.id);
 
   return NextResponse.json(connections);
 });
@@ -33,7 +31,7 @@ export const POST = withAuth(
       return error;
     }
 
-    const connection = await connectProvider(asUserId(user.id), data.provider, data.token);
+    const connection = await connectProvider(user.id, data.provider, data.token);
 
     return NextResponse.json(connection, { status: 201 });
   },

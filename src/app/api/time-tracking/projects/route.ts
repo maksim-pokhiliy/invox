@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { asUserId } from "@app/shared/types/ids";
-
 import { errorResponse, withAuth } from "@app/server/api/route-helpers";
 import { createRequestBudget } from "@app/server/api/timeout";
 import { getProjects } from "@app/server/time-tracking";
@@ -22,7 +20,7 @@ export const GET = withAuth(async (user, request) => {
   const budget = createRequestBudget(TIME_TRACKING_REQUEST_BUDGET_MS);
 
   try {
-    const projects = await getProjects(asUserId(user.id), provider, workspaceId, {
+    const projects = await getProjects(user.id, provider, workspaceId, {
       signal: budget.signal,
     });
 

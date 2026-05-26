@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { asPublicId, asUserId } from "@app/shared/types/ids";
+import { asPublicId } from "@app/shared/types/ids";
 
 import { applyRateLimit, RATE_LIMITS } from "@app/server/api/rate-limit";
 import { notFoundResponse, withPublic } from "@app/server/api/route-helpers";
@@ -9,7 +9,7 @@ import { tryMarkViewed } from "@app/server/invoices";
 
 export const POST = withPublic(async (request, context) => {
   const user = await getUser();
-  const viewerUserId = user?.id ? asUserId(user.id) : null;
+  const viewerUserId = user?.id ?? null;
   const { response: limited } = await applyRateLimit(request, {
     bucket: "public.invoice.viewed",
     ...RATE_LIMITS.PUBLIC_VIEW,

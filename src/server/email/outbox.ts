@@ -8,6 +8,7 @@ import {
   type EmailOutboxRelatedTypeValue,
 } from "@app/shared/config/email-outbox";
 import { runWithConcurrency } from "@app/shared/lib/concurrency";
+import type { UserId } from "@app/shared/types/ids";
 
 import { prisma } from "@app/server/db";
 import { pruneArm } from "@app/server/prune/run";
@@ -23,7 +24,7 @@ import {
 export type EmailOutboxClient = Prisma.TransactionClient | typeof prisma;
 
 export interface CreateEmailOutboxInput {
-  userId: string | null;
+  userId: UserId | null;
   kind: EmailOutboxKindValue;
   relatedType: EmailOutboxRelatedTypeValue | null;
   relatedId: string | null;

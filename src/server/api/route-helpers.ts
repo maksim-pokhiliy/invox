@@ -5,7 +5,9 @@ import type { ZodType } from "zod";
 import { API_ERROR_CODES, type ApiErrorCode } from "@app/shared/api/error-codes";
 import { env } from "@app/shared/config/env";
 
-import { AuthenticationError, requireUser } from "@app/server/auth/require-user";
+import { AuthenticationError, type AuthUser, requireUser } from "@app/server/auth/require-user";
+
+export type { AuthUser };
 
 export function errorResponse(
   code: ApiErrorCode,
@@ -48,11 +50,9 @@ interface ErrorHandler {
   respond: (error: Error) => NextResponse;
 }
 
-type AuthUser = { id: string; email: string };
+export type RouteContext = { params: Promise<Record<string, string>> };
 
-type RouteContext = { params: Promise<Record<string, string>> };
-
-type AuthHandler = (
+export type AuthHandler = (
   user: AuthUser,
   request: Request,
   context: RouteContext

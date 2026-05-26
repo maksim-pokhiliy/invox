@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { updateInvoiceSchema } from "@app/shared/schemas";
-import { asInvoiceId, asUserId } from "@app/shared/types/ids";
+import { asInvoiceId } from "@app/shared/types/ids";
 
 import {
   errorResponse,
@@ -19,7 +19,7 @@ import {
 
 export const GET = withAuth(async (user, _request, context) => {
   const { id } = await context.params;
-  const invoice = await getInvoice(asInvoiceId(id), asUserId(user.id));
+  const invoice = await getInvoice(asInvoiceId(id), user.id);
 
   if (!invoice) {
     return notFoundResponse("Invoice");
@@ -37,7 +37,7 @@ export const PATCH = withAuth(
       return error;
     }
 
-    const invoice = await updateInvoice(asInvoiceId(id), asUserId(user.id), data);
+    const invoice = await updateInvoice(asInvoiceId(id), user.id, data);
 
     if (!invoice) {
       return notFoundResponse("Invoice");
@@ -59,7 +59,7 @@ export const PATCH = withAuth(
 
 export const DELETE = withAuth(async (user, _request, context) => {
   const { id } = await context.params;
-  const result = await deleteInvoice(asInvoiceId(id), asUserId(user.id));
+  const result = await deleteInvoice(asInvoiceId(id), user.id);
 
   if (!result) {
     return notFoundResponse("Invoice");

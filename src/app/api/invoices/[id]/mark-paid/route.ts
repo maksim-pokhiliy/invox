@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { asInvoiceId, asUserId } from "@app/shared/types/ids";
+import { asInvoiceId } from "@app/shared/types/ids";
 
 import { withIdempotency } from "@app/server/api/idempotency";
 import { notFoundResponse, withAuth } from "@app/server/api/route-helpers";
@@ -10,7 +10,7 @@ export const POST = withAuth(
   withIdempotency(
     async (user, _request, context) => {
       const { id } = await context.params;
-      const invoice = await markInvoicePaid(asInvoiceId(id), asUserId(user.id));
+      const invoice = await markInvoicePaid(asInvoiceId(id), user.id);
 
       if (!invoice) {
         return notFoundResponse("Invoice not found or already paid");

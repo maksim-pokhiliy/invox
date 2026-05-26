@@ -1,6 +1,6 @@
 import { after, NextResponse } from "next/server";
 
-import { asInvoiceId, asUserId } from "@app/shared/types/ids";
+import { asInvoiceId } from "@app/shared/types/ids";
 
 import { withIdempotency } from "@app/server/api/idempotency";
 import { errorResponse, withAuth } from "@app/server/api/route-helpers";
@@ -15,7 +15,7 @@ export const POST = withAuth(
   withIdempotency(
     async (user, _request, context) => {
       const { id } = await context.params;
-      const { invoice, outboxId } = await sendInvoice(asInvoiceId(id), asUserId(user.id));
+      const { invoice, outboxId } = await sendInvoice(asInvoiceId(id), user.id);
 
       after(() =>
         dispatchOutbox(outboxId).catch((error) => {

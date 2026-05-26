@@ -4,6 +4,8 @@ import { Prisma } from "@prisma/client";
 import { randomBytes } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { asUserId } from "@app/shared/types/ids";
+
 const idempotencyKey = {
   findUnique: vi.fn(),
   create: vi.fn(),
@@ -22,7 +24,7 @@ vi.mock("@app/server/api/route-helpers", () => ({
 
 const ENDPOINT = "POST /api/invoices/:id/payments";
 const VALID_HEADER_KEY = "idem-key-12345678";
-const USER = { id: "user-1", email: "owner@example.com" };
+const USER = { id: asUserId("user-1"), email: "owner@example.com" };
 const FRESH_EXPIRY = new Date(Date.now() + 60_000);
 
 function buildRequest(body: Record<string, unknown> = { amount: 100 }): Request {

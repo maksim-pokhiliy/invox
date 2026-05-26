@@ -3,7 +3,14 @@ import { NextResponse } from "next/server";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import crypto from "node:crypto";
 
-import { errorResponse } from "@app/server/api/route-helpers";
+import type { UserId } from "@app/shared/types/ids";
+
+import {
+  type AuthHandler,
+  type AuthUser,
+  errorResponse,
+  type RouteContext,
+} from "@app/server/api/route-helpers";
 import { prisma } from "@app/server/db";
 import { pruneArm } from "@app/server/prune/run";
 
@@ -18,22 +25,12 @@ const IN_PROGRESS_STATUS = 409;
 const SUCCESS_STATUS_MIN = 200;
 const SUCCESS_STATUS_MAX = 300;
 
-type AuthUser = { id: string; email: string };
-
-type RouteContext = { params: Promise<Record<string, string>> };
-
-type AuthHandler = (
-  user: AuthUser,
-  request: Request,
-  context: RouteContext
-) => Promise<NextResponse>;
-
 interface IdempotencyOptions {
   endpoint: string;
 }
 
 interface ClaimKey {
-  userId: string;
+  userId: UserId;
   endpoint: string;
   key: string;
 }

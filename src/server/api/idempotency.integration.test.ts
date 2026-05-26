@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TIME } from "@app/shared/config/config";
+import { asUserId, type UserId } from "@app/shared/types/ids";
 
 const { prisma } = await import("@app/server/db");
 const { pruneExpiredIdempotencyKeys, withIdempotency } =
@@ -21,14 +22,14 @@ const IN_PROGRESS_STATUS = 409;
 const RESPONSE_BODY = { ok: true };
 
 interface IdempotencyContext {
-  userId: string;
+  userId: UserId;
   email: string;
 }
 
 async function seedUser(): Promise<IdempotencyContext> {
   const user = await factories.createUser(prisma);
 
-  return { userId: user.id, email: user.email };
+  return { userId: asUserId(user.id), email: user.email };
 }
 
 function buildRequest(body: Record<string, unknown> = { amount: 100 }): Request {

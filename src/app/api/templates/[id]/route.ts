@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
 
 import { updateTemplateSchema } from "@app/shared/schemas";
-import { asUserId } from "@app/shared/types/ids";
 
 import { notFoundResponse, parseBody, withAuth } from "@app/server/api/route-helpers";
 import { deleteTemplate, getTemplate, updateTemplate } from "@app/server/templates";
 
 export const GET = withAuth(async (user, _request, context) => {
   const { id } = await context.params;
-  const template = await getTemplate(id, asUserId(user.id));
+  const template = await getTemplate(id, user.id);
 
   if (!template) {
     return notFoundResponse("Template");
@@ -25,7 +24,7 @@ export const PATCH = withAuth(async (user, request, context) => {
     return error;
   }
 
-  const template = await updateTemplate(id, asUserId(user.id), data);
+  const template = await updateTemplate(id, user.id, data);
 
   if (!template) {
     return notFoundResponse("Template");
@@ -36,7 +35,7 @@ export const PATCH = withAuth(async (user, request, context) => {
 
 export const DELETE = withAuth(async (user, _request, context) => {
   const { id } = await context.params;
-  const result = await deleteTemplate(id, asUserId(user.id));
+  const result = await deleteTemplate(id, user.id);
 
   if (!result) {
     return notFoundResponse("Template");

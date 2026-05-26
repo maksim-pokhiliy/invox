@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 
 import { z } from "zod";
 
-import { asUserId } from "@app/shared/types/ids";
-
 import { parseBody, withAuth } from "@app/server/api/route-helpers";
 import { createRequestBudget } from "@app/server/api/timeout";
 import { getTimeEntries } from "@app/server/time-tracking";
@@ -35,7 +33,7 @@ export const POST = withAuth(async (user, request) => {
 
   try {
     const result = await getTimeEntries(
-      asUserId(user.id),
+      user.id,
       data.provider,
       {
         workspaceId: data.workspaceId,
