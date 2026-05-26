@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { extractApiErrorMessage } from "@app/shared/api";
 import { CURRENCY } from "@app/shared/config/config";
 import { useToast } from "@app/shared/hooks/use-toast";
-import type { InvoiceFormInput } from "@app/shared/schemas";
+import type { CreateInvoiceInput, InvoiceFormInput, UpdateInvoiceInput } from "@app/shared/schemas";
 
 import type { InvoiceFormMode } from "../types";
 import { useCreateInvoice, useUpdateInvoice } from ".";
@@ -16,6 +16,8 @@ interface UseInvoiceSubmitOptions {
   invoiceId?: string;
   onDraftClear: () => void;
 }
+
+type TransformedItems = ReturnType<typeof transformForSubmit>;
 
 function transformForSubmit(data: InvoiceFormInput) {
   const items = data.items.map((item, i) => ({
@@ -37,6 +39,40 @@ function transformForSubmit(data: InvoiceFormInput) {
   return { items, itemGroups };
 }
 
+function buildCommonInvoicePayload(data: InvoiceFormInput, transformed: TransformedItems) {
+  return {
+    clientId: data.clientId,
+    currency: data.currency,
+    dueDate: new Date(data.dueDate),
+    periodStart: data.periodStart ? new Date(data.periodStart) : undefined,
+    periodEnd: data.periodEnd ? new Date(data.periodEnd) : undefined,
+    items: transformed.items,
+    itemGroups: transformed.itemGroups,
+  };
+}
+
+function buildCreateInvoicePayload(
+  data: InvoiceFormInput,
+  transformed: TransformedItems
+): CreateInvoiceInput {
+  return {
+    ...buildCommonInvoicePayload(data, transformed),
+    notes: data.notes || undefined,
+    message: data.message || undefined,
+  };
+}
+
+function buildUpdateInvoicePayload(
+  data: InvoiceFormInput,
+  transformed: TransformedItems
+): UpdateInvoiceInput {
+  return {
+    ...buildCommonInvoicePayload(data, transformed),
+    notes: data.notes || null,
+    message: data.message || null,
+  };
+}
+
 export function useInvoiceSubmit({ mode, invoiceId, onDraftClear }: UseInvoiceSubmitOptions) {
   const router = useRouter();
   const toast = useToast();
@@ -50,35 +86,22 @@ export function useInvoiceSubmit({ mode, invoiceId, onDraftClear }: UseInvoiceSu
   const onSubmit = React.useCallback(
     (data: InvoiceFormInput) => {
       setError(null);
-      const { items, itemGroups } = transformForSubmit(data);
+      const transformed = transformForSubmit(data);
 
       if (mode === "create") {
-        createMutation.mutate(
-          {
-            clientId: data.clientId,
-            currency: data.currency,
-            dueDate: new Date(data.dueDate),
-            periodStart: data.periodStart ? new Date(data.periodStart) : undefined,
-            periodEnd: data.periodEnd ? new Date(data.periodEnd) : undefined,
-            items,
-            itemGroups,
-            notes: data.notes || undefined,
-            message: data.message || undefined,
+        createMutation.mutate(buildCreateInvoicePayload(data, transformed), {
+          onSuccess: (invoice) => {
+            onDraftClear();
+            toast.success("Invoice created successfully!");
+            router.push(`/app/invoices/${invoice.id}`);
           },
-          {
-            onSuccess: (invoice) => {
-              onDraftClear();
-              toast.success("Invoice created successfully!");
-              router.push(`/app/invoices/${invoice.id}`);
-            },
-            onError: (err) => {
-              const message = extractApiErrorMessage(err, "Failed to create invoice");
+          onError: (err) => {
+            const message = extractApiErrorMessage(err, "Failed to create invoice");
 
-              setError(message);
-              toast.error(message);
-            },
-          }
-        );
+            setError(message);
+            toast.error(message);
+          },
+        });
 
         return;
       }
@@ -90,20 +113,7 @@ export function useInvoiceSubmit({ mode, invoiceId, onDraftClear }: UseInvoiceSu
       }
 
       updateMutation.mutate(
-        {
-          id: invoiceId,
-          data: {
-            clientId: data.clientId,
-            currency: data.currency,
-            dueDate: new Date(data.dueDate),
-            periodStart: data.periodStart ? new Date(data.periodStart) : undefined,
-            periodEnd: data.periodEnd ? new Date(data.periodEnd) : undefined,
-            items,
-            itemGroups,
-            notes: data.notes || null,
-            message: data.message || null,
-          },
-        },
+        { id: invoiceId, data: buildUpdateInvoicePayload(data, transformed) },
         {
           onSuccess: () => {
             toast.success("Invoice updated successfully!");
