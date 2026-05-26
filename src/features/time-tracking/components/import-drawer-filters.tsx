@@ -21,7 +21,8 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import dayjs, { type Dayjs } from "dayjs";
 
-import type { Project, ProviderInfo } from "../api";
+import type { ProviderInfo, TimeTrackingProject } from "@app/shared/schemas/api";
+
 import type { RateSource } from "../constants";
 import { useProjects, useWorkspaces } from "../hooks";
 import { ImportSettings } from "./import-settings";
@@ -34,8 +35,8 @@ interface ImportDrawerFiltersProps {
   provider: ProviderInfo;
   workspaceId: string;
   onWorkspaceChange: (id: string) => void;
-  selectedProjects: Project[];
-  onProjectsChange: (projects: Project[]) => void;
+  selectedProjects: TimeTrackingProject[];
+  onProjectsChange: (projects: TimeTrackingProject[]) => void;
   startDate: string;
   endDate: string;
   onStartDateChange: (date: string) => void;
@@ -162,7 +163,7 @@ export function ImportDrawerFilters({
             return options;
           }
 
-          const selectAllOption: Project = {
+          const selectAllOption: TimeTrackingProject = {
             id: SELECT_ALL_ID,
             name:
               selectedProjects.length === (projects?.length ?? 0) ? "Deselect all" : "Select all",

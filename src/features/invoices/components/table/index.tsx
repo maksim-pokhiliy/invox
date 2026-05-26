@@ -5,9 +5,9 @@ import * as React from "react";
 import { Checkbox } from "@mui/material";
 
 import { useTableKeyboardNav } from "@app/shared/hooks";
+import type { InvoiceListItem } from "@app/shared/schemas/api";
 import { DataTable, type DataTableColumn } from "@app/shared/ui/data-table";
 
-import type { InvoiceData } from "../invoice-row";
 import { PaginatedRows } from "./paginated-rows";
 import { InvoicesTableFooter } from "./table-footer";
 import { VirtualizedRows } from "./virtualized-rows";
@@ -30,8 +30,8 @@ const COLUMNS: DataTableColumn[] = [
 ];
 
 interface InvoicesTableProps {
-  filteredInvoices: InvoiceData[];
-  paginatedInvoices: InvoiceData[];
+  filteredInvoices: InvoiceListItem[];
+  paginatedInvoices: InvoiceListItem[];
   showAll: boolean;
   setShowAll: (show: boolean) => void;
   virtualItems: VirtualItem[];

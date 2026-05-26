@@ -17,7 +17,7 @@ import {
 
 import { FONT_FAMILY_MAP } from "@app/shared/config/config";
 import { INVOICE_STATUS, STATUS_CONFIG } from "@app/shared/config/invoice-status";
-import type { InvoiceItemGroupResponse, InvoiceItemResponse } from "@app/shared/schemas/api";
+import type { PublicInvoice } from "@app/shared/schemas/api";
 
 import { publicApi } from "../api";
 import { InvoiceActions } from "./invoice-actions";
@@ -28,32 +28,6 @@ import { InvoiceTotals } from "./invoice-totals";
 import { PaymentReferenceBlock } from "./payment-reference-block";
 import { SenderBillTo } from "./sender-bill-to";
 
-interface Invoice {
-  publicId: string;
-  status: string;
-  currency: string;
-  subtotal: number;
-  total: number;
-  dueDate: string;
-  periodStart: string | null;
-  periodEnd: string | null;
-  paidAt: string | null;
-  createdAt: string;
-  message: string | null;
-  paymentReference: string | null;
-  client: {
-    name: string;
-    email: string;
-  };
-  items: InvoiceItemResponse[];
-  itemGroups?: InvoiceItemGroupResponse[];
-  sender: {
-    name: string;
-    address: string;
-    taxId: string;
-  };
-}
-
 interface Branding {
   logoUrl: string | null;
   primaryColor: string;
@@ -63,7 +37,7 @@ interface Branding {
 
 interface Props {
   publicId: string;
-  invoice: Invoice;
+  invoice: PublicInvoice;
   branding: Branding;
   justPaid: boolean;
 }

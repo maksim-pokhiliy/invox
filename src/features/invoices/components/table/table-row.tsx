@@ -3,13 +3,13 @@
 import { Checkbox, Chip, TableCell, Typography } from "@mui/material";
 
 import { formatCurrency, formatDateCompact } from "@app/shared/lib/format";
+import type { InvoiceListItem } from "@app/shared/schemas/api";
 import { DataTableActions, DataTableRow } from "@app/shared/ui/data-table";
 
 import { STATUS_CONFIG } from "../../constants/invoice";
-import type { InvoiceData } from "../invoice-row";
 
 interface InvoiceTableRowProps {
-  invoice: InvoiceData;
+  invoice: InvoiceListItem;
   height?: number;
   dataIndex?: number;
   selected?: boolean;

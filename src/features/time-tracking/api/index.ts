@@ -1,76 +1,18 @@
 import { fetchApi } from "@app/shared/api/base";
-
-export interface TimeTrackingConnection {
-  id: string;
-  provider: string;
-  label: string | null;
-  metadata: Record<string, unknown> | null;
-  connectedAt: string;
-  lastUsedAt: string | null;
-}
-
-export interface ProviderCapabilities {
-  breakdownOptions: string[];
-  allowedCombinations: Record<string, string[]>;
-  roundingOptions: number[];
-  roundingDirections: string[];
-  hasClients: boolean;
-  hasTasks: boolean;
-  hasBillableRates: boolean;
-  hasCurrency: boolean;
-  hasProjects: boolean;
-}
-
-export interface ProviderInfo {
-  id: string;
-  name: string;
-  capabilities: ProviderCapabilities;
-}
-
-export interface Workspace {
-  id: string;
-  name: string;
-  defaultCurrency: string | null;
-  defaultHourlyRateCents: number | null;
-  roundingDirection: string;
-  roundingMinutes: number;
-}
-
-export interface Project {
-  id: string;
-  name: string;
-  clientId: string | null;
-  clientName: string | null;
-  active: boolean;
-  billable: boolean;
-  color: string | null;
-  currency: string | null;
-  rateCents: number | null;
-}
-
-export interface TimeEntryItem {
-  id: string;
-  title: string;
-  seconds: number;
-  amountCents: number | null;
-  rateCents: number | null;
-  currency: string | null;
-}
-
-export interface TimeEntryGroup {
-  id: string;
-  title: string;
-  items: TimeEntryItem[];
-  totalSeconds: number;
-  totalAmountCents: number | null;
-}
-
-export interface TimeEntriesResult {
-  groups: TimeEntryGroup[];
-  totalSeconds: number;
-  totalAmountCents: number | null;
-  currency: string | null;
-}
+import {
+  type ProviderInfo,
+  providerInfoListSchema,
+  successAckSchema,
+  type TimeEntriesResult,
+  timeEntriesResultSchema,
+  type TimeTrackingConnection,
+  timeTrackingConnectionListSchema,
+  timeTrackingConnectionSchema,
+  type TimeTrackingProject,
+  timeTrackingProjectListSchema,
+  type TimeTrackingWorkspace,
+  timeTrackingWorkspaceListSchema,
+} from "@app/shared/schemas/api";
 
 export interface TimeEntriesSearchInput {
   provider: string;
@@ -101,32 +43,56 @@ export interface ImportedGroup {
 }
 
 export const timeTrackingApi = {
-  getProviders: () => fetchApi<ProviderInfo[]>("/api/time-tracking/providers"),
+  getProviders: () =>
+    fetchApi<ProviderInfo[]>("/api/time-tracking/providers", undefined, providerInfoListSchema),
 
-  getConnections: () => fetchApi<TimeTrackingConnection[]>("/api/time-tracking/connections"),
+  getConnections: () =>
+    fetchApi<TimeTrackingConnection[]>(
+      "/api/time-tracking/connections",
+      undefined,
+      timeTrackingConnectionListSchema
+    ),
 
   connect: (provider: string, token: string) =>
-    fetchApi<TimeTrackingConnection>("/api/time-tracking/connections", {
-      method: "POST",
-      body: JSON.stringify({ provider, token }),
-    }),
+    fetchApi<TimeTrackingConnection>(
+      "/api/time-tracking/connections",
+      {
+        method: "POST",
+        body: JSON.stringify({ provider, token }),
+      },
+      timeTrackingConnectionSchema
+    ),
 
   disconnect: (connectionId: string) =>
-    fetchApi<{ success: boolean }>(`/api/time-tracking/connections/${connectionId}`, {
-      method: "DELETE",
-    }),
+    fetchApi<{ success: boolean }>(
+      `/api/time-tracking/connections/${connectionId}`,
+      {
+        method: "DELETE",
+      },
+      successAckSchema
+    ),
 
   getWorkspaces: (provider: string) =>
-    fetchApi<Workspace[]>(`/api/time-tracking/workspaces?provider=${provider}`),
+    fetchApi<TimeTrackingWorkspace[]>(
+      `/api/time-tracking/workspaces?provider=${provider}`,
+      undefined,
+      timeTrackingWorkspaceListSchema
+    ),
 
   getProjects: (provider: string, workspaceId: string) =>
-    fetchApi<Project[]>(
-      `/api/time-tracking/projects?provider=${provider}&workspaceId=${workspaceId}`
+    fetchApi<TimeTrackingProject[]>(
+      `/api/time-tracking/projects?provider=${provider}&workspaceId=${workspaceId}`,
+      undefined,
+      timeTrackingProjectListSchema
     ),
 
   searchTimeEntries: (input: TimeEntriesSearchInput) =>
-    fetchApi<TimeEntriesResult>("/api/time-tracking/time-entries", {
-      method: "POST",
-      body: JSON.stringify(input),
-    }),
+    fetchApi<TimeEntriesResult>(
+      "/api/time-tracking/time-entries",
+      {
+        method: "POST",
+        body: JSON.stringify(input),
+      },
+      timeEntriesResultSchema
+    ),
 };

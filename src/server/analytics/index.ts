@@ -1,7 +1,7 @@
 import { INVOICE_STATUS } from "@app/shared/config/invoice-status";
 import { isOverdue } from "@app/shared/lib/invoice-status-predicates";
 import type { AnalyticsData, CurrencyMetrics, MonthlyRevenue } from "@app/shared/schemas/api";
-import type { UserId } from "@app/shared/types/ids";
+import { asInvoiceId, type UserId } from "@app/shared/types/ids";
 
 import { prisma } from "@app/server/db";
 
@@ -114,7 +114,7 @@ function fetchInvoicesForAnalytics(userId: UserId) {
 
 function mapRecentInvoiceDto(invoice: RecentInvoiceRow): AnalyticsData["recentInvoices"][number] {
   return {
-    id: invoice.id,
+    id: asInvoiceId(invoice.id),
     publicId: invoice.publicId,
     status: invoice.status,
     total: invoice.total,

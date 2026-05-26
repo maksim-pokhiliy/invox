@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import type { ProviderInfo, TimeTrackingConnection } from "../api";
+import type { ProviderInfo, TimeTrackingConnection } from "@app/shared/schemas/api";
 
 export function useImportDrawer(
   connections: TimeTrackingConnection[] | undefined,

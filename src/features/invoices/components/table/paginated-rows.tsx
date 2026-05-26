@@ -1,10 +1,11 @@
 "use client";
 
-import type { InvoiceData } from "../invoice-row";
+import type { InvoiceListItem } from "@app/shared/schemas/api";
+
 import { InvoiceTableRow } from "./table-row";
 
 interface PaginatedRowsProps {
-  invoices: InvoiceData[];
+  invoices: InvoiceListItem[];
   selectedIds?: Set<string>;
   focusedIndex?: number;
   onToggleSelect?: (id: string) => void;

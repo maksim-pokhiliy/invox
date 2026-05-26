@@ -7,15 +7,9 @@ import { Alert, Box, Button, Drawer, IconButton, Stack, Typography } from "@mui/
 
 import { extractApiErrorMessage } from "@app/shared/api";
 import { CURRENCY, DECIMAL_ROUNDING_FACTOR, TIME_TRACKING } from "@app/shared/config/config";
+import type { ProviderInfo, TimeEntriesResult, TimeTrackingProject } from "@app/shared/schemas/api";
 
-import type {
-  ImportedGroup,
-  ImportedItem,
-  Project,
-  ProviderInfo,
-  Selection,
-  TimeEntriesResult,
-} from "../api";
+import type { ImportedGroup, ImportedItem, Selection } from "../api";
 import { RATE_SOURCE, type RateSource } from "../constants";
 import { useSearchTimeEntries } from "../hooks";
 import { buildDateRange, resolveItemRate } from "../lib/import-utils";
@@ -40,7 +34,7 @@ export function ImportDrawer({
   onImport,
 }: ImportDrawerProps) {
   const [workspaceId, setWorkspaceId] = React.useState("");
-  const [selectedProjects, setSelectedProjects] = React.useState<Project[]>([]);
+  const [selectedProjects, setSelectedProjects] = React.useState<TimeTrackingProject[]>([]);
   const [startDate, setStartDate] = React.useState(buildDateRange().startDate);
   const [endDate, setEndDate] = React.useState(buildDateRange().endDate);
   const [grouping, setGrouping] = React.useState("projects");

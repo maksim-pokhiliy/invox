@@ -14,8 +14,8 @@ import {
 } from "@mui/material";
 
 import { CURRENCY, UI } from "@app/shared/config/config";
+import type { ProviderInfo } from "@app/shared/schemas/api";
 
-import type { ProviderInfo } from "../api";
 import { BREAKDOWN_LABELS, RATE_SOURCE, type RateSource, ROUNDING_LABELS } from "../constants";
 
 interface ImportSettingsProps {

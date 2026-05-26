@@ -3,8 +3,8 @@
 import { TableCell, TableRow } from "@mui/material";
 
 import { VIRTUALIZATION } from "@app/shared/config/config";
+import type { InvoiceListItem } from "@app/shared/schemas/api";
 
-import type { InvoiceData } from "../invoice-row";
 import { InvoiceTableRow } from "./table-row";
 
 interface VirtualItem {
@@ -14,7 +14,7 @@ interface VirtualItem {
 }
 
 interface VirtualizedRowsProps {
-  filteredInvoices: InvoiceData[];
+  filteredInvoices: InvoiceListItem[];
   virtualItems: VirtualItem[];
   totalSize: number;
   selectedIds?: Set<string>;

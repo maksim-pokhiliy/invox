@@ -5,25 +5,12 @@ import { alpha, Chip, IconButton, TableCell, TableRow, Typography, useTheme } fr
 
 import { UI } from "@app/shared/config/config";
 import { formatCurrency, formatDateCompact } from "@app/shared/lib/format";
+import type { InvoiceListItem } from "@app/shared/schemas/api";
 
 import { STATUS_CONFIG } from "../constants/invoice";
 
-export interface InvoiceData {
-  id: string;
-  publicId: string;
-  status: string;
-  total: number;
-  currency: string;
-  dueDate: string;
-  createdAt: string;
-  client: {
-    name: string;
-    email: string;
-  };
-}
-
 interface InvoiceRowProps {
-  invoice: InvoiceData;
+  invoice: InvoiceListItem;
   onRowClick: (id: string) => void;
   onMenuOpen: (event: React.MouseEvent<HTMLElement>, id: string) => void;
   onPrefetch: (id: string) => void;

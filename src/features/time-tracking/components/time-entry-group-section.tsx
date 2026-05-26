@@ -2,7 +2,8 @@
 
 import { alpha, Box, Checkbox, Stack, Typography, useTheme } from "@mui/material";
 
-import type { TimeEntryGroup } from "../api";
+import type { TimeEntryGroup } from "@app/shared/schemas/api";
+
 import { formatAmount, formatHours } from "../lib/import-utils";
 import { TimeEntryItemRow } from "./time-entry-item-row";
 

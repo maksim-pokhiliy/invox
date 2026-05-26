@@ -4,7 +4,9 @@ import * as React from "react";
 
 import { alpha, Box, Checkbox, Stack, Typography, useTheme } from "@mui/material";
 
-import type { Selection, TimeEntriesResult, TimeEntryGroup } from "../api";
+import type { TimeEntriesResult, TimeEntryGroup } from "@app/shared/schemas/api";
+
+import type { Selection } from "../api";
 import { formatAmount, formatHours } from "../lib/import-utils";
 import { TimeEntryGroupSection } from "./time-entry-group-section";
 

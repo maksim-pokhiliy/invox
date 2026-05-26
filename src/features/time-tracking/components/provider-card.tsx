@@ -15,9 +15,9 @@ import {
   Typography,
 } from "@mui/material";
 
+import type { TimeTrackingConnection } from "@app/shared/schemas/api";
 import { ConfirmDialog } from "@app/shared/ui/confirm-dialog";
 
-import type { TimeTrackingConnection } from "../api";
 import { PROVIDER_META } from "../constants";
 import { useDisconnectProvider } from "../hooks";
 import { ConnectDialog } from "./connect-dialog";

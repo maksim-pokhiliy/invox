@@ -2,11 +2,11 @@
 
 import * as React from "react";
 
+import type { InvoiceListItem } from "@app/shared/schemas/api";
 import { NoResults } from "@app/shared/ui/no-results";
 import { TableSkeleton } from "@app/shared/ui/skeletons";
 
 import { EmptyInvoicesState } from "./empty-states";
-import type { InvoiceData } from "./invoice-row";
 import { InvoicesTable } from "./table";
 
 interface VirtualItem {
@@ -17,9 +17,9 @@ interface VirtualItem {
 
 interface InvoicesContentProps {
   isLoading: boolean;
-  invoices: InvoiceData[] | undefined;
-  filteredInvoices: InvoiceData[];
-  paginatedInvoices: InvoiceData[];
+  invoices: InvoiceListItem[] | undefined;
+  filteredInvoices: InvoiceListItem[];
+  paginatedInvoices: InvoiceListItem[];
   showAll: boolean;
   setShowAll: (show: boolean) => void;
   virtualItems: VirtualItem[];

@@ -3,8 +3,8 @@
 import { Checkbox, Stack, Typography } from "@mui/material";
 
 import { CURRENCY } from "@app/shared/config/config";
+import type { TimeEntryItem } from "@app/shared/schemas/api";
 
-import type { TimeEntryItem } from "../api";
 import { formatAmount, formatHours } from "../lib/import-utils";
 
 interface TimeEntryItemRowProps {
