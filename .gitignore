@@ -41,6 +41,7 @@ yarn-error.log*
 # claude code
 .claude
 .audit
+.audit-smells
 .feature-dev
 .upgrade
 
