@@ -9,7 +9,8 @@ import type { InvoiceId, UserId } from "@app/shared/types/ids";
 import { prisma } from "@app/server/db";
 import type { InvoiceWithRelations } from "@app/server/invoices";
 
-import { createItemGroups, ITEM_GROUPS_INCLUDE } from "./item-groups";
+import { INVOICE_WITH_RELATIONS_INCLUDE } from "./invoice-fields";
+import { createItemGroups } from "./item-groups";
 
 export async function duplicateInvoice(
   id: InvoiceId,
@@ -37,66 +38,64 @@ export async function duplicateInvoice(
     invoice.taxRate
   );
 
-  const newInvoice = await prisma.invoice.create({
-    data: {
-      userId,
-      clientId: invoice.clientId,
-      publicId,
-      currency: invoice.currency,
-      status: INVOICE_STATUS.DRAFT,
-      dueDate: new Date(Date.now() + INVOICE.DEFAULT_DUE_DAYS * TIME.DAY),
-      periodStart: invoice.periodStart,
-      periodEnd: invoice.periodEnd,
-      subtotal,
-      discountType: invoice.discountType,
-      discountValue: invoice.discountValue,
-      discountAmount,
-      taxRate: invoice.taxRate,
-      taxAmount,
-      total,
-      message: invoice.message,
-      tags: parseInvoiceTags(invoice.tags),
-      items: {
-        create: ungroupedItems.map((item) => ({
-          title: item.title,
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          amount: item.amount,
-          sortOrder: item.sortOrder,
-        })),
+  return prisma.$transaction(async (tx) => {
+    const newInvoice = await tx.invoice.create({
+      data: {
+        userId,
+        clientId: invoice.clientId,
+        publicId,
+        currency: invoice.currency,
+        status: INVOICE_STATUS.DRAFT,
+        dueDate: new Date(Date.now() + INVOICE.DEFAULT_DUE_DAYS * TIME.DAY),
+        periodStart: invoice.periodStart,
+        periodEnd: invoice.periodEnd,
+        subtotal,
+        discountType: invoice.discountType,
+        discountValue: invoice.discountValue,
+        discountAmount,
+        taxRate: invoice.taxRate,
+        taxAmount,
+        total,
+        message: invoice.message,
+        tags: parseInvoiceTags(invoice.tags),
+        items: {
+          create: ungroupedItems.map((item) => ({
+            title: item.title,
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            amount: item.amount,
+            sortOrder: item.sortOrder,
+          })),
+        },
       },
-    },
-    include: {
-      client: true,
-      items: { orderBy: { sortOrder: "asc" } },
-    },
-  });
+      include: {
+        client: true,
+        items: { orderBy: { sortOrder: "asc" } },
+      },
+    });
 
-  if (invoice.itemGroups.length > 0) {
-    await createItemGroups(
-      prisma,
-      newInvoice.id,
-      invoice.itemGroups.map((g) => ({
-        title: g.title,
-        sortOrder: g.sortOrder,
-        items: g.items.map((item) => ({
-          title: item.title,
-          description: item.description ?? undefined,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          sortOrder: item.sortOrder,
-        })),
-      }))
-    );
-  }
+    if (invoice.itemGroups.length > 0) {
+      await createItemGroups(
+        tx,
+        newInvoice.id,
+        invoice.itemGroups.map((g) => ({
+          title: g.title,
+          sortOrder: g.sortOrder,
+          items: g.items.map((item) => ({
+            title: item.title,
+            description: item.description ?? undefined,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            sortOrder: item.sortOrder,
+          })),
+        }))
+      );
+    }
 
-  return prisma.invoice.findUniqueOrThrow({
-    where: { id: newInvoice.id },
-    include: {
-      client: true,
-      items: { where: { groupId: null }, orderBy: { sortOrder: "asc" } },
-      itemGroups: ITEM_GROUPS_INCLUDE,
-    },
+    return tx.invoice.findUniqueOrThrow({
+      where: { id: newInvoice.id },
+      include: INVOICE_WITH_RELATIONS_INCLUDE,
+    });
   });
 }
