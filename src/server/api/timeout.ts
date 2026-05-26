@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { API_ERROR_CODES } from "@app/shared/api/error-codes";
+
 const STATUS_GATEWAY_TIMEOUT = 504;
 
 export class RequestBudgetExceededError extends Error {
@@ -41,7 +43,10 @@ export function createRequestBudget(budgetMs: number): RequestBudget {
 export function gatewayTimeoutResponse() {
   return NextResponse.json(
     {
-      error: { code: "GATEWAY_TIMEOUT", message: "Request exceeded the time budget. Try again." },
+      error: {
+        code: API_ERROR_CODES.GATEWAY_TIMEOUT,
+        message: "Request exceeded the time budget. Try again.",
+      },
     },
     { status: STATUS_GATEWAY_TIMEOUT }
   );

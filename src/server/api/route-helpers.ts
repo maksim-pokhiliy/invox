@@ -2,24 +2,13 @@ import { NextResponse } from "next/server";
 
 import type { ZodType } from "zod";
 
+import { API_ERROR_CODES, type ApiErrorCode } from "@app/shared/api/error-codes";
 import { env } from "@app/shared/config/env";
 
 import { AuthenticationError, requireUser } from "@app/server/auth/require-user";
 
-type ErrorCode =
-  | "UNAUTHORIZED"
-  | "VALIDATION_ERROR"
-  | "NOT_FOUND"
-  | "BAD_REQUEST"
-  | "INTERNAL_ERROR"
-  | "CLIENT_HAS_DEPENDENTS"
-  | "IDEMPOTENCY_KEY_REQUIRED"
-  | "IDEMPOTENCY_KEY_INVALID"
-  | "IDEMPOTENCY_KEY_REUSED"
-  | (string & {});
-
 export function errorResponse(
-  code: ErrorCode,
+  code: ApiErrorCode,
   message: string,
   status: number,
   details?: Record<string, unknown>
@@ -31,23 +20,27 @@ export function errorResponse(
 }
 
 export function unauthorizedResponse() {
-  return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
+  return errorResponse(API_ERROR_CODES.UNAUTHORIZED, "Unauthorized", 401);
 }
 
 export function validationErrorResponse(zodError: { issues: Array<{ message: string }> }) {
-  return errorResponse("VALIDATION_ERROR", zodError.issues[0]?.message ?? "Invalid input", 400);
+  return errorResponse(
+    API_ERROR_CODES.VALIDATION_ERROR,
+    zodError.issues[0]?.message ?? "Invalid input",
+    400
+  );
 }
 
 export function notFoundResponse(entity: string) {
-  return errorResponse("NOT_FOUND", `${entity} not found`, 404);
+  return errorResponse(API_ERROR_CODES.NOT_FOUND, `${entity} not found`, 404);
 }
 
 export function forbiddenResponse() {
-  return errorResponse("FORBIDDEN", "Access denied", 403);
+  return errorResponse(API_ERROR_CODES.FORBIDDEN, "Access denied", 403);
 }
 
 export function internalErrorResponse() {
-  return errorResponse("INTERNAL_ERROR", "An unexpected error occurred", 500);
+  return errorResponse(API_ERROR_CODES.INTERNAL_ERROR, "An unexpected error occurred", 500);
 }
 
 interface ErrorHandler {
