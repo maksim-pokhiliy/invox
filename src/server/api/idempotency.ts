@@ -3,10 +3,9 @@ import { NextResponse } from "next/server";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import crypto from "node:crypto";
 
-import { PRUNE } from "@app/shared/config/prune";
-
 import { errorResponse } from "@app/server/api/route-helpers";
 import { prisma } from "@app/server/db";
+import { pruneArm } from "@app/server/prune/run";
 
 const IDEMPOTENCY_HEADER = "Idempotency-Key";
 const KEY_MIN_LENGTH = 8;
@@ -268,44 +267,43 @@ export function withIdempotency(handler: AuthHandler, options: IdempotencyOption
   };
 }
 
+const IDEMPOTENCY_TABLE = "IdempotencyKey";
+
 export async function pruneExpiredIdempotencyKeys(
   client: PrismaClient,
   now: Date
 ): Promise<{ deleted: number }> {
-  const result = await client.idempotencyKey.deleteMany({
-    where: { expiresAt: { lte: now } },
+  const deleted = await pruneArm({
+    client,
+    now,
+    table: IDEMPOTENCY_TABLE,
+    mode: "prune",
+    run: async ({ client: c }) => {
+      const result = await c.idempotencyKey.deleteMany({
+        where: { expiresAt: { lte: now } },
+      });
+
+      return result.count;
+    },
   });
 
-  if (result.count > PRUNE.LARGE_DELETE_THRESHOLD) {
-    console.warn(
-      JSON.stringify({
-        event: "prune.warning.large_delete",
-        table: "IdempotencyKey",
-        deleted: result.count,
-      })
-    );
-  }
-
-  return { deleted: result.count };
+  return { deleted };
 }
 
 export async function countExpiredIdempotencyKeys(
   client: PrismaClient,
   now: Date
 ): Promise<{ count: number }> {
-  const count = await client.idempotencyKey.count({
-    where: { expiresAt: { lte: now } },
+  const count = await pruneArm({
+    client,
+    now,
+    table: IDEMPOTENCY_TABLE,
+    mode: "count",
+    run: ({ client: c }) =>
+      c.idempotencyKey.count({
+        where: { expiresAt: { lte: now } },
+      }),
   });
-
-  if (count > PRUNE.LARGE_DELETE_THRESHOLD) {
-    console.warn(
-      JSON.stringify({
-        event: "prune.warning.large_backlog",
-        table: "IdempotencyKey",
-        wouldDelete: count,
-      })
-    );
-  }
 
   return { count };
 }

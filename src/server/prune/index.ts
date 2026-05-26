@@ -33,6 +33,37 @@ export interface PruneOptions {
   now?: Date;
 }
 
+type ReportKey = "idempotencyKeys" | "emailOutboxSent" | "emailOutboxFailed" | "waitlistEntries";
+
+interface RetentionTable {
+  key: ReportKey;
+  runLive: (client: PrismaClient, now: Date) => Promise<number>;
+  runDryRun: (client: PrismaClient, now: Date) => Promise<number>;
+}
+
+const RETENTION_TABLES: readonly RetentionTable[] = [
+  {
+    key: "idempotencyKeys",
+    runLive: async (client, now) => (await pruneExpiredIdempotencyKeys(client, now)).deleted,
+    runDryRun: async (client, now) => (await countExpiredIdempotencyKeys(client, now)).count,
+  },
+  {
+    key: "emailOutboxSent",
+    runLive: async (client, now) => (await pruneOutboxSent(client, now)).deleted,
+    runDryRun: async (client, now) => (await countOutboxSent(client, now)).count,
+  },
+  {
+    key: "emailOutboxFailed",
+    runLive: async (client, now) => (await pruneOutboxFailed(client, now)).deleted,
+    runDryRun: async (client, now) => (await countOutboxFailed(client, now)).count,
+  },
+  {
+    key: "waitlistEntries",
+    runLive: async (client, now) => (await pruneConvertedWaitlistEntries(client, now)).deleted,
+    runDryRun: async (client, now) => (await countConvertedWaitlistEntries(client, now)).candidates,
+  },
+];
+
 function elapsedMs(start: number): number {
   return Math.round(performance.now() - start);
 }
@@ -41,7 +72,8 @@ function toErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-async function runIdempotencyKeys(
+async function runTable(
+  table: RetentionTable,
   client: PrismaClient,
   now: Date,
   isDryRun: boolean
@@ -49,79 +81,9 @@ async function runIdempotencyKeys(
   const start = performance.now();
 
   try {
-    if (isDryRun) {
-      const { count } = await countExpiredIdempotencyKeys(client, now);
-
-      return { ok: true, deleted: count, durationMs: elapsedMs(start) };
-    }
-
-    const { deleted } = await pruneExpiredIdempotencyKeys(client, now);
-
-    return { ok: true, deleted, durationMs: elapsedMs(start) };
-  } catch (error) {
-    return { ok: false, error: toErrorMessage(error), durationMs: elapsedMs(start) };
-  }
-}
-
-async function runOutboxSent(
-  client: PrismaClient,
-  now: Date,
-  isDryRun: boolean
-): Promise<PruneTableResult> {
-  const start = performance.now();
-
-  try {
-    if (isDryRun) {
-      const { count } = await countOutboxSent(client, now);
-
-      return { ok: true, deleted: count, durationMs: elapsedMs(start) };
-    }
-
-    const { deleted } = await pruneOutboxSent(client, now);
-
-    return { ok: true, deleted, durationMs: elapsedMs(start) };
-  } catch (error) {
-    return { ok: false, error: toErrorMessage(error), durationMs: elapsedMs(start) };
-  }
-}
-
-async function runOutboxFailed(
-  client: PrismaClient,
-  now: Date,
-  isDryRun: boolean
-): Promise<PruneTableResult> {
-  const start = performance.now();
-
-  try {
-    if (isDryRun) {
-      const { count } = await countOutboxFailed(client, now);
-
-      return { ok: true, deleted: count, durationMs: elapsedMs(start) };
-    }
-
-    const { deleted } = await pruneOutboxFailed(client, now);
-
-    return { ok: true, deleted, durationMs: elapsedMs(start) };
-  } catch (error) {
-    return { ok: false, error: toErrorMessage(error), durationMs: elapsedMs(start) };
-  }
-}
-
-async function runWaitlist(
-  client: PrismaClient,
-  now: Date,
-  isDryRun: boolean
-): Promise<PruneTableResult> {
-  const start = performance.now();
-
-  try {
-    if (isDryRun) {
-      const { candidates } = await countConvertedWaitlistEntries(client, now);
-
-      return { ok: true, deleted: candidates, durationMs: elapsedMs(start) };
-    }
-
-    const { deleted } = await pruneConvertedWaitlistEntries(client, now);
+    const deleted = isDryRun
+      ? await table.runDryRun(client, now)
+      : await table.runLive(client, now);
 
     return { ok: true, deleted, durationMs: elapsedMs(start) };
   } catch (error) {
@@ -146,21 +108,30 @@ export async function pruneExpired(
   const now = await resolveNow(client, options?.now);
   const isDryRun = options?.dryRun === true;
 
-  const idempotencyKeys = await runIdempotencyKeys(client, now, isDryRun);
-  const emailOutboxSent = await runOutboxSent(client, now, isDryRun);
-  const emailOutboxFailed = await runOutboxFailed(client, now, isDryRun);
-  const waitlistEntries = await runWaitlist(client, now, isDryRun);
+  const results: Record<ReportKey, PruneTableResult> = {
+    idempotencyKeys: { ok: true, deleted: 0, durationMs: 0 },
+    emailOutboxSent: { ok: true, deleted: 0, durationMs: 0 },
+    emailOutboxFailed: { ok: true, deleted: 0, durationMs: 0 },
+    waitlistEntries: { ok: true, deleted: 0, durationMs: 0 },
+  };
+
+  for (const table of RETENTION_TABLES) {
+    results[table.key] = await runTable(table, client, now, isDryRun);
+  }
 
   const hasError =
-    !idempotencyKeys.ok || !emailOutboxSent.ok || !emailOutboxFailed.ok || !waitlistEntries.ok;
+    !results.idempotencyKeys.ok ||
+    !results.emailOutboxSent.ok ||
+    !results.emailOutboxFailed.ok ||
+    !results.waitlistEntries.ok;
 
   return {
     mode: isDryRun ? "dry-run" : "live",
     now: now.toISOString(),
-    idempotencyKeys,
-    emailOutboxSent,
-    emailOutboxFailed,
-    waitlistEntries,
+    idempotencyKeys: results.idempotencyKeys,
+    emailOutboxSent: results.emailOutboxSent,
+    emailOutboxFailed: results.emailOutboxFailed,
+    waitlistEntries: results.waitlistEntries,
     hasError,
   };
 }

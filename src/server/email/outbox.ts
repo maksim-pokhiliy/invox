@@ -1,6 +1,5 @@
 import { EmailOutbox, Prisma, type PrismaClient } from "@prisma/client";
 
-import { TIME } from "@app/shared/config/config";
 import {
   computeBackoffMs,
   EMAIL_OUTBOX,
@@ -8,11 +7,10 @@ import {
   type EmailOutboxKindValue,
   type EmailOutboxRelatedTypeValue,
 } from "@app/shared/config/email-outbox";
-import { PRUNE } from "@app/shared/config/prune";
 import { runWithConcurrency } from "@app/shared/lib/concurrency";
 
 import { prisma } from "@app/server/db";
-import { RetentionMisconfiguredError } from "@app/server/prune/errors";
+import { pruneArm } from "@app/server/prune/run";
 
 import { type ResendEmailPayload, sendEmail } from "./index";
 import {
@@ -240,32 +238,6 @@ export async function processOutbox(now: Date = new Date()): Promise<ProcessOutb
   return result;
 }
 
-function warnIfLargeDelete(arm: "SENT" | "FAILED", deleted: number): void {
-  if (deleted > PRUNE.LARGE_DELETE_THRESHOLD) {
-    console.warn(
-      JSON.stringify({
-        event: "prune.warning.large_delete",
-        table: "EmailOutbox",
-        arm,
-        deleted,
-      })
-    );
-  }
-}
-
-function warnIfLargeBacklog(arm: "SENT" | "FAILED", wouldDelete: number): void {
-  if (wouldDelete > PRUNE.LARGE_DELETE_THRESHOLD) {
-    console.warn(
-      JSON.stringify({
-        event: "prune.warning.large_backlog",
-        table: "EmailOutbox",
-        arm,
-        wouldDelete,
-      })
-    );
-  }
-}
-
 export interface OutboxSentRetentionOverrides {
   sentDays?: number;
 }
@@ -274,26 +246,34 @@ export interface OutboxFailedRetentionOverrides {
   failedDays?: number;
 }
 
+const OUTBOX_TABLE = "EmailOutbox";
+const OUTBOX_SENT_LABEL = "Outbox SENT retention";
+const OUTBOX_FAILED_LABEL = "Outbox FAILED retention";
+
 export async function pruneOutboxSent(
   client: PrismaClient,
   now: Date,
   retention: OutboxSentRetentionOverrides = {}
 ): Promise<{ deleted: number }> {
-  const sentDays = retention.sentDays ?? EMAIL_OUTBOX.RETENTION_SENT_DAYS;
+  const days = retention.sentDays ?? EMAIL_OUTBOX.RETENTION_SENT_DAYS;
 
-  if (sentDays <= 0) {
-    throw new RetentionMisconfiguredError("Outbox SENT retention");
-  }
+  const deleted = await pruneArm({
+    client,
+    now,
+    table: OUTBOX_TABLE,
+    arm: EMAIL_OUTBOX_STATUS.SENT,
+    retention: { days, label: OUTBOX_SENT_LABEL },
+    mode: "prune",
+    run: async ({ client: c, cutoff }) => {
+      const result = await c.emailOutbox.deleteMany({
+        where: { status: EMAIL_OUTBOX_STATUS.SENT, createdAt: { lt: cutoff } },
+      });
 
-  const cutoffSent = new Date(now.getTime() - TIME.DAY * sentDays);
-
-  const result = await client.emailOutbox.deleteMany({
-    where: { status: EMAIL_OUTBOX_STATUS.SENT, createdAt: { lt: cutoffSent } },
+      return result.count;
+    },
   });
 
-  warnIfLargeDelete("SENT", result.count);
-
-  return { deleted: result.count };
+  return { deleted };
 }
 
 export async function pruneOutboxFailed(
@@ -301,21 +281,25 @@ export async function pruneOutboxFailed(
   now: Date,
   retention: OutboxFailedRetentionOverrides = {}
 ): Promise<{ deleted: number }> {
-  const failedDays = retention.failedDays ?? EMAIL_OUTBOX.RETENTION_FAILED_DAYS;
+  const days = retention.failedDays ?? EMAIL_OUTBOX.RETENTION_FAILED_DAYS;
 
-  if (failedDays <= 0) {
-    throw new RetentionMisconfiguredError("Outbox FAILED retention");
-  }
+  const deleted = await pruneArm({
+    client,
+    now,
+    table: OUTBOX_TABLE,
+    arm: EMAIL_OUTBOX_STATUS.FAILED,
+    retention: { days, label: OUTBOX_FAILED_LABEL },
+    mode: "prune",
+    run: async ({ client: c, cutoff }) => {
+      const result = await c.emailOutbox.deleteMany({
+        where: { status: EMAIL_OUTBOX_STATUS.FAILED, createdAt: { lt: cutoff } },
+      });
 
-  const cutoffFailed = new Date(now.getTime() - TIME.DAY * failedDays);
-
-  const result = await client.emailOutbox.deleteMany({
-    where: { status: EMAIL_OUTBOX_STATUS.FAILED, createdAt: { lt: cutoffFailed } },
+      return result.count;
+    },
   });
 
-  warnIfLargeDelete("FAILED", result.count);
-
-  return { deleted: result.count };
+  return { deleted };
 }
 
 export async function countOutboxSent(
@@ -323,19 +307,20 @@ export async function countOutboxSent(
   now: Date,
   retention: OutboxSentRetentionOverrides = {}
 ): Promise<{ count: number }> {
-  const sentDays = retention.sentDays ?? EMAIL_OUTBOX.RETENTION_SENT_DAYS;
+  const days = retention.sentDays ?? EMAIL_OUTBOX.RETENTION_SENT_DAYS;
 
-  if (sentDays <= 0) {
-    throw new RetentionMisconfiguredError("Outbox SENT retention");
-  }
-
-  const cutoffSent = new Date(now.getTime() - TIME.DAY * sentDays);
-
-  const count = await client.emailOutbox.count({
-    where: { status: EMAIL_OUTBOX_STATUS.SENT, createdAt: { lt: cutoffSent } },
+  const count = await pruneArm({
+    client,
+    now,
+    table: OUTBOX_TABLE,
+    arm: EMAIL_OUTBOX_STATUS.SENT,
+    retention: { days, label: OUTBOX_SENT_LABEL },
+    mode: "count",
+    run: ({ client: c, cutoff }) =>
+      c.emailOutbox.count({
+        where: { status: EMAIL_OUTBOX_STATUS.SENT, createdAt: { lt: cutoff } },
+      }),
   });
-
-  warnIfLargeBacklog("SENT", count);
 
   return { count };
 }
@@ -345,19 +330,20 @@ export async function countOutboxFailed(
   now: Date,
   retention: OutboxFailedRetentionOverrides = {}
 ): Promise<{ count: number }> {
-  const failedDays = retention.failedDays ?? EMAIL_OUTBOX.RETENTION_FAILED_DAYS;
+  const days = retention.failedDays ?? EMAIL_OUTBOX.RETENTION_FAILED_DAYS;
 
-  if (failedDays <= 0) {
-    throw new RetentionMisconfiguredError("Outbox FAILED retention");
-  }
-
-  const cutoffFailed = new Date(now.getTime() - TIME.DAY * failedDays);
-
-  const count = await client.emailOutbox.count({
-    where: { status: EMAIL_OUTBOX_STATUS.FAILED, createdAt: { lt: cutoffFailed } },
+  const count = await pruneArm({
+    client,
+    now,
+    table: OUTBOX_TABLE,
+    arm: EMAIL_OUTBOX_STATUS.FAILED,
+    retention: { days, label: OUTBOX_FAILED_LABEL },
+    mode: "count",
+    run: ({ client: c, cutoff }) =>
+      c.emailOutbox.count({
+        where: { status: EMAIL_OUTBOX_STATUS.FAILED, createdAt: { lt: cutoff } },
+      }),
   });
-
-  warnIfLargeBacklog("FAILED", count);
 
   return { count };
 }
