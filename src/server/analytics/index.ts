@@ -12,6 +12,22 @@ interface InvoiceForMetrics {
   dueDate: Date;
 }
 
+interface InvoiceForAggregation extends InvoiceForMetrics {
+  currency: string;
+}
+
+type RecentInvoiceRow = {
+  id: string;
+  publicId: string;
+  status: string;
+  total: number;
+  currency: string;
+  createdAt: Date;
+  client: { name: string };
+};
+
+type AggregatedMetrics = Omit<AnalyticsData, "recentInvoices" | "clientCount">;
+
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
 const MONTHS_TO_SHOW = 6;
@@ -81,12 +97,8 @@ function calculateMetricsForInvoices(
   return { totalRevenue, revenueThisMonth, revenueLastMonth, outstandingBalance, overdueAmount };
 }
 
-export async function getAnalytics(userId: UserId): Promise<AnalyticsData> {
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - THIRTY_DAYS_MS);
-  const sixtyDaysAgo = new Date(now.getTime() - SIXTY_DAYS_MS);
-
-  const invoices = await prisma.invoice.findMany({
+function fetchInvoicesForAnalytics(userId: UserId) {
+  return prisma.invoice.findMany({
     where: { userId },
     select: {
       id: true,
@@ -98,8 +110,42 @@ export async function getAnalytics(userId: UserId): Promise<AnalyticsData> {
       dueDate: true,
     },
   });
+}
 
-  const currencies = [...new Set(invoices.map((inv) => inv.currency))];
+function mapRecentInvoiceDto(invoice: RecentInvoiceRow): AnalyticsData["recentInvoices"][number] {
+  return {
+    id: invoice.id,
+    publicId: invoice.publicId,
+    status: invoice.status,
+    total: invoice.total,
+    currency: invoice.currency,
+    clientName: invoice.client.name,
+    createdAt: invoice.createdAt.toISOString(),
+  };
+}
+
+async function fetchRecentInvoices(userId: UserId): Promise<AnalyticsData["recentInvoices"]> {
+  const recent = await prisma.invoice.findMany({
+    where: { userId },
+    include: { client: { select: { name: true } } },
+    orderBy: { createdAt: "desc" },
+    take: RECENT_INVOICES_LIMIT,
+  });
+
+  return recent.map(mapRecentInvoiceDto);
+}
+
+function countClients(userId: UserId): Promise<number> {
+  return prisma.client.count({ where: { userId } });
+}
+
+function buildByCurrencyMetrics(
+  invoices: InvoiceForAggregation[],
+  currencies: string[],
+  now: Date,
+  thirtyDaysAgo: Date,
+  sixtyDaysAgo: Date
+): Record<string, CurrencyMetrics> {
   const byCurrency: Record<string, CurrencyMetrics> = {};
 
   for (const currency of currencies) {
@@ -113,19 +159,13 @@ export async function getAnalytics(userId: UserId): Promise<AnalyticsData> {
     byCurrency[currency] = { ...metrics, monthlyRevenue };
   }
 
-  const allPaidInvoices = invoices.filter(
-    (inv) => inv.status === INVOICE_STATUS.PAID || inv.paidAt
-  );
-  const globalMetrics = calculateMetricsForInvoices(invoices, now, thirtyDaysAgo, sixtyDaysAgo);
-  const allOverdueInvoices = invoices.filter((inv) => isOverdue(inv, now));
+  return byCurrency;
+}
 
-  const statusCounts = invoices.reduce(
+function computeStatusCounts(invoices: InvoiceForAggregation[], now: Date): Record<string, number> {
+  return invoices.reduce(
     (acc, inv) => {
-      let status = inv.status;
-
-      if (isOverdue(inv, now)) {
-        status = INVOICE_STATUS.OVERDUE;
-      }
+      const status = isOverdue(inv, now) ? INVOICE_STATUS.OVERDUE : inv.status;
 
       acc[status] = (acc[status] || 0) + 1;
 
@@ -133,23 +173,22 @@ export async function getAnalytics(userId: UserId): Promise<AnalyticsData> {
     },
     {} as Record<string, number>
   );
+}
 
+function aggregateMetrics(invoices: InvoiceForAggregation[], now: Date): AggregatedMetrics {
+  const thirtyDaysAgo = new Date(now.getTime() - THIRTY_DAYS_MS);
+  const sixtyDaysAgo = new Date(now.getTime() - SIXTY_DAYS_MS);
+
+  const currencies = [...new Set(invoices.map((inv) => inv.currency))];
+  const byCurrency = buildByCurrencyMetrics(invoices, currencies, now, thirtyDaysAgo, sixtyDaysAgo);
+
+  const allPaidInvoices = invoices.filter(
+    (inv) => inv.status === INVOICE_STATUS.PAID || inv.paidAt
+  );
+  const globalMetrics = calculateMetricsForInvoices(invoices, now, thirtyDaysAgo, sixtyDaysAgo);
+  const allOverdueInvoices = invoices.filter((inv) => isOverdue(inv, now));
+  const statusCounts = computeStatusCounts(invoices, now);
   const monthlyRevenue = calculateMonthlyRevenue(allPaidInvoices, now);
-
-  const recentInvoices = await prisma.invoice.findMany({
-    where: { userId },
-    include: {
-      client: {
-        select: { name: true },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    take: RECENT_INVOICES_LIMIT,
-  });
-
-  const clientCount = await prisma.client.count({
-    where: { userId },
-  });
 
   return {
     currencies,
@@ -160,15 +199,16 @@ export async function getAnalytics(userId: UserId): Promise<AnalyticsData> {
     overdueInvoices: allOverdueInvoices.length,
     statusCounts,
     monthlyRevenue,
-    clientCount,
-    recentInvoices: recentInvoices.map((inv) => ({
-      id: inv.id,
-      publicId: inv.publicId,
-      status: inv.status,
-      total: inv.total,
-      currency: inv.currency,
-      clientName: inv.client.name,
-      createdAt: inv.createdAt.toISOString(),
-    })),
   };
+}
+
+export async function getAnalytics(userId: UserId): Promise<AnalyticsData> {
+  const now = new Date();
+  const invoices = await fetchInvoicesForAnalytics(userId);
+  const [recentInvoices, clientCount] = await Promise.all([
+    fetchRecentInvoices(userId),
+    countClients(userId),
+  ]);
+
+  return { ...aggregateMetrics(invoices, now), recentInvoices, clientCount };
 }
