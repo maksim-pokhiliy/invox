@@ -1,4 +1,5 @@
 import { INVOICE_STATUS } from "@app/shared/config/invoice-status";
+import { isOverdue } from "@app/shared/lib/invoice-status-predicates";
 import type { AnalyticsData, CurrencyMetrics, MonthlyRevenue } from "@app/shared/schemas/api";
 import type { UserId } from "@app/shared/types/ids";
 
@@ -74,9 +75,7 @@ function calculateMetricsForInvoices(
   );
   const outstandingBalance = outstandingInvoices.reduce((sum, inv) => sum + inv.total, 0);
 
-  const overdueInvoices = invoices.filter(
-    (inv) => !inv.paidAt && new Date(inv.dueDate) < now && inv.status !== INVOICE_STATUS.DRAFT
-  );
+  const overdueInvoices = invoices.filter((inv) => isOverdue(inv, now));
   const overdueAmount = overdueInvoices.reduce((sum, inv) => sum + inv.total, 0);
 
   return { totalRevenue, revenueThisMonth, revenueLastMonth, outstandingBalance, overdueAmount };
@@ -118,15 +117,13 @@ export async function getAnalytics(userId: UserId): Promise<AnalyticsData> {
     (inv) => inv.status === INVOICE_STATUS.PAID || inv.paidAt
   );
   const globalMetrics = calculateMetricsForInvoices(invoices, now, thirtyDaysAgo, sixtyDaysAgo);
-  const allOverdueInvoices = invoices.filter(
-    (inv) => !inv.paidAt && new Date(inv.dueDate) < now && inv.status !== INVOICE_STATUS.DRAFT
-  );
+  const allOverdueInvoices = invoices.filter((inv) => isOverdue(inv, now));
 
   const statusCounts = invoices.reduce(
     (acc, inv) => {
       let status = inv.status;
 
-      if (!inv.paidAt && inv.status !== INVOICE_STATUS.DRAFT && new Date(inv.dueDate) < now) {
+      if (isOverdue(inv, now)) {
         status = INVOICE_STATUS.OVERDUE;
       }
 

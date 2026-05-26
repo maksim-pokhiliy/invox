@@ -1,6 +1,7 @@
 import { InvoiceStatus, Prisma } from "@prisma/client";
 
 import { INVOICE_STATUS, type InvoiceStatusValue } from "@app/shared/config/invoice-status";
+import { isOverdue } from "@app/shared/lib/invoice-status-predicates";
 import type { InvoiceId, PublicId, UserId } from "@app/shared/types/ids";
 
 import { prisma } from "@app/server/db";
@@ -46,11 +47,7 @@ function computeOverdueStatus(invoice: {
     return INVOICE_STATUS.PARTIALLY_PAID;
   }
 
-  if (
-    invoice.status !== INVOICE_STATUS.DRAFT &&
-    invoice.dueDate < new Date() &&
-    invoice.status !== INVOICE_STATUS.OVERDUE
-  ) {
+  if (isOverdue(invoice, new Date())) {
     return INVOICE_STATUS.OVERDUE;
   }
 
