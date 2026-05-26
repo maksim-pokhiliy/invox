@@ -1,4 +1,5 @@
-import { EmailOutbox, Prisma, type PrismaClient } from "@prisma/client";
+import { EmailOutbox, Prisma } from "@prisma/client";
+import { randomUUID } from "node:crypto";
 
 import {
   computeBackoffMs,
@@ -11,7 +12,6 @@ import { runWithConcurrency } from "@app/shared/lib/concurrency";
 import type { UserId } from "@app/shared/types/ids";
 
 import { prisma } from "@app/server/db";
-import { pruneArm } from "@app/server/prune/run";
 
 import { type ResendEmailPayload, sendEmail } from "./index";
 import {
@@ -56,6 +56,22 @@ export function buildOutboxIdempotencyKey(
   const related = relatedId ?? "none";
 
   return `${kind}-${related}-${outboxRowId}`;
+}
+
+export type CreateStableOutboxInput = Omit<CreateEmailOutboxInput, "idempotencyKey">;
+
+export async function createStableOutbox(
+  client: EmailOutboxClient,
+  input: CreateStableOutboxInput
+): Promise<EmailOutbox> {
+  const placeholder = `pending-${randomUUID()}`;
+  const row = await createEmailOutbox(client, { ...input, idempotencyKey: placeholder });
+  const stableKey = buildOutboxIdempotencyKey(input.kind, input.relatedId, row.id);
+
+  return client.emailOutbox.update({
+    where: { id: row.id },
+    data: { idempotencyKey: stableKey },
+  });
 }
 
 function isResendPayload(value: Prisma.JsonValue): value is Prisma.JsonObject & ResendEmailPayload {
@@ -237,114 +253,4 @@ export async function processOutbox(now: Date = new Date()): Promise<ProcessOutb
   }
 
   return result;
-}
-
-export interface OutboxSentRetentionOverrides {
-  sentDays?: number;
-}
-
-export interface OutboxFailedRetentionOverrides {
-  failedDays?: number;
-}
-
-const OUTBOX_TABLE = "EmailOutbox";
-const OUTBOX_SENT_LABEL = "Outbox SENT retention";
-const OUTBOX_FAILED_LABEL = "Outbox FAILED retention";
-
-export async function pruneOutboxSent(
-  client: PrismaClient,
-  now: Date,
-  retention: OutboxSentRetentionOverrides = {}
-): Promise<{ deleted: number }> {
-  const days = retention.sentDays ?? EMAIL_OUTBOX.RETENTION_SENT_DAYS;
-
-  const deleted = await pruneArm({
-    client,
-    now,
-    table: OUTBOX_TABLE,
-    arm: EMAIL_OUTBOX_STATUS.SENT,
-    retention: { days, label: OUTBOX_SENT_LABEL },
-    mode: "prune",
-    run: async ({ client: c, cutoff }) => {
-      const result = await c.emailOutbox.deleteMany({
-        where: { status: EMAIL_OUTBOX_STATUS.SENT, createdAt: { lt: cutoff } },
-      });
-
-      return result.count;
-    },
-  });
-
-  return { deleted };
-}
-
-export async function pruneOutboxFailed(
-  client: PrismaClient,
-  now: Date,
-  retention: OutboxFailedRetentionOverrides = {}
-): Promise<{ deleted: number }> {
-  const days = retention.failedDays ?? EMAIL_OUTBOX.RETENTION_FAILED_DAYS;
-
-  const deleted = await pruneArm({
-    client,
-    now,
-    table: OUTBOX_TABLE,
-    arm: EMAIL_OUTBOX_STATUS.FAILED,
-    retention: { days, label: OUTBOX_FAILED_LABEL },
-    mode: "prune",
-    run: async ({ client: c, cutoff }) => {
-      const result = await c.emailOutbox.deleteMany({
-        where: { status: EMAIL_OUTBOX_STATUS.FAILED, createdAt: { lt: cutoff } },
-      });
-
-      return result.count;
-    },
-  });
-
-  return { deleted };
-}
-
-export async function countOutboxSent(
-  client: PrismaClient,
-  now: Date,
-  retention: OutboxSentRetentionOverrides = {}
-): Promise<{ count: number }> {
-  const days = retention.sentDays ?? EMAIL_OUTBOX.RETENTION_SENT_DAYS;
-
-  const count = await pruneArm({
-    client,
-    now,
-    table: OUTBOX_TABLE,
-    arm: EMAIL_OUTBOX_STATUS.SENT,
-    retention: { days, label: OUTBOX_SENT_LABEL },
-    mode: "count",
-    run: ({ client: c, cutoff }) =>
-      c.emailOutbox.count({
-        where: { status: EMAIL_OUTBOX_STATUS.SENT, createdAt: { lt: cutoff } },
-      }),
-  });
-
-  return { count };
-}
-
-export async function countOutboxFailed(
-  client: PrismaClient,
-  now: Date,
-  retention: OutboxFailedRetentionOverrides = {}
-): Promise<{ count: number }> {
-  const days = retention.failedDays ?? EMAIL_OUTBOX.RETENTION_FAILED_DAYS;
-
-  const count = await pruneArm({
-    client,
-    now,
-    table: OUTBOX_TABLE,
-    arm: EMAIL_OUTBOX_STATUS.FAILED,
-    retention: { days, label: OUTBOX_FAILED_LABEL },
-    mode: "count",
-    run: ({ client: c, cutoff }) =>
-      c.emailOutbox.count({
-        where: { status: EMAIL_OUTBOX_STATUS.FAILED, createdAt: { lt: cutoff } },
-      }),
-  });
-
-  return { count };
 }

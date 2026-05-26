@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   EMAIL_OUTBOX_KIND,
@@ -9,6 +9,7 @@ import { INVOICE_EVENT, INVOICE_STATUS } from "@app/shared/config/invoice-status
 import { asInvoiceId, asUserId } from "@app/shared/types/ids";
 
 const sendEmailMock = vi.fn().mockResolvedValue({ data: { id: "fake-resend-id" }, error: null });
+const randomUUIDMock = vi.fn();
 
 vi.mock("@app/server/email", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@app/server/email")>();
@@ -16,15 +17,22 @@ vi.mock("@app/server/email", async (importOriginal) => {
   return { ...actual, sendEmail: sendEmailMock };
 });
 
+vi.mock("node:crypto", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:crypto")>();
+
+  return { ...actual, randomUUID: randomUUIDMock };
+});
+
 const { prisma } = await import("@app/server/db");
 const { buildOutboxIdempotencyKey } = await import("@app/server/email/outbox");
 const { InvoiceAlreadySentError, InvoiceNotFoundError, sendInvoice } =
   await import("@app/server/invoices/send");
 const factories = await import("@app/test/factories");
+const actualCrypto = await vi.importActual<typeof import("node:crypto")>("node:crypto");
 
 const TOTAL_CENTS = 12_000;
 const PLACEHOLDER_KEY_PREFIX = "pending-";
-const FROZEN_NOW_MS = 1_750_000_000_000;
+const FROZEN_RANDOM_UUID = "00000000-0000-4000-8000-000000000001";
 
 interface SendInvoiceContext {
   invoiceId: ReturnType<typeof asInvoiceId>;
@@ -67,6 +75,8 @@ beforeAll(() => {
 beforeEach(() => {
   sendEmailMock.mockClear();
   consoleError?.mockClear();
+  randomUUIDMock.mockReset();
+  randomUUIDMock.mockImplementation(() => actualCrypto.randomUUID());
 });
 
 afterAll(() => {
@@ -173,16 +183,11 @@ describe("sendInvoice rejected status transitions", () => {
 });
 
 describe("sendInvoice transactional guarantees", () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it("rolls back the entire transaction when the outbox INSERT collides with the @@unique constraint", async () => {
-    vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date(FROZEN_NOW_MS));
+  it("rolls back the entire transaction when the outbox placeholder INSERT collides with the @@unique constraint", async () => {
+    randomUUIDMock.mockReturnValue(FROZEN_RANDOM_UUID);
 
     const ctx = await seedSendableInvoice();
-    const collidingKey = `${PLACEHOLDER_KEY_PREFIX}${ctx.invoiceId}-${FROZEN_NOW_MS}`;
+    const collidingKey = `${PLACEHOLDER_KEY_PREFIX}${FROZEN_RANDOM_UUID}`;
 
     await factories.createEmailOutbox(prisma, {
       userId: ctx.userId,

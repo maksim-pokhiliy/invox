@@ -18,7 +18,7 @@ import {
   mapInvoiceItem,
   mapInvoiceItemGroups,
 } from "@app/server/email/invoice-email-dto";
-import { buildOutboxIdempotencyKey, createEmailOutbox } from "@app/server/email/outbox";
+import { createStableOutbox } from "@app/server/email/outbox";
 import { type InvoiceWithRelations, logInvoiceEvent } from "@app/server/invoices";
 import { ITEM_GROUPS_INCLUDE } from "@app/server/invoices/item-groups";
 
@@ -137,21 +137,12 @@ async function commitSendInvoice(input: CommitSendInvoiceInput): Promise<string>
 
     await logInvoiceEvent(invoiceId, INVOICE_EVENT.SENT, { clientEmail: invoice.client.email }, tx);
 
-    const placeholderKey = `pending-${invoiceId}-${sentAt.getTime()}`;
-    const row = await createEmailOutbox(tx, {
+    const row = await createStableOutbox(tx, {
       userId,
       kind: EMAIL_OUTBOX_KIND.INVOICE,
       relatedType: EMAIL_OUTBOX_RELATED_TYPE.INVOICE,
       relatedId: invoiceId,
       payload,
-      idempotencyKey: placeholderKey,
-    });
-
-    const stableKey = buildOutboxIdempotencyKey(EMAIL_OUTBOX_KIND.INVOICE, invoiceId, row.id);
-
-    await tx.emailOutbox.update({
-      where: { id: row.id },
-      data: { idempotencyKey: stableKey },
     });
 
     return row.id;

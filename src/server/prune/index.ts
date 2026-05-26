@@ -9,7 +9,7 @@ import {
   countOutboxSent,
   pruneOutboxFailed,
   pruneOutboxSent,
-} from "@app/server/email/outbox";
+} from "@app/server/email/outbox-prune";
 import { countConvertedWaitlistEntries, pruneConvertedWaitlistEntries } from "@app/server/waitlist";
 
 export { RetentionMisconfiguredError } from "./errors";

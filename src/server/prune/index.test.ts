@@ -16,7 +16,7 @@ vi.mock("@app/server/api/idempotency", () => ({
   countExpiredIdempotencyKeys,
 }));
 
-vi.mock("@app/server/email/outbox", () => ({
+vi.mock("@app/server/email/outbox-prune", () => ({
   pruneOutboxSent,
   pruneOutboxFailed,
   countOutboxSent,

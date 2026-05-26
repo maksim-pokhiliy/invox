@@ -11,7 +11,7 @@ import {
   buildWaitlistConfirmationPayload,
   buildWaitlistNotificationPayload,
 } from "@app/server/email";
-import { buildOutboxIdempotencyKey, createEmailOutbox } from "@app/server/email/outbox";
+import { createStableOutbox } from "@app/server/email/outbox";
 import { pruneArm } from "@app/server/prune/run";
 
 export class WaitlistEntryNotFoundError extends Error {
@@ -46,47 +46,23 @@ export async function addToWaitlist(email: string): Promise<AddToWaitlistResult>
   return prisma.$transaction(async (tx) => {
     const entry = await tx.waitlistEntry.create({ data: { email } });
 
-    const confirmationRow = await createEmailOutbox(tx, {
+    const confirmationRow = await createStableOutbox(tx, {
       userId: null,
       kind: EMAIL_OUTBOX_KIND.WAITLIST_CONFIRMATION,
       relatedType: EMAIL_OUTBOX_RELATED_TYPE.WAITLIST_ENTRY,
       relatedId: entry.id,
       payload: confirmationPayload,
-      idempotencyKey: `pending-${entry.id}-confirmation`,
-    });
-
-    const confirmationKey = buildOutboxIdempotencyKey(
-      EMAIL_OUTBOX_KIND.WAITLIST_CONFIRMATION,
-      entry.id,
-      confirmationRow.id
-    );
-
-    await tx.emailOutbox.update({
-      where: { id: confirmationRow.id },
-      data: { idempotencyKey: confirmationKey },
     });
 
     let notificationOutboxId: string | null = null;
 
     if (notificationPayload) {
-      const notificationRow = await createEmailOutbox(tx, {
+      const notificationRow = await createStableOutbox(tx, {
         userId: null,
         kind: EMAIL_OUTBOX_KIND.WAITLIST_NOTIFICATION,
         relatedType: EMAIL_OUTBOX_RELATED_TYPE.WAITLIST_ENTRY,
         relatedId: entry.id,
         payload: notificationPayload,
-        idempotencyKey: `pending-${entry.id}-notification`,
-      });
-
-      const notificationKey = buildOutboxIdempotencyKey(
-        EMAIL_OUTBOX_KIND.WAITLIST_NOTIFICATION,
-        entry.id,
-        notificationRow.id
-      );
-
-      await tx.emailOutbox.update({
-        where: { id: notificationRow.id },
-        data: { idempotencyKey: notificationKey },
       });
 
       notificationOutboxId = notificationRow.id;
@@ -131,24 +107,12 @@ export async function approveWaitlistEntry(email: string): Promise<ApproveWaitli
       data: { status: "APPROVED" },
     });
 
-    const row = await createEmailOutbox(tx, {
+    const row = await createStableOutbox(tx, {
       userId: null,
       kind: EMAIL_OUTBOX_KIND.WAITLIST_APPROVAL,
       relatedType: EMAIL_OUTBOX_RELATED_TYPE.WAITLIST_ENTRY,
       relatedId: entry.id,
       payload,
-      idempotencyKey: `pending-${entry.id}-approval`,
-    });
-
-    const stableKey = buildOutboxIdempotencyKey(
-      EMAIL_OUTBOX_KIND.WAITLIST_APPROVAL,
-      entry.id,
-      row.id
-    );
-
-    await tx.emailOutbox.update({
-      where: { id: row.id },
-      data: { idempotencyKey: stableKey },
     });
 
     return { entryId: entry.id, outboxId: row.id };

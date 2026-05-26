@@ -23,7 +23,7 @@ async function loadModule() {
   vi.stubEnv("DATABASE_URL", "postgresql://localhost:5432/test");
   vi.stubEnv("NEXTAUTH_SECRET", randomBytes(32).toString("base64"));
 
-  const helpers = await import("./outbox");
+  const helpers = await import("./outbox-prune");
   const db = await import("@app/server/db");
 
   return { ...helpers, prisma: db.prisma };

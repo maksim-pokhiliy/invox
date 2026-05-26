@@ -386,21 +386,12 @@ const outboxId = await prisma.$transaction(async (tx) => {
   await updateInvoiceStatus(invoice.id, INVOICE_STATUS.SENT, { sentAt }, tx);
   await logInvoiceEvent(invoice.id, INVOICE_EVENT.SENT, {}, tx);
 
-  const placeholderKey = `pending-${invoice.id}-${sentAt.getTime()}`;
-  const row = await createEmailOutbox(tx, {
+  const row = await createStableOutbox(tx, {
     userId,
     kind: EMAIL_OUTBOX_KIND.INVOICE,
     relatedType: EMAIL_OUTBOX_RELATED_TYPE.INVOICE,
     relatedId: invoice.id,
     payload,
-    idempotencyKey: placeholderKey,
-  });
-
-  await tx.emailOutbox.update({
-    where: { id: row.id },
-    data: {
-      idempotencyKey: buildOutboxIdempotencyKey(EMAIL_OUTBOX_KIND.INVOICE, invoice.id, row.id),
-    },
   });
 
   return row.id;
@@ -409,14 +400,16 @@ const outboxId = await prisma.$transaction(async (tx) => {
 await dispatchOutbox(outboxId);
 ```
 
+`createStableOutbox` (in `@app/server/email/outbox`) handles the two-step write internally: it inserts the row with a unique placeholder idempotency key (`pending-<uuid>`) to satisfy the NOT NULL + `@@unique` constraints before `row.id` is known, then rewrites it to the stable `buildOutboxIdempotencyKey(kind, relatedId, row.id)` value — all inside the caller's transaction. Use it for every new outbox flow; the lower-level `createEmailOutbox` exists only as the building block underneath.
+
 Key rules:
 
-- The DB writes that change user-visible state and the `createEmailOutbox` call MUST be in the same `prisma.$transaction`. Email payload is captured (rendered HTML/text) inside the transaction so a template change between send and retry can't desync.
+- The DB writes that change user-visible state and the `createStableOutbox` call MUST be in the same `prisma.$transaction`. Email payload is captured (rendered HTML/text) inside the transaction so a template change between send and retry can't desync.
 - The Resend call lives in `dispatchOutbox(rowId)` and happens AFTER the transaction commits. Best-effort: if Resend fails, the outbox row stays `PENDING` and `scripts/process-outbox.ts` (cron entry, `pnpm outbox:run`) retries with exponential backoff (5min × 2^attempts up to 5 attempts, then `FAILED`).
 - `dispatchOutbox` calls `sendEmail()` from `@app/server/email` with `idempotencyKey` set to the row's stable key (`${kind}-${relatedId}-${outboxRowId}`). Resend's per-call idempotency dedupes the actual API call across retries.
 - Two flows currently use the outbox: `sendInvoice` and the waitlist routes (sign-up + admin approval).
 
-When adding a new email-send: build a `ResendEmailPayload` via a `buildXxxEmailPayload` helper in `@app/server/email`, then write the state change + `createEmailOutbox` in one transaction, then `dispatchOutbox` outside.
+When adding a new email-send: build a `ResendEmailPayload` via a `buildXxxEmailPayload` helper in `@app/server/email`, then write the state change + `createStableOutbox` in one transaction, then `dispatchOutbox` outside.
 
 ## Background maintenance
 
