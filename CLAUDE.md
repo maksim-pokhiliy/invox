@@ -321,7 +321,7 @@ export const invoicesApi = {
 
 If the response doesn't match the schema, `fetchApi` logs a structured `api.response.shape_mismatch` line via `console.error` and throws `ApiResponseShapeError` — surfaced to React Query as a query/mutation error, not swallowed.
 
-Common error codes:
+Common error codes (full canonical inventory in `src/shared/api/error-codes.ts` — `API_ERROR_CODES`):
 
 - `VALIDATION_ERROR` - Invalid input (Zod parse failed)
 - `BAD_REQUEST` - Well-formed input but business rule rejected (e.g. payment over invoice total)
@@ -331,6 +331,13 @@ Common error codes:
 - `EMAIL_EXISTS` - Sign-up attempted with an email that already has an account
 - `REGISTRATION_DISABLED` - Sign-up blocked by edition (`pro` rejects public registration)
 - `IDEMPOTENCY_KEY_REQUIRED` / `IDEMPOTENCY_KEY_INVALID` / `IDEMPOTENCY_KEY_REUSED` / `IDEMPOTENCY_KEY_IN_PROGRESS` - Idempotency-Key header issues (see Idempotency below)
+- `ALREADY_SENT` - Invoice send re-attempt after it already moved past DRAFT
+- `CLIENT_HAS_DEPENDENTS` - Client deletion blocked because invoices reference it
+- `PAYMENT_EXCEEDS_BALANCE` - Payment amount greater than the invoice's outstanding balance
+- `CONNECTION_DECRYPT_FAILED` - Stored time-tracking OAuth token failed AES-GCM decrypt (key rotation or tampering)
+- `RATE_LIMITED` - Per-route per-user request budget exhausted
+- `GATEWAY_TIMEOUT` - Route handler exceeded the configured request timeout
+- `UPSTREAM_NOT_FOUND` / `UPSTREAM_BAD_REQUEST` / `UPSTREAM_UNAUTHORIZED` / `UPSTREAM_RATE_LIMITED` / `UPSTREAM_ERROR` - Third-party time-tracking API (Toggl) returned 404 / 400 / 401 / 429 / 5xx respectively
 - `INTERNAL_ERROR` - Unexpected server error
 
 ## Idempotency
