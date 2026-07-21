@@ -62,6 +62,7 @@ export async function createInvoice(
             unitPrice: item.unitPrice,
             amount: Math.round(item.quantity * item.unitPrice),
             sortOrder: index,
+            serviceId: item.serviceId ?? null,
           })),
         },
       },

@@ -40,6 +40,16 @@ interface InvoiceFormProps {
   defaultRate?: Cents;
   defaultCurrency?: string;
   renderImport?: (props: ImportRenderProps) => React.ReactNode;
+  renderServiceSelector?: (props: {
+    onSelect: (item: {
+      serviceId: string;
+      title: string;
+      description: string;
+      quantity: number;
+      unitPrice: number;
+    }) => void;
+    currency: string;
+  }) => React.ReactNode;
 }
 
 export function InvoiceForm({
@@ -55,6 +65,7 @@ export function InvoiceForm({
   defaultRate,
   defaultCurrency,
   renderImport,
+  renderServiceSelector,
 }: InvoiceFormProps) {
   const form = useInvoiceForm({
     mode,
@@ -132,6 +143,11 @@ export function InvoiceForm({
             onAddGroup={() => form.addGroup(toDollars(form.resolvedRate))}
             defaultUnitPrice={toDollars(form.resolvedRate)}
           />
+
+          {renderServiceSelector?.({
+            onSelect: form.appendFromService,
+            currency: form.currency,
+          })}
 
           {renderImport?.({
             addGroups: form.addImportedGroups,

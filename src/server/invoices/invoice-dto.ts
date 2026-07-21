@@ -48,6 +48,7 @@ export interface InvoiceItemDTO {
   unitPrice: Cents;
   amount: Cents;
   sortOrder: number;
+  serviceId: string | null;
 }
 
 export interface InvoiceItemGroupDTO {
@@ -128,6 +129,7 @@ function toItemDTO(item: InvoiceDetailRow["items"][number]): InvoiceItemDTO {
     unitPrice: asCents(item.unitPrice),
     amount: asCents(item.amount),
     sortOrder: item.sortOrder,
+    serviceId: item.serviceId ?? null,
   };
 }
 

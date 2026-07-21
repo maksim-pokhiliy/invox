@@ -97,6 +97,25 @@ export function useInvoiceForm({
     groupArray
   );
 
+  const appendFromService = React.useCallback(
+    (item: {
+      serviceId: string;
+      title: string;
+      description: string;
+      quantity: number;
+      unitPrice: number;
+    }) => {
+      append({
+        title: item.title,
+        description: item.description || "",
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        serviceId: item.serviceId,
+      });
+    },
+    [append]
+  );
+
   return {
     register,
     handleSubmit,
@@ -132,5 +151,6 @@ export function useInvoiceForm({
     moveGroup: groupArray.move,
     addImportedGroups,
     addGroup,
+    appendFromService,
   };
 }

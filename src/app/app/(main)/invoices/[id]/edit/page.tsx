@@ -12,6 +12,7 @@ import { CardSkeleton } from "@app/shared/ui/skeletons";
 import { useClients, useCreateClient } from "@app/features/clients";
 import { mapInvoiceToFormData, useInvoice } from "@app/features/invoices";
 import { InvoiceForm } from "@app/features/invoices/components";
+import { ServiceSelector } from "@app/features/services/components";
 import { useSenderProfile } from "@app/features/settings";
 import { TimeTrackingImportSection } from "@app/features/time-tracking/components";
 
@@ -80,6 +81,9 @@ export default function EditInvoicePage() {
         defaultCurrency={senderProfile?.defaultCurrency}
         renderImport={({ addGroups, rateCents }) => (
           <TimeTrackingImportSection onImport={addGroups} getpaidRateCents={rateCents} />
+        )}
+        renderServiceSelector={({ onSelect, currency }) => (
+          <ServiceSelector onSelect={onSelect} currency={currency} />
         )}
       />
     </AppLayout>
