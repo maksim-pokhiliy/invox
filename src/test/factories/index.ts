@@ -15,5 +15,6 @@ export {
 } from "./invoice-item";
 export { createPayment, makePayment } from "./payment";
 export { createSenderProfile, makeSenderProfile } from "./sender-profile";
+export { createService, makeService } from "./service";
 export { createUser, defaultPassword, defaultPasswordHash, makeUser } from "./user";
 export { createWaitlistEntry, makeWaitlistEntry } from "./waitlist-entry";

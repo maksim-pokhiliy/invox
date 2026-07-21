@@ -18,6 +18,7 @@ export const lineItemSchema = z
       .max(SCHEMA_LIMITS.MONEY_MAX_LINE_ITEM_CENTS, "Unit price is too large")
       .transform(asCents),
     sortOrder: z.number().int().optional(),
+    serviceId: z.string().optional(),
   })
   .refine((item) => Math.round(item.quantity * item.unitPrice) <= SCHEMA_LIMITS.MONEY_MAX_CENTS, {
     message: "Line item total is too large",

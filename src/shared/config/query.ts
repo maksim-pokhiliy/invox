@@ -16,6 +16,7 @@ export const queryKeys = {
     ["time-tracking-projects", provider, workspaceId] as const,
   timeTrackingEntries: (provider: string) => ["time-tracking-entries", provider] as const,
   waitlistEntries: ["waitlist-entries"] as const,
+  services: ["services"] as const,
 };
 
 export const STALE_TIME = {

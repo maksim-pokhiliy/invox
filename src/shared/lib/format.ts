@@ -1,7 +1,18 @@
 import { CURRENCY } from "@app/shared/config/config";
+import { CURRENCY_SYMBOLS } from "@app/shared/config/currencies";
 import { type Cents } from "@app/shared/types/money";
 
+function formatWithSymbol(amount: number, currency: string, fractionDigits: number): string {
+  const value = amount / CURRENCY.CENTS_MULTIPLIER;
+
+  return `${value.toLocaleString("en-US", { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })} ${CURRENCY_SYMBOLS[currency]}`;
+}
+
 export function formatCurrency(amount: number, currency = "USD"): string {
+  if (CURRENCY_SYMBOLS[currency]) {
+    return formatWithSymbol(amount, currency, 2);
+  }
+
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
@@ -9,6 +20,10 @@ export function formatCurrency(amount: number, currency = "USD"): string {
 }
 
 export function formatCurrencyCompact(amount: number, currency = "USD"): string {
+  if (CURRENCY_SYMBOLS[currency]) {
+    return formatWithSymbol(amount, currency, 0);
+  }
+
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,

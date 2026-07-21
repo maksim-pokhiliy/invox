@@ -14,6 +14,7 @@ interface ItemRowBase {
   quantity: number;
   unitPrice: number;
   sortOrder: number;
+  serviceId: string | null;
 }
 
 export function buildItemRowBase(
@@ -28,6 +29,7 @@ export function buildItemRowBase(
     quantity: item.quantity,
     unitPrice: item.unitPrice,
     sortOrder,
+    serviceId: item.serviceId ?? null,
   };
 }
 

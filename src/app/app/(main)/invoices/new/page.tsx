@@ -7,6 +7,7 @@ import { Breadcrumbs } from "@app/shared/ui/breadcrumbs";
 
 import { useClients, useCreateClient } from "@app/features/clients";
 import { InvoiceForm } from "@app/features/invoices/components";
+import { ServiceSelector } from "@app/features/services/components";
 import { useSenderProfile } from "@app/features/settings";
 import { useTemplate } from "@app/features/templates";
 import { TimeTrackingImportSection } from "@app/features/time-tracking/components";
@@ -38,6 +39,9 @@ export default function NewInvoicePage() {
         defaultCurrency={senderProfile?.defaultCurrency}
         renderImport={({ addGroups, rateCents }) => (
           <TimeTrackingImportSection onImport={addGroups} getpaidRateCents={rateCents} />
+        )}
+        renderServiceSelector={({ onSelect, currency }) => (
+          <ServiceSelector onSelect={onSelect} currency={currency} />
         )}
       />
     </AppLayout>

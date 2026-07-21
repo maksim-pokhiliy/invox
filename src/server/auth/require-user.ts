@@ -1,6 +1,7 @@
 import { asUserId, type UserId } from "@app/shared/types/ids";
 
 import { auth } from "@app/server/auth";
+import { prisma } from "@app/server/db";
 
 export interface AuthUser {
   id: UserId;
@@ -21,7 +22,16 @@ export async function requireUser(): Promise<AuthUser> {
     throw new AuthenticationError();
   }
 
-  return { id: asUserId(session.user.id), email: session.user.email };
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, email: true },
+  });
+
+  if (!user) {
+    throw new AuthenticationError();
+  }
+
+  return { id: asUserId(user.id), email: user.email };
 }
 
 export async function getUser(): Promise<AuthUser | null> {
@@ -31,5 +41,14 @@ export async function getUser(): Promise<AuthUser | null> {
     return null;
   }
 
-  return { id: asUserId(session.user.id), email: session.user.email };
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, email: true },
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  return { id: asUserId(user.id), email: user.email };
 }

@@ -14,6 +14,7 @@ export const TRUNCATE_TABLES = [
   "InvoiceItemGroup",
   "Invoice",
   "Client",
+  "Service",
   "SenderProfile",
   "TimeTrackingConnection",
   "VerificationToken",

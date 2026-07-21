@@ -6,5 +6,6 @@ export * from "./invoice";
 export * from "./line-item";
 export * from "./payment";
 export * from "./sender-profile";
+export * from "./service";
 export * from "./template";
 export * from "./waitlist";

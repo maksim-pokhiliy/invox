@@ -5,6 +5,8 @@ import { PAYMENT_METHOD } from "@app/shared/config/payment-method";
 import { asClientId, asInvoiceId, asPaymentId } from "@app/shared/types/ids";
 import { asCents } from "@app/shared/types/money";
 
+const nullableCents = (v: number | null) => (v === null ? null : asCents(v));
+
 const invoiceStatusSchema = z.nativeEnum(INVOICE_STATUS);
 const invoiceEventTypeSchema = z.nativeEnum(INVOICE_EVENT);
 const discountTypeSchema = z.nativeEnum(DISCOUNT_TYPE);
@@ -33,15 +35,25 @@ export const clientSchema = z.object({
   id: z.string().transform(asClientId),
   name: z.string(),
   email: z.string(),
-  defaultRate: z
-    .number()
-    .nullable()
-    .transform((v) => (v === null ? null : asCents(v))),
+  defaultRate: z.number().nullable().transform(nullableCents),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
 
 export const clientListSchema = z.array(clientSchema);
+
+export const serviceSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  unit: z.string().nullable(),
+  defaultPrice: z.number().transform(asCents),
+  active: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const serviceListSchema = z.array(serviceSchema);
 
 export const invoiceItemResponseSchema = z.object({
   id: z.string(),
@@ -51,6 +63,7 @@ export const invoiceItemResponseSchema = z.object({
   unitPrice: z.number().transform(asCents),
   amount: z.number().transform(asCents),
   sortOrder: z.number().optional(),
+  serviceId: z.string().nullable().optional(),
 });
 
 export const invoiceItemGroupResponseSchema = z.object({
@@ -140,10 +153,7 @@ export const senderProfileResponseSchema = z.object({
   footerText: z.string().nullable(),
   fontFamily: z.string().nullable(),
   invoicePrefix: z.string().nullable(),
-  defaultRate: z
-    .number()
-    .nullable()
-    .transform((v) => (v === null ? null : asCents(v))),
+  defaultRate: z.number().nullable().transform(nullableCents),
 });
 
 export const monthlyRevenueSchema = z.object({
@@ -187,103 +197,30 @@ export const analyticsDataSchema = z.object({
   recentInvoices: z.array(recentInvoiceSchema),
 });
 
-export const providerCapabilitiesSchema = z.object({
-  breakdownOptions: z.array(z.string()),
-  allowedCombinations: z.record(z.string(), z.array(z.string())),
-  roundingOptions: z.array(z.number()),
-  roundingDirections: z.array(z.string()),
-  hasClients: z.boolean(),
-  hasTasks: z.boolean(),
-  hasBillableRates: z.boolean(),
-  hasCurrency: z.boolean(),
-  hasProjects: z.boolean(),
-});
-
-export const providerInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  capabilities: providerCapabilitiesSchema,
-});
-
-export const providerInfoListSchema = z.array(providerInfoSchema);
-
-export const timeTrackingConnectionSchema = z.object({
-  id: z.string(),
-  provider: z.string(),
-  label: z.string().nullable(),
-  metadata: z.record(z.string(), z.unknown()).nullable(),
-  connectedAt: z.string(),
-  lastUsedAt: z.string().nullable().optional(),
-});
-
-export const timeTrackingConnectionListSchema = z.array(timeTrackingConnectionSchema);
-
-export const timeTrackingWorkspaceSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  defaultCurrency: z.string().nullable(),
-  defaultHourlyRateCents: z
-    .number()
-    .nullable()
-    .transform((v) => (v === null ? null : asCents(v))),
-  roundingDirection: z.string(),
-  roundingMinutes: z.number(),
-});
-
-export const timeTrackingWorkspaceListSchema = z.array(timeTrackingWorkspaceSchema);
-
-export const timeTrackingProjectSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  clientId: z.string().nullable(),
-  clientName: z.string().nullable(),
-  active: z.boolean(),
-  billable: z.boolean(),
-  color: z.string().nullable(),
-  currency: z.string().nullable(),
-  rateCents: z
-    .number()
-    .nullable()
-    .transform((v) => (v === null ? null : asCents(v))),
-});
-
-export const timeTrackingProjectListSchema = z.array(timeTrackingProjectSchema);
-
-export const timeEntryItemSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  seconds: z.number(),
-  amountCents: z
-    .number()
-    .nullable()
-    .transform((v) => (v === null ? null : asCents(v))),
-  rateCents: z
-    .number()
-    .nullable()
-    .transform((v) => (v === null ? null : asCents(v))),
-  currency: z.string().nullable(),
-});
-
-export const timeEntryGroupSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  items: z.array(timeEntryItemSchema),
-  totalSeconds: z.number(),
-  totalAmountCents: z
-    .number()
-    .nullable()
-    .transform((v) => (v === null ? null : asCents(v))),
-});
-
-export const timeEntriesResultSchema = z.object({
-  groups: z.array(timeEntryGroupSchema),
-  totalSeconds: z.number(),
-  totalAmountCents: z
-    .number()
-    .nullable()
-    .transform((v) => (v === null ? null : asCents(v))),
-  currency: z.string().nullable(),
-});
+export type {
+  ProviderCapabilities,
+  ProviderInfo,
+  TimeEntriesResult,
+  TimeEntryGroup,
+  TimeEntryItem,
+  TimeTrackingConnection,
+  TimeTrackingProject,
+  TimeTrackingWorkspace,
+} from "./time-tracking";
+export {
+  providerCapabilitiesSchema,
+  providerInfoListSchema,
+  providerInfoSchema,
+  timeEntriesResultSchema,
+  timeEntryGroupSchema,
+  timeEntryItemSchema,
+  timeTrackingConnectionListSchema,
+  timeTrackingConnectionSchema,
+  timeTrackingProjectListSchema,
+  timeTrackingProjectSchema,
+  timeTrackingWorkspaceListSchema,
+  timeTrackingWorkspaceSchema,
+} from "./time-tracking";
 
 export const publicInvoiceSchema = z.object({
   publicId: z.string(),
@@ -309,6 +246,7 @@ export const publicInvoiceSchema = z.object({
 });
 
 export type Client = z.infer<typeof clientSchema>;
+export type Service = z.infer<typeof serviceSchema>;
 export type InvoiceItemResponse = z.infer<typeof invoiceItemResponseSchema>;
 export type InvoiceItemGroupResponse = z.infer<typeof invoiceItemGroupResponseSchema>;
 export type InvoiceEvent = z.infer<typeof invoiceEventSchema>;
@@ -321,11 +259,3 @@ export type MonthlyRevenue = z.infer<typeof monthlyRevenueSchema>;
 export type RecentInvoice = z.infer<typeof recentInvoiceSchema>;
 export type CurrencyMetrics = z.infer<typeof currencyMetricsSchema>;
 export type AnalyticsData = z.infer<typeof analyticsDataSchema>;
-export type ProviderCapabilities = z.infer<typeof providerCapabilitiesSchema>;
-export type ProviderInfo = z.infer<typeof providerInfoSchema>;
-export type TimeTrackingConnection = z.infer<typeof timeTrackingConnectionSchema>;
-export type TimeTrackingWorkspace = z.infer<typeof timeTrackingWorkspaceSchema>;
-export type TimeTrackingProject = z.infer<typeof timeTrackingProjectSchema>;
-export type TimeEntryItem = z.infer<typeof timeEntryItemSchema>;
-export type TimeEntryGroup = z.infer<typeof timeEntryGroupSchema>;
-export type TimeEntriesResult = z.infer<typeof timeEntriesResultSchema>;
